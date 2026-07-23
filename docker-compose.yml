@@ -1,6 +1,6 @@
 services:
   app:
-    image: brofrong/zero-test:${APP_IMAGE_TAG:-latest}
+    image: brofrong/zero-test:latest
     pull_policy: always
     container_name: zero-test-app
     restart: unless-stopped
@@ -43,14 +43,14 @@ services:
         condition: service_healthy
 
   zero-postgres:
-    image: postgres:18-alpine
+    image: postgres:18
     container_name: zero-test-postgres
     restart: unless-stopped
     environment:
       POSTGRES_DB: zero
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pass}
     volumes:
-      - zero-postgres-data:/var/lib/postgresql/data
+      - zero-postgres-data:/var/lib/postgresql
     command: postgres -c wal_level=logical
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d zero"]
