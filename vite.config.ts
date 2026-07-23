@@ -27,10 +27,7 @@ function createZeroProxyConfig(target: string) {
 
 export default defineConfig(({ mode }) => {
 	const env = loadEnv(mode, process.cwd(), "");
-	const zeroUpstream =
-		env.ZERO_CACHE_UPSTREAM_URL ??
-		env.VITE_ZERO_CACHE_URL ??
-		"http://localhost:4848";
+	const zeroUpstream = env.ZERO_CACHE_UPSTREAM_URL ?? "http://localhost:4848";
 
 	return {
 		resolve: { tsconfigPaths: true },

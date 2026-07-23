@@ -1,8 +1,7 @@
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: brofrong/zero-test:${APP_IMAGE_TAG:-latest}
+    pull_policy: always
     container_name: zero-test-app
     restart: unless-stopped
     ports:
@@ -11,10 +10,10 @@ services:
       NODE_ENV: production
       PORT: 3000
       HOST: 0.0.0.0
-      SESSION_SECRET: ${SESSION_SECRET:?Set SESSION_SECRET in .env}
+      APP_URL: ${APP_URL:-http://localhost:3000}
       ZERO_UPSTREAM_DB: postgres://postgres:${POSTGRES_PASSWORD:-pass}@zero-postgres:5432/zero
       ZERO_CACHE_UPSTREAM_URL: http://zero-cache:4848
-      VITE_ZERO_CACHE_URL: ${VITE_ZERO_CACHE_URL:-http://localhost:4848}
+
     depends_on:
       zero-postgres:
         condition: service_healthy

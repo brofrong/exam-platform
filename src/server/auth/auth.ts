@@ -17,7 +17,7 @@ export const auth = betterAuth({
 		},
 	}),
 	secret: betterAuthSecret,
-	baseURL: env.VITE_BETTER_AUTH_URL,
+	baseURL: env.APP_URL,
 	emailAndPassword: {
 		enabled: true,
 	},

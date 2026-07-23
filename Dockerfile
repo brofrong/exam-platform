@@ -11,9 +11,6 @@ FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-ARG VITE_ZERO_CACHE_URL=http://localhost:4848
-ENV VITE_ZERO_CACHE_URL=${VITE_ZERO_CACHE_URL}
-
 RUN bun run build
 
 FROM base AS runner
