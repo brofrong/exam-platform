@@ -1,0 +1,64 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: zero-test-app
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      HOST: 0.0.0.0
+      SESSION_SECRET: ${SESSION_SECRET:?Set SESSION_SECRET in .env}
+      ZERO_UPSTREAM_DB: postgres://postgres:${POSTGRES_PASSWORD:-pass}@zero-postgres:5432/zero
+      ZERO_CACHE_UPSTREAM_URL: http://zero-cache:4848
+      VITE_ZERO_CACHE_URL: ${VITE_ZERO_CACHE_URL:-http://localhost:4848}
+    depends_on:
+      zero-postgres:
+        condition: service_healthy
+      zero-cache:
+        condition: service_started
+
+  zero-cache:
+    image: rocicorp/zero:1.8.0
+    container_name: zero-test-cache
+    restart: unless-stopped
+    stop_grace_period: 10m
+    environment:
+      ZERO_UPSTREAM_DB: postgres://postgres:${POSTGRES_PASSWORD:-pass}@zero-postgres:5432/zero
+      ZERO_CVR_DB: postgres://postgres:${POSTGRES_PASSWORD:-pass}@zero-postgres:5432/zero
+      ZERO_CHANGE_DB: postgres://postgres:${POSTGRES_PASSWORD:-pass}@zero-postgres:5432/zero
+      ZERO_REPLICA_FILE: /data/replica.db
+      ZERO_ADMIN_PASSWORD: ${ZERO_ADMIN_PASSWORD:-change-me}
+      ZERO_QUERY_URL: http://app:3000/api/query
+      ZERO_MUTATE_URL: http://app:3000/api/mutate
+      ZERO_ENABLE_CRUD_MUTATIONS: "false"
+      ZERO_QUERY_FORWARD_COOKIES: "true"
+      ZERO_MUTATE_FORWARD_COOKIES: "true"
+    volumes:
+      - zero-cache-data:/data
+    depends_on:
+      zero-postgres:
+        condition: service_healthy
+
+  zero-postgres:
+    image: postgres:18-alpine
+    container_name: zero-test-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: zero
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pass}
+    volumes:
+      - zero-postgres-data:/var/lib/postgresql/data
+    command: postgres -c wal_level=logical
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d zero"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  zero-cache-data:
+  zero-postgres-data:

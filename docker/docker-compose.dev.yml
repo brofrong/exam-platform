@@ -1,0 +1,37 @@
+services:
+  zero-cache:
+    image: rocicorp/zero:1.8.0
+    container_name: zero-cache
+    stop_grace_period: 10m
+    environment:
+      ZERO_UPSTREAM_DB: postgres://postgres:pass@zero-postgres:5432/zero
+      ZERO_CVR_DB: postgres://postgres:pass@zero-postgres:5432/zero
+      ZERO_CHANGE_DB: postgres://postgres:pass@zero-postgres:5432/zero
+      # Path to the SQLite replica
+      ZERO_REPLICA_FILE: /data/replica.db
+      # Password used to access the inspector and /statz
+      ZERO_ADMIN_PASSWORD: randompassword
+      ZERO_QUERY_URL: http://host.docker.internal:3000/api/query
+      ZERO_MUTATE_URL: http://host.docker.internal:3000/api/mutate
+      ZERO_ENABLE_CRUD_MUTATIONS: 'false'
+      ZERO_QUERY_FORWARD_COOKIES: 'true'
+      ZERO_MUTATE_FORWARD_COOKIES: 'true'
+    volumes:
+      - zero-cache-data:/data
+
+  zero-postgres:
+    image: postgres:18
+    container_name: zero-postgres
+    environment:
+      POSTGRES_DB: zero
+      POSTGRES_PASSWORD: pass
+    ports:
+      - "5432:5432"
+    command: postgres -c wal_level=logical
+    healthcheck:
+      test: pg_isready
+      interval: 10s
+
+volumes:
+  zero-cache-data:
+    driver: local
