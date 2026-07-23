@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
-import { authenticateRequest, type AuthUser } from "#/server/auth/session";
+import { authenticateRequest } from "#/server/auth/authenticate-request";
+import type { AuthUser } from "#/server/auth/types";
 
 export const getCurrentUser = createServerFn({ method: "GET" }).handler(
 	async (): Promise<AuthUser | null> => {

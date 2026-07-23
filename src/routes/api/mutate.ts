@@ -1,7 +1,7 @@
 import { mustGetMutator } from "@rocicorp/zero";
 import { handleMutateRequest } from "@rocicorp/zero/server";
 import { createFileRoute } from "@tanstack/react-router";
-import { authenticateRequest } from "#/server/auth/session";
+import { authenticateRequest } from "#/server/auth/authenticate-request";
 import { dbProvider } from "#/server/db/db";
 import { mutators } from "#/zero/mutators";
 
@@ -19,7 +19,11 @@ export const Route = createFileRoute("/api/mutate")({
 					handler: (transact) =>
 						transact((tx, name, args) => {
 							const mutator = mustGetMutator(mutators, name);
-							return mutator.fn({ args, tx, ctx: user });
+							return mutator.fn({
+								args,
+								tx,
+								ctx: { id: user.id, name: user.name },
+							});
 						}),
 					request,
 					userID: user.id,

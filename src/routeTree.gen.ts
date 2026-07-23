@@ -18,9 +18,6 @@ import { Route as ApiZeroRouteImport } from './routes/api/zero'
 import { Route as ApiQueryRouteImport } from './routes/api/query'
 import { Route as ApiMutateRouteImport } from './routes/api/mutate'
 import { Route as ApiZeroSplatRouteImport } from './routes/api/zero/$'
-import { Route as ApiAuthMeRouteImport } from './routes/api/auth/me'
-import { Route as ApiAuthLogoutRouteImport } from './routes/api/auth/logout'
-import { Route as ApiAuthLoginRouteImport } from './routes/api/auth/login'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
 const ZeroRoute = ZeroRouteImport.update({
@@ -67,21 +64,6 @@ const ApiZeroSplatRoute = ApiZeroSplatRouteImport.update({
   path: '/$',
   getParentRoute: () => ApiZeroRoute,
 } as any)
-const ApiAuthMeRoute = ApiAuthMeRouteImport.update({
-  id: '/api/auth/me',
-  path: '/api/auth/me',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiAuthLogoutRoute = ApiAuthLogoutRouteImport.update({
-  id: '/api/auth/logout',
-  path: '/api/auth/logout',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiAuthLoginRoute = ApiAuthLoginRouteImport.update({
-  id: '/api/auth/login',
-  path: '/api/auth/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -97,9 +79,6 @@ export interface FileRoutesByFullPath {
   '/api/zero': typeof ApiZeroRouteWithChildren
   '/zero/$': typeof ZeroSplatRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/auth/login': typeof ApiAuthLoginRoute
-  '/api/auth/logout': typeof ApiAuthLogoutRoute
-  '/api/auth/me': typeof ApiAuthMeRoute
   '/api/zero/$': typeof ApiZeroSplatRoute
 }
 export interface FileRoutesByTo {
@@ -111,9 +90,6 @@ export interface FileRoutesByTo {
   '/zero/$': typeof ZeroSplatRoute
   '/': typeof AuthenticatedIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/auth/login': typeof ApiAuthLoginRoute
-  '/api/auth/logout': typeof ApiAuthLogoutRoute
-  '/api/auth/me': typeof ApiAuthMeRoute
   '/api/zero/$': typeof ApiZeroSplatRoute
 }
 export interface FileRoutesById {
@@ -127,9 +103,6 @@ export interface FileRoutesById {
   '/zero/$': typeof ZeroSplatRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/auth/login': typeof ApiAuthLoginRoute
-  '/api/auth/logout': typeof ApiAuthLogoutRoute
-  '/api/auth/me': typeof ApiAuthMeRoute
   '/api/zero/$': typeof ApiZeroSplatRoute
 }
 export interface FileRouteTypes {
@@ -143,9 +116,6 @@ export interface FileRouteTypes {
     | '/api/zero'
     | '/zero/$'
     | '/api/auth/$'
-    | '/api/auth/login'
-    | '/api/auth/logout'
-    | '/api/auth/me'
     | '/api/zero/$'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -157,9 +127,6 @@ export interface FileRouteTypes {
     | '/zero/$'
     | '/'
     | '/api/auth/$'
-    | '/api/auth/login'
-    | '/api/auth/logout'
-    | '/api/auth/me'
     | '/api/zero/$'
   id:
     | '__root__'
@@ -172,9 +139,6 @@ export interface FileRouteTypes {
     | '/zero/$'
     | '/_authenticated/'
     | '/api/auth/$'
-    | '/api/auth/login'
-    | '/api/auth/logout'
-    | '/api/auth/me'
     | '/api/zero/$'
   fileRoutesById: FileRoutesById
 }
@@ -186,9 +150,6 @@ export interface RootRouteChildren {
   ApiQueryRoute: typeof ApiQueryRoute
   ApiZeroRoute: typeof ApiZeroRouteWithChildren
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
-  ApiAuthLoginRoute: typeof ApiAuthLoginRoute
-  ApiAuthLogoutRoute: typeof ApiAuthLogoutRoute
-  ApiAuthMeRoute: typeof ApiAuthMeRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -256,27 +217,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiZeroSplatRouteImport
       parentRoute: typeof ApiZeroRoute
     }
-    '/api/auth/me': {
-      id: '/api/auth/me'
-      path: '/api/auth/me'
-      fullPath: '/api/auth/me'
-      preLoaderRoute: typeof ApiAuthMeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/auth/logout': {
-      id: '/api/auth/logout'
-      path: '/api/auth/logout'
-      fullPath: '/api/auth/logout'
-      preLoaderRoute: typeof ApiAuthLogoutRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/auth/login': {
-      id: '/api/auth/login'
-      path: '/api/auth/login'
-      fullPath: '/api/auth/login'
-      preLoaderRoute: typeof ApiAuthLoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -328,9 +268,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiQueryRoute: ApiQueryRoute,
   ApiZeroRoute: ApiZeroRouteWithChildren,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
-  ApiAuthLoginRoute: ApiAuthLoginRoute,
-  ApiAuthLogoutRoute: ApiAuthLogoutRoute,
-  ApiAuthMeRoute: ApiAuthMeRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

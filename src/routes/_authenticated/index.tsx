@@ -9,6 +9,7 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { authClient } from "#/utils/auth-client";
 import {
 	getOldestCursor,
 	hasMoreMessages,
@@ -39,7 +40,7 @@ function ChatApp() {
 	}, [chats, selectedChatId]);
 
 	const handleLogout = async () => {
-		await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+		await authClient.signOut();
 		await zero.delete();
 		window.location.href = "/login";
 	};
@@ -63,7 +64,9 @@ function ChatApp() {
 			<aside className="flex w-72 shrink-0 flex-col border-r border-border bg-bg-surface">
 				<div className="border-b border-border p-4">
 					<p className="text-sm text-text-muted">Вы вошли как</p>
-					<p className="font-semibold text-text-heading">{user.login}</p>
+					<p className="font-semibold text-text-heading">
+						{user.name || user.email}
+					</p>
 					<button
 						type="button"
 						onClick={handleLogout}
@@ -315,12 +318,12 @@ function ChatWindow({
 				) : (
 					messages.map((item) => {
 						const isOwn = item.authorId === currentUserId;
-						const authorLogin =
+						const authorName =
 							"author" in item &&
 							item.author &&
 							typeof item.author === "object" &&
-							"login" in item.author
-								? String(item.author.login)
+							"name" in item.author
+								? String(item.author.name)
 								: "unknown";
 						return (
 							<div
@@ -336,7 +339,7 @@ function ChatWindow({
 								>
 									{!isOwn && (
 										<p className="mb-1 text-xs font-medium opacity-80">
-											{authorLogin}
+											{authorName}
 										</p>
 									)}
 									<p>{item.content}</p>

@@ -2,6 +2,10 @@
   "name": "zero-test",
   "private": true,
   "type": "module",
+  "packageManager": "bun@1.4.0",
+  "engines": {
+    "bun": ">=1.4.0"
+  },
   "imports": {
     "#/*": "./src/*"
   },
@@ -46,6 +50,7 @@
     "@tanstack/router-cli": "^1.132.0",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/react": "^16.3.0",
+    "@types/bun": "^1.3.14",
     "@types/node": "^22.10.2",
     "@types/pg": "^8.20.0",
     "@types/react": "^19.2.0",
@@ -59,13 +64,9 @@
     "vite": "^8.0.0",
     "vitest": "^4.1.5"
   },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "esbuild",
-      "lightningcss"
-    ]
-  },
   "trustedDependencies": [
-    "@rocicorp/zero-sqlite3"
+    "@rocicorp/zero-sqlite3",
+    "esbuild",
+    "lightningcss"
   ]
 }

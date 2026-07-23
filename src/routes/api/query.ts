@@ -1,7 +1,7 @@
 import { mustGetQuery } from "@rocicorp/zero";
 import { handleQueryRequest } from "@rocicorp/zero/server";
 import { createFileRoute } from "@tanstack/react-router";
-import { authenticateRequest } from "#/server/auth/session";
+import { authenticateRequest } from "#/server/auth/authenticate-request";
 import { queries } from "#/zero/queries";
 import { schema } from "#/zero/schema";
 
@@ -17,7 +17,10 @@ export const Route = createFileRoute("/api/query")({
 				const result = await handleQueryRequest({
 					handler: (name, args) => {
 						const query = mustGetQuery(queries, name);
-						return query.fn({ args, ctx: user });
+						return query.fn({
+							args,
+							ctx: { id: user.id, name: user.name },
+						});
 					},
 					schema,
 					request,

@@ -12,7 +12,8 @@ dist-ssr
 __unconfig*
 todos.json
 
-.pnpm-store
 .worktrees
 worktrees
 zero.db
+
+.pnpm-store

@@ -25,7 +25,7 @@ function AuthenticatedLayout() {
 			schema={schema}
 			mutators={mutators}
 			userID={user.id}
-			context={{ id: user.id, login: user.login }}
+			context={{ id: user.id, name: user.name }}
 		>
 			<Outlet />
 		</ZeroProvider>

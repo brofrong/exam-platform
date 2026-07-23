@@ -6,10 +6,6 @@ export const env = createEnv({
 	server: {
 		ZERO_UPSTREAM_DB: z.string(),
 		ZERO_CACHE_UPSTREAM_URL: z.string().default("http://localhost:4848"),
-		SESSION_SECRET: z
-			.string()
-			.default("dev-session-secret-change-in-production"),
-		BETTER_AUTH_SECRET: z.string(),
 	},
 	client: {
 		VITE_BETTER_AUTH_URL: z.string().default("http://localhost:3000"),
