@@ -2,11 +2,11 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { authClient } from "#/shared/auth-client";
 import { Button } from "@/components/ui/button";
 
-export const Route = createFileRoute("/_authenticated/")({
-	component: AuthenticatedHomePage,
+export const Route = createFileRoute("/app/")({
+	component: AppHomePage,
 });
 
-function AuthenticatedHomePage() {
+function AppHomePage() {
 	const { user } = Route.useRouteContext();
 	const navigate = useNavigate();
 

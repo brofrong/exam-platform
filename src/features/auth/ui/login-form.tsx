@@ -29,7 +29,7 @@ export function LoginForm() {
 				return;
 			}
 
-			await navigate({ to: "/" });
+			await navigate({ to: "/app" });
 		} catch {
 			setError("Не удалось войти");
 		} finally {

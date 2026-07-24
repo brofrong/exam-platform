@@ -5,7 +5,7 @@ import { mutators } from "#/server/zero/mutators";
 import { schema } from "#/server/zero/schema";
 import { getZeroCacheURL } from "#/shared/zero-cache-url";
 
-export const Route = createFileRoute("/_authenticated")({
+export const Route = createFileRoute("/admin")({
 	beforeLoad: async () => {
 		const user = await getCurrentUser();
 		if (!user) {
@@ -13,10 +13,10 @@ export const Route = createFileRoute("/_authenticated")({
 		}
 		return { user };
 	},
-	component: AuthenticatedLayout,
+	component: AdminLayout,
 });
 
-function AuthenticatedLayout() {
+function AdminLayout() {
 	const { user } = Route.useRouteContext();
 
 	return (

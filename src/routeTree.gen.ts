@@ -11,8 +11,13 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ZeroRouteImport } from './routes/zero'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
-import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as DevRouteImport } from './routes/dev'
+import { Route as AppRouteImport } from './routes/app'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as IndexRouteImport } from './routes/index'
+import { Route as DevIndexRouteImport } from './routes/dev/index'
+import { Route as AppIndexRouteImport } from './routes/app/index'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as ZeroSplatRouteImport } from './routes/zero/$'
 import { Route as ApiZeroRouteImport } from './routes/api/zero'
 import { Route as ApiQueryRouteImport } from './routes/api/query'
@@ -30,14 +35,40 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedRoute = AuthenticatedRouteImport.update({
-  id: '/_authenticated',
+const DevRoute = DevRouteImport.update({
+  id: '/dev',
+  path: '/dev',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
+const AppRoute = AppRouteImport.update({
+  id: '/app',
+  path: '/app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => AuthenticatedRoute,
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DevIndexRoute = DevIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DevRoute,
+} as any)
+const AppIndexRoute = AppIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
 } as any)
 const ZeroSplatRoute = ZeroSplatRouteImport.update({
   id: '/$',
@@ -71,37 +102,51 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof AuthenticatedIndexRoute
+  '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
+  '/app': typeof AppRouteWithChildren
+  '/dev': typeof DevRouteWithChildren
   '/login': typeof LoginRoute
   '/zero': typeof ZeroRouteWithChildren
   '/api/mutate': typeof ApiMutateRoute
   '/api/query': typeof ApiQueryRoute
   '/api/zero': typeof ApiZeroRouteWithChildren
   '/zero/$': typeof ZeroSplatRoute
+  '/admin/': typeof AdminIndexRoute
+  '/app/': typeof AppIndexRoute
+  '/dev/': typeof DevIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/zero/$': typeof ApiZeroSplatRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/zero': typeof ZeroRouteWithChildren
   '/api/mutate': typeof ApiMutateRoute
   '/api/query': typeof ApiQueryRoute
   '/api/zero': typeof ApiZeroRouteWithChildren
   '/zero/$': typeof ZeroSplatRoute
-  '/': typeof AuthenticatedIndexRoute
+  '/admin': typeof AdminIndexRoute
+  '/app': typeof AppIndexRoute
+  '/dev': typeof DevIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/zero/$': typeof ApiZeroSplatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
+  '/app': typeof AppRouteWithChildren
+  '/dev': typeof DevRouteWithChildren
   '/login': typeof LoginRoute
   '/zero': typeof ZeroRouteWithChildren
   '/api/mutate': typeof ApiMutateRoute
   '/api/query': typeof ApiQueryRoute
   '/api/zero': typeof ApiZeroRouteWithChildren
   '/zero/$': typeof ZeroSplatRoute
-  '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/admin/': typeof AdminIndexRoute
+  '/app/': typeof AppIndexRoute
+  '/dev/': typeof DevIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/zero/$': typeof ApiZeroSplatRoute
 }
@@ -109,41 +154,58 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
+    | '/app'
+    | '/dev'
     | '/login'
     | '/zero'
     | '/api/mutate'
     | '/api/query'
     | '/api/zero'
     | '/zero/$'
+    | '/admin/'
+    | '/app/'
+    | '/dev/'
     | '/api/auth/$'
     | '/api/zero/$'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
     | '/login'
     | '/zero'
     | '/api/mutate'
     | '/api/query'
     | '/api/zero'
     | '/zero/$'
-    | '/'
+    | '/admin'
+    | '/app'
+    | '/dev'
     | '/api/auth/$'
     | '/api/zero/$'
   id:
     | '__root__'
-    | '/_authenticated'
+    | '/'
+    | '/admin'
+    | '/app'
+    | '/dev'
     | '/login'
     | '/zero'
     | '/api/mutate'
     | '/api/query'
     | '/api/zero'
     | '/zero/$'
-    | '/_authenticated/'
+    | '/admin/'
+    | '/app/'
+    | '/dev/'
     | '/api/auth/$'
     | '/api/zero/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRouteWithChildren
+  AppRoute: typeof AppRouteWithChildren
+  DevRoute: typeof DevRouteWithChildren
   LoginRoute: typeof LoginRoute
   ZeroRoute: typeof ZeroRouteWithChildren
   ApiMutateRoute: typeof ApiMutateRoute
@@ -168,19 +230,54 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated': {
-      id: '/_authenticated'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedRouteImport
+    '/dev': {
+      id: '/dev'
+      path: '/dev'
+      fullPath: '/dev'
+      preLoaderRoute: typeof DevRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/': {
-      id: '/_authenticated/'
+    '/app': {
+      id: '/app'
+      path: '/app'
+      fullPath: '/app'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/': {
+      id: '/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedIndexRouteImport
-      parentRoute: typeof AuthenticatedRoute
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dev/': {
+      id: '/dev/'
+      path: '/'
+      fullPath: '/dev/'
+      preLoaderRoute: typeof DevIndexRouteImport
+      parentRoute: typeof DevRoute
+    }
+    '/app/': {
+      id: '/app/'
+      path: '/'
+      fullPath: '/app/'
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/zero/$': {
       id: '/zero/$'
@@ -227,17 +324,35 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface AuthenticatedRouteChildren {
-  AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+interface AdminRouteChildren {
+  AdminIndexRoute: typeof AdminIndexRoute
 }
 
-const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
-  AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminIndexRoute: AdminIndexRoute,
 }
 
-const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
-  AuthenticatedRouteChildren,
-)
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
+interface AppRouteChildren {
+  AppIndexRoute: typeof AppIndexRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppIndexRoute: AppIndexRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
+interface DevRouteChildren {
+  DevIndexRoute: typeof DevIndexRoute
+}
+
+const DevRouteChildren: DevRouteChildren = {
+  DevIndexRoute: DevIndexRoute,
+}
+
+const DevRouteWithChildren = DevRoute._addFileChildren(DevRouteChildren)
 
 interface ZeroRouteChildren {
   ZeroSplatRoute: typeof ZeroSplatRoute
@@ -261,7 +376,10 @@ const ApiZeroRouteWithChildren =
   ApiZeroRoute._addFileChildren(ApiZeroRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
-  AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  IndexRoute: IndexRoute,
+  AdminRoute: AdminRouteWithChildren,
+  AppRoute: AppRouteWithChildren,
+  DevRoute: DevRouteWithChildren,
   LoginRoute: LoginRoute,
   ZeroRoute: ZeroRouteWithChildren,
   ApiMutateRoute: ApiMutateRoute,
@@ -272,12 +390,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}

@@ -29,10 +29,9 @@ async function openLogin(page: Page) {
 }
 
 async function waitForHomeShell(page: Page) {
-	await page.waitForURL((url) => {
-		const path = url.pathname;
-		return path === "/" || path === "";
-	});
+	await page.waitForURL(
+		(url) => url.pathname === "/app" || url.pathname === "/app/",
+	);
 	await expect(page.getByTestId("home-shell")).toBeVisible({
 		timeout: 60_000,
 	});
