@@ -109,7 +109,9 @@ bun run test:e2e
 
 `test:e2e` сам поднимает `docker/docker-compose.e2e.yml`, гоняет миграции и стартует app через Playwright `webServer`. Данные в тестах уникальные (email/чат на каждый прогон) — БД между тестами не чистится.
 
-Остановить infra: `bun run test:e2e:infra:down` (с `-v` снесёт volume).
+В CI то же самое делает workflow [`.github/workflows/e2e.yml`](.github/workflows/e2e.yml) на push в `main` и на pull request.
+
+Остановить infra локально: `bun run test:e2e:infra:down` (с `-v` снесёт volume).
 
 ### Auth и данные
 

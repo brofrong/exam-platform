@@ -20,7 +20,7 @@ Cursor project rules in `.cursor/rules/` are the source of truth:
 | DB migrate | `bun run db:migrate` |
 | Generate Zero schema | `bun run zero:generate` |
 | Add shadcn component | `bunx shadcn@latest add <name>` |
-| E2E | `bun run test:e2e` (starts e2e compose + migrate) |
+| E2E | `bun run test:e2e` (starts e2e compose + migrate; also runs in GitHub Actions) |
 
 ## Do / Don't
 
