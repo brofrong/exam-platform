@@ -21,9 +21,11 @@ import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as ZeroSplatRouteImport } from './routes/zero/$'
 import { Route as DevSlugRouteImport } from './routes/dev/$slug'
 import { Route as ApiZeroRouteImport } from './routes/api/zero'
+import { Route as ApiUploadRouteImport } from './routes/api/upload'
 import { Route as ApiQueryRouteImport } from './routes/api/query'
 import { Route as ApiMutateRouteImport } from './routes/api/mutate'
 import { Route as ApiZeroSplatRouteImport } from './routes/api/zero/$'
+import { Route as ApiFilesSplatRouteImport } from './routes/api/files/$'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
 const ZeroRoute = ZeroRouteImport.update({
@@ -86,6 +88,11 @@ const ApiZeroRoute = ApiZeroRouteImport.update({
   path: '/api/zero',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiUploadRoute = ApiUploadRouteImport.update({
+  id: '/api/upload',
+  path: '/api/upload',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiQueryRoute = ApiQueryRouteImport.update({
   id: '/api/query',
   path: '/api/query',
@@ -100,6 +107,11 @@ const ApiZeroSplatRoute = ApiZeroSplatRouteImport.update({
   id: '/$',
   path: '/$',
   getParentRoute: () => ApiZeroRoute,
+} as any)
+const ApiFilesSplatRoute = ApiFilesSplatRouteImport.update({
+  id: '/api/files/$',
+  path: '/api/files/$',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
@@ -116,6 +128,7 @@ export interface FileRoutesByFullPath {
   '/zero': typeof ZeroRouteWithChildren
   '/api/mutate': typeof ApiMutateRoute
   '/api/query': typeof ApiQueryRoute
+  '/api/upload': typeof ApiUploadRoute
   '/api/zero': typeof ApiZeroRouteWithChildren
   '/dev/$slug': typeof DevSlugRoute
   '/zero/$': typeof ZeroSplatRoute
@@ -123,6 +136,7 @@ export interface FileRoutesByFullPath {
   '/app/': typeof AppIndexRoute
   '/dev/': typeof DevIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/files/$': typeof ApiFilesSplatRoute
   '/api/zero/$': typeof ApiZeroSplatRoute
 }
 export interface FileRoutesByTo {
@@ -131,6 +145,7 @@ export interface FileRoutesByTo {
   '/zero': typeof ZeroRouteWithChildren
   '/api/mutate': typeof ApiMutateRoute
   '/api/query': typeof ApiQueryRoute
+  '/api/upload': typeof ApiUploadRoute
   '/api/zero': typeof ApiZeroRouteWithChildren
   '/dev/$slug': typeof DevSlugRoute
   '/zero/$': typeof ZeroSplatRoute
@@ -138,6 +153,7 @@ export interface FileRoutesByTo {
   '/app': typeof AppIndexRoute
   '/dev': typeof DevIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/files/$': typeof ApiFilesSplatRoute
   '/api/zero/$': typeof ApiZeroSplatRoute
 }
 export interface FileRoutesById {
@@ -150,6 +166,7 @@ export interface FileRoutesById {
   '/zero': typeof ZeroRouteWithChildren
   '/api/mutate': typeof ApiMutateRoute
   '/api/query': typeof ApiQueryRoute
+  '/api/upload': typeof ApiUploadRoute
   '/api/zero': typeof ApiZeroRouteWithChildren
   '/dev/$slug': typeof DevSlugRoute
   '/zero/$': typeof ZeroSplatRoute
@@ -157,6 +174,7 @@ export interface FileRoutesById {
   '/app/': typeof AppIndexRoute
   '/dev/': typeof DevIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/files/$': typeof ApiFilesSplatRoute
   '/api/zero/$': typeof ApiZeroSplatRoute
 }
 export interface FileRouteTypes {
@@ -170,6 +188,7 @@ export interface FileRouteTypes {
     | '/zero'
     | '/api/mutate'
     | '/api/query'
+    | '/api/upload'
     | '/api/zero'
     | '/dev/$slug'
     | '/zero/$'
@@ -177,6 +196,7 @@ export interface FileRouteTypes {
     | '/app/'
     | '/dev/'
     | '/api/auth/$'
+    | '/api/files/$'
     | '/api/zero/$'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -185,6 +205,7 @@ export interface FileRouteTypes {
     | '/zero'
     | '/api/mutate'
     | '/api/query'
+    | '/api/upload'
     | '/api/zero'
     | '/dev/$slug'
     | '/zero/$'
@@ -192,6 +213,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/dev'
     | '/api/auth/$'
+    | '/api/files/$'
     | '/api/zero/$'
   id:
     | '__root__'
@@ -203,6 +225,7 @@ export interface FileRouteTypes {
     | '/zero'
     | '/api/mutate'
     | '/api/query'
+    | '/api/upload'
     | '/api/zero'
     | '/dev/$slug'
     | '/zero/$'
@@ -210,6 +233,7 @@ export interface FileRouteTypes {
     | '/app/'
     | '/dev/'
     | '/api/auth/$'
+    | '/api/files/$'
     | '/api/zero/$'
   fileRoutesById: FileRoutesById
 }
@@ -222,8 +246,10 @@ export interface RootRouteChildren {
   ZeroRoute: typeof ZeroRouteWithChildren
   ApiMutateRoute: typeof ApiMutateRoute
   ApiQueryRoute: typeof ApiQueryRoute
+  ApiUploadRoute: typeof ApiUploadRoute
   ApiZeroRoute: typeof ApiZeroRouteWithChildren
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiFilesSplatRoute: typeof ApiFilesSplatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -312,6 +338,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiZeroRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/upload': {
+      id: '/api/upload'
+      path: '/api/upload'
+      fullPath: '/api/upload'
+      preLoaderRoute: typeof ApiUploadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/query': {
       id: '/api/query'
       path: '/api/query'
@@ -332,6 +365,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/zero/$'
       preLoaderRoute: typeof ApiZeroSplatRouteImport
       parentRoute: typeof ApiZeroRoute
+    }
+    '/api/files/$': {
+      id: '/api/files/$'
+      path: '/api/files/$'
+      fullPath: '/api/files/$'
+      preLoaderRoute: typeof ApiFilesSplatRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/auth/$': {
       id: '/api/auth/$'
@@ -405,8 +445,10 @@ const rootRouteChildren: RootRouteChildren = {
   ZeroRoute: ZeroRouteWithChildren,
   ApiMutateRoute: ApiMutateRoute,
   ApiQueryRoute: ApiQueryRoute,
+  ApiUploadRoute: ApiUploadRoute,
   ApiZeroRoute: ApiZeroRouteWithChildren,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiFilesSplatRoute: ApiFilesSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
