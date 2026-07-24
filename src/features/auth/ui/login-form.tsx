@@ -25,13 +25,13 @@ export function LoginForm() {
 					: await authClient.signIn.email({ email, password });
 
 			if (result.error) {
-				setError(result.error.message ?? "Не удалось выполнить вход");
+				setError(result.error.message ?? "Could not sign in");
 				return;
 			}
 
 			await navigate({ to: "/" });
 		} catch {
-			setError("Не удалось выполнить вход");
+			setError("Could not sign in");
 		} finally {
 			setIsSubmitting(false);
 		}
@@ -46,12 +46,12 @@ export function LoginForm() {
 		<main className="mx-auto flex min-h-[calc(100vh-8rem)] w-full max-w-7xl items-center justify-center px-4 py-10">
 			<div className="w-full max-w-md rounded-2xl border border-border bg-card p-8 text-card-foreground shadow-lg">
 				<h1 className="text-2xl font-bold text-foreground">
-					{mode === "signin" ? "Вход в чат" : "Регистрация"}
+					{mode === "signin" ? "Sign in" : "Create account"}
 				</h1>
 				<p className="mt-2 text-sm text-muted-foreground">
 					{mode === "signin"
-						? "Войдите с email и паролем."
-						: "Создайте аккаунт с именем, email и паролем."}
+						? "Sign in with your email and password."
+						: "Create an account with a name, email, and password."}
 				</p>
 
 				<div className="mt-4 flex rounded-xl border border-border p-1">
@@ -65,7 +65,7 @@ export function LoginForm() {
 						}}
 						className="flex-1"
 					>
-						Войти
+						Sign in
 					</Button>
 					<Button
 						type="button"
@@ -77,7 +77,7 @@ export function LoginForm() {
 						}}
 						className="flex-1"
 					>
-						Регистрация
+						Sign up
 					</Button>
 				</div>
 
@@ -88,14 +88,14 @@ export function LoginForm() {
 								htmlFor="name"
 								className="block text-sm font-medium text-foreground"
 							>
-								Имя
+								Name
 							</label>
 							<Input
 								id="name"
 								data-testid="auth-name"
 								value={name}
 								onChange={(event) => setName(event.target.value)}
-								placeholder="например, Alice"
+								placeholder="e.g. Alice"
 								className="h-10 rounded-xl px-4"
 								required
 							/>
@@ -126,7 +126,7 @@ export function LoginForm() {
 							htmlFor="password"
 							className="block text-sm font-medium text-foreground"
 						>
-							Пароль
+							Password
 						</label>
 						<Input
 							id="password"
@@ -152,11 +152,11 @@ export function LoginForm() {
 					>
 						{isSubmitting
 							? mode === "signin"
-								? "Входим..."
-								: "Регистрируем..."
+								? "Signing in..."
+								: "Creating account..."
 							: mode === "signin"
-								? "Войти"
-								: "Зарегистрироваться"}
+								? "Sign in"
+								: "Create account"}
 					</Button>
 				</form>
 			</div>

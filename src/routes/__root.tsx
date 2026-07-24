@@ -35,7 +35,7 @@ export const Route = createRootRoute({
 function RootPending() {
 	return (
 		<main className="mx-auto flex min-h-[calc(100vh-8rem)] w-full max-w-7xl items-center justify-center px-4 py-10">
-			<p className="text-sm text-muted-foreground">Загрузка...</p>
+			<p className="text-sm text-muted-foreground">Loading...</p>
 		</main>
 	);
 }
@@ -45,10 +45,10 @@ function RootError({ error }: { error: Error }) {
 		<main className="mx-auto flex min-h-[calc(100vh-8rem)] w-full max-w-7xl items-center justify-center px-4 py-10">
 			<div className="max-w-md space-y-2 text-center">
 				<h1 className="text-lg font-semibold text-foreground">
-					Что-то пошло не так
+					Something went wrong
 				</h1>
 				<p className="text-sm text-muted-foreground">
-					{error.message || "Неизвестная ошибка"}
+					{error.message || "Unknown error"}
 				</p>
 			</div>
 		</main>
@@ -57,7 +57,7 @@ function RootError({ error }: { error: Error }) {
 
 function RootDocument({ children }: { children: React.ReactNode }) {
 	return (
-		<html lang="ru" suppressHydrationWarning>
+		<html lang="en" suppressHydrationWarning>
 			<head>
 				{/** biome-ignore lint/security/noDangerouslySetInnerHtml: We are using a trusted script */}
 				<script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />

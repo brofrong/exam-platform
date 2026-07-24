@@ -66,8 +66,8 @@ export function ChatSidebar({
 					size="icon-sm"
 					data-testid="chat-logout"
 					onClick={onLogout}
-					aria-label="Выйти"
-					title="Выйти"
+					aria-label="Log out"
+					title="Log out"
 				>
 					<LogOut />
 				</Button>
@@ -91,7 +91,7 @@ export function ChatSidebar({
 						onClick={onStartCreate}
 					>
 						<MessageSquarePlus />
-						Новый чат
+						New chat
 					</Button>
 				)}
 			</div>
@@ -102,7 +102,7 @@ export function ChatSidebar({
 				<div className="space-y-0.5 p-2" data-testid="chat-list">
 					{chats.length === 0 ? (
 						<p className="px-3 py-6 text-center text-sm text-muted-foreground">
-							Пока нет чатов
+							No chats yet
 						</p>
 					) : (
 						chats.map((chat) => (

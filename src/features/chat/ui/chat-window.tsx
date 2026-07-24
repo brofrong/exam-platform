@@ -169,7 +169,7 @@ export function ChatWindow({
 		<>
 			<div className="border-b border-border px-6 py-4">
 				<h1 className="text-lg font-semibold text-foreground">
-					{chat?.title ?? "Чат"}
+					{chat?.title ?? "Chat"}
 				</h1>
 			</div>
 
@@ -180,11 +180,11 @@ export function ChatWindow({
 			>
 				{isLoadingMore && (
 					<p className="text-center text-xs text-muted-foreground">
-						Загрузка сообщений...
+						Loading messages...
 					</p>
 				)}
 				{messages.length === 0 ? (
-					<p className="text-sm text-muted-foreground">Сообщений пока нет</p>
+					<p className="text-sm text-muted-foreground">No messages yet</p>
 				) : (
 					messages.map((item) => (
 						<MessageBubble
