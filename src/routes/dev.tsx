@@ -1,4 +1,5 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { DevGalleryLayout } from "#/features/dev-gallery";
 import { getCurrentUser } from "#/server/auth/get-current-user";
 import { can } from "#/shared/authz";
 
@@ -23,5 +24,9 @@ export const Route = createFileRoute("/dev")({
 });
 
 function DevLayout() {
-	return <Outlet />;
+	return (
+		<DevGalleryLayout>
+			<Outlet />
+		</DevGalleryLayout>
+	);
 }

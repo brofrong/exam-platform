@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useParams } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import {
 	galleryRegistry,
@@ -8,22 +8,20 @@ import { cn } from "@/lib/utils";
 
 type DevGalleryLayoutProps = {
 	children: ReactNode;
-	activeSlug?: string;
 };
 
-export function DevGalleryLayout({
-	children,
-	activeSlug,
-}: DevGalleryLayoutProps) {
+export function DevGalleryLayout({ children }: DevGalleryLayoutProps) {
+	const params = useParams({ strict: false });
+	const activeSlug = typeof params.slug === "string" ? params.slug : undefined;
 	const groups = getEntriesByCategory();
 
 	return (
 		<div
-			className="mx-auto flex w-full max-w-7xl gap-8 px-4 py-6"
+			className="mx-auto flex h-[calc(100dvh-4.5rem)] w-full max-w-7xl gap-8 px-4"
 			data-testid="dev-gallery"
 		>
-			<aside className="hidden w-56 shrink-0 md:block">
-				<div className="sticky top-24 space-y-6">
+			<aside className="hidden w-56 shrink-0 overflow-y-auto py-6 md:block">
+				<div className="space-y-6">
 					<div>
 						<Link
 							to="/dev"
@@ -68,7 +66,12 @@ export function DevGalleryLayout({
 					</nav>
 				</div>
 			</aside>
-			<div className="min-w-0 flex-1">{children}</div>
+			<div
+				key={activeSlug ?? "home"}
+				className="min-w-0 flex-1 overflow-y-auto py-6"
+			>
+				{children}
+			</div>
 		</div>
 	);
 }
