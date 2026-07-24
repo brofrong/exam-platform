@@ -510,10 +510,6 @@ export function PlaceholderDemo({ label }: { label: string }) {
 	);
 }
 
-export function LmsCompositesPlaceholder() {
-	return <PlaceholderDemo label="LMS composites" />;
-}
-
 export function EditorPlaceholder() {
 	return <PlaceholderDemo label="Editor" />;
 }
