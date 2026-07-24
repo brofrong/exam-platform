@@ -24,6 +24,17 @@ bun run dev
 
 Откройте [http://localhost:3000](http://localhost:3000) и зарегистрируйтесь.
 
+Object storage (MinIO) поднимается вместе с Postgres/Zero:
+
+| Сервис | Порт | URL |
+|--------|------|-----|
+| S3 API | `9000` | `http://localhost:9000` |
+| MinIO Console | `9001` | [http://localhost:9001](http://localhost:9001) |
+
+Логин консоли по умолчанию: `minioadmin` / `minioadmin`. Bucket `exam-platform-uploads` создаётся init-контейнером (`minio-init`). Проверка: `bun run smoke:s3`.
+
+Префиксы ключей (MVP, один bucket): `editor/…`, `submissions/…`.
+
 Новые пользователи получают роль `student`. Чтобы сделать админа:
 
 ```sql
@@ -70,11 +81,12 @@ src/
 | Миграции | `bun run db:migrate` |
 | Drizzle Studio | `bun run db:studio` |
 | Генерация схемы Zero | `bun run zero:generate` |
+| Smoke MinIO / S3 | `bun run smoke:s3` |
 | E2E | `bun run test:e2e` |
 
 ## E2E
 
-Отдельный стек (Postgres `5433`, Zero `4849`, приложение `3100`), чтобы не пересекаться с локальной разработкой.
+Отдельный стек (Postgres `5433`, Zero `4849`, MinIO API `9010` / console `9011`, приложение `3100`), чтобы не пересекаться с локальной разработкой.
 
 ```bash
 cp .env.e2e.example .env.e2e
@@ -91,7 +103,7 @@ bun run build
 bun run start
 ```
 
-Или полный стек: [`docker/docker-compose.yml`](docker/docker-compose.yml) + [`Dockerfile`](Dockerfile). Перед деплоем задайте надёжные `POSTGRES_PASSWORD`, `ZERO_ADMIN_PASSWORD` и `BETTER_AUTH_SECRET`.
+Или полный стек: [`docker/docker-compose.yml`](docker/docker-compose.yml) + [`Dockerfile`](Dockerfile). Перед деплоем задайте надёжные `POSTGRES_PASSWORD`, `ZERO_ADMIN_PASSWORD`, `BETTER_AUTH_SECRET`, `S3_ACCESS_KEY` и `S3_SECRET_KEY`.
 
 Docker-образ по умолчанию: `brofrong/exam-platform`.
 
@@ -102,5 +114,6 @@ Docker-образ по умолчанию: `brofrong/exam-platform`.
 | Zero не синхронизируется | Dev compose публикует `4848`; `ZERO_CACHE_UPSTREAM_URL` указывает на него |
 | Zero → app на Linux | В compose есть `host.docker.internal:host-gateway`; приложение слушает `0.0.0.0:3000` |
 | Postgres / Zero | Нужен `wal_level=logical` |
+| MinIO / upload | Dev: API `9000`, console `9001`; `S3_*` в `.env`; `bun run smoke:s3` |
 | Браузеры Playwright | `bunx playwright install chromium` |
 | Типы Zero — `unknown` | Перезапустите `bun run zero:generate` |

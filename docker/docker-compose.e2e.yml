@@ -41,6 +41,41 @@ services:
       timeout: 5s
       retries: 10
 
+  minio-e2e:
+    image: minio/minio:latest
+    container_name: minio-e2e
+    command: server /data --console-address ":9001"
+    ports:
+      - "9010:9000"
+      - "9011:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes:
+      - minio-e2e-data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
+  minio-e2e-init:
+    image: minio/mc:latest
+    container_name: minio-e2e-init
+    depends_on:
+      minio-e2e:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set local http://minio-e2e:9000 minioadmin minioadmin &&
+      mc mb --ignore-existing local/exam-platform-uploads &&
+      echo 'bucket ready: exam-platform-uploads'
+      "
+    restart: "no"
+
 volumes:
   zero-cache-e2e-data:
+    driver: local
+  minio-e2e-data:
     driver: local
