@@ -1,11 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
 	BookOpenIcon,
+	ChartColumnIcon,
 	ClipboardCheckIcon,
 	LinkIcon,
 	MessageCircleIcon,
 	NotebookPenIcon,
 } from "lucide-react";
+import { can } from "#/shared/authz";
 import { PageHeader } from "@/components/lms";
 import { Button } from "@/components/ui/button";
 
@@ -14,6 +16,9 @@ export const Route = createFileRoute("/admin/")({
 });
 
 function AdminHomePage() {
+	const { user } = Route.useRouteContext();
+	const showAnalytics = can(user.role, "analytics:read");
+
 	return (
 		<main
 			className="mx-auto flex min-h-[calc(100vh-8rem)] w-full max-w-3xl flex-col gap-8 px-4 py-10"
@@ -79,6 +84,26 @@ function AdminHomePage() {
 						</span>
 					</Link>
 				</Button>
+				{showAnalytics ? (
+					<Button
+						asChild
+						variant="outline"
+						className="h-auto justify-start gap-3 px-4 py-3"
+						data-testid="admin-nav-analytics"
+					>
+						<Link to="/admin/analytics">
+							<span className="flex size-9 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+								<ChartColumnIcon className="size-4" />
+							</span>
+							<span className="text-left">
+								<span className="block font-medium">Аналитика</span>
+								<span className="block text-xs font-normal text-muted-foreground">
+									Прогресс учеников по программам
+								</span>
+							</span>
+						</Link>
+					</Button>
+				) : null}
 				<Button
 					asChild
 					variant="outline"

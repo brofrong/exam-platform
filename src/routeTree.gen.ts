@@ -31,6 +31,7 @@ import { Route as AdminReviewsIndexRouteImport } from './routes/admin/reviews/in
 import { Route as AdminProgramsIndexRouteImport } from './routes/admin/programs/index'
 import { Route as AdminLessonsIndexRouteImport } from './routes/admin/lessons/index'
 import { Route as AdminInvitesIndexRouteImport } from './routes/admin/invites/index'
+import { Route as AdminAnalyticsIndexRouteImport } from './routes/admin/analytics/index'
 import { Route as AppProgramsProgramIdRouteImport } from './routes/app/programs/$programId'
 import { Route as ApiZeroSplatRouteImport } from './routes/api/zero/$'
 import { Route as ApiInviteActivateRouteImport } from './routes/api/invite/activate'
@@ -40,6 +41,7 @@ import { Route as AdminSupportThreadIdRouteImport } from './routes/admin/support
 import { Route as AdminReviewsSubmissionIdRouteImport } from './routes/admin/reviews/$submissionId'
 import { Route as AdminProgramsProgramIdRouteImport } from './routes/admin/programs/$programId'
 import { Route as AdminLessonsLessonIdRouteImport } from './routes/admin/lessons/$lessonId'
+import { Route as AdminAnalyticsUserIdProgramIdRouteImport } from './routes/admin/analytics/$userId/$programId'
 import { Route as AppProgramsProgramIdLessonsLessonIdRouteImport } from './routes/app/programs/$programId/lessons/$lessonId'
 
 const ZeroRoute = ZeroRouteImport.update({
@@ -152,6 +154,11 @@ const AdminInvitesIndexRoute = AdminInvitesIndexRouteImport.update({
   path: '/invites/',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminAnalyticsIndexRoute = AdminAnalyticsIndexRouteImport.update({
+  id: '/analytics/',
+  path: '/analytics/',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AppProgramsProgramIdRoute = AppProgramsProgramIdRouteImport.update({
   id: '/programs/$programId',
   path: '/programs/$programId',
@@ -198,6 +205,12 @@ const AdminLessonsLessonIdRoute = AdminLessonsLessonIdRouteImport.update({
   path: '/lessons/$lessonId',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminAnalyticsUserIdProgramIdRoute =
+  AdminAnalyticsUserIdProgramIdRouteImport.update({
+    id: '/analytics/$userId/$programId',
+    path: '/analytics/$userId/$programId',
+    getParentRoute: () => AdminRoute,
+  } as any)
 const AppProgramsProgramIdLessonsLessonIdRoute =
   AppProgramsProgramIdLessonsLessonIdRouteImport.update({
     id: '/lessons/$lessonId',
@@ -232,11 +245,13 @@ export interface FileRoutesByFullPath {
   '/api/invite/activate': typeof ApiInviteActivateRoute
   '/api/zero/$': typeof ApiZeroSplatRoute
   '/app/programs/$programId': typeof AppProgramsProgramIdRouteWithChildren
+  '/admin/analytics/': typeof AdminAnalyticsIndexRoute
   '/admin/invites/': typeof AdminInvitesIndexRoute
   '/admin/lessons/': typeof AdminLessonsIndexRoute
   '/admin/programs/': typeof AdminProgramsIndexRoute
   '/admin/reviews/': typeof AdminReviewsIndexRoute
   '/admin/support/': typeof AdminSupportIndexRoute
+  '/admin/analytics/$userId/$programId': typeof AdminAnalyticsUserIdProgramIdRoute
   '/app/programs/$programId/lessons/$lessonId': typeof AppProgramsProgramIdLessonsLessonIdRoute
 }
 export interface FileRoutesByTo {
@@ -263,11 +278,13 @@ export interface FileRoutesByTo {
   '/api/invite/activate': typeof ApiInviteActivateRoute
   '/api/zero/$': typeof ApiZeroSplatRoute
   '/app/programs/$programId': typeof AppProgramsProgramIdRouteWithChildren
+  '/admin/analytics': typeof AdminAnalyticsIndexRoute
   '/admin/invites': typeof AdminInvitesIndexRoute
   '/admin/lessons': typeof AdminLessonsIndexRoute
   '/admin/programs': typeof AdminProgramsIndexRoute
   '/admin/reviews': typeof AdminReviewsIndexRoute
   '/admin/support': typeof AdminSupportIndexRoute
+  '/admin/analytics/$userId/$programId': typeof AdminAnalyticsUserIdProgramIdRoute
   '/app/programs/$programId/lessons/$lessonId': typeof AppProgramsProgramIdLessonsLessonIdRoute
 }
 export interface FileRoutesById {
@@ -298,11 +315,13 @@ export interface FileRoutesById {
   '/api/invite/activate': typeof ApiInviteActivateRoute
   '/api/zero/$': typeof ApiZeroSplatRoute
   '/app/programs/$programId': typeof AppProgramsProgramIdRouteWithChildren
+  '/admin/analytics/': typeof AdminAnalyticsIndexRoute
   '/admin/invites/': typeof AdminInvitesIndexRoute
   '/admin/lessons/': typeof AdminLessonsIndexRoute
   '/admin/programs/': typeof AdminProgramsIndexRoute
   '/admin/reviews/': typeof AdminReviewsIndexRoute
   '/admin/support/': typeof AdminSupportIndexRoute
+  '/admin/analytics/$userId/$programId': typeof AdminAnalyticsUserIdProgramIdRoute
   '/app/programs/$programId/lessons/$lessonId': typeof AppProgramsProgramIdLessonsLessonIdRoute
 }
 export interface FileRouteTypes {
@@ -334,11 +353,13 @@ export interface FileRouteTypes {
     | '/api/invite/activate'
     | '/api/zero/$'
     | '/app/programs/$programId'
+    | '/admin/analytics/'
     | '/admin/invites/'
     | '/admin/lessons/'
     | '/admin/programs/'
     | '/admin/reviews/'
     | '/admin/support/'
+    | '/admin/analytics/$userId/$programId'
     | '/app/programs/$programId/lessons/$lessonId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -365,11 +386,13 @@ export interface FileRouteTypes {
     | '/api/invite/activate'
     | '/api/zero/$'
     | '/app/programs/$programId'
+    | '/admin/analytics'
     | '/admin/invites'
     | '/admin/lessons'
     | '/admin/programs'
     | '/admin/reviews'
     | '/admin/support'
+    | '/admin/analytics/$userId/$programId'
     | '/app/programs/$programId/lessons/$lessonId'
   id:
     | '__root__'
@@ -399,11 +422,13 @@ export interface FileRouteTypes {
     | '/api/invite/activate'
     | '/api/zero/$'
     | '/app/programs/$programId'
+    | '/admin/analytics/'
     | '/admin/invites/'
     | '/admin/lessons/'
     | '/admin/programs/'
     | '/admin/reviews/'
     | '/admin/support/'
+    | '/admin/analytics/$userId/$programId'
     | '/app/programs/$programId/lessons/$lessonId'
   fileRoutesById: FileRoutesById
 }
@@ -580,6 +605,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminInvitesIndexRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/analytics/': {
+      id: '/admin/analytics/'
+      path: '/analytics'
+      fullPath: '/admin/analytics/'
+      preLoaderRoute: typeof AdminAnalyticsIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/app/programs/$programId': {
       id: '/app/programs/$programId'
       path: '/programs/$programId'
@@ -643,6 +675,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminLessonsLessonIdRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/analytics/$userId/$programId': {
+      id: '/admin/analytics/$userId/$programId'
+      path: '/analytics/$userId/$programId'
+      fullPath: '/admin/analytics/$userId/$programId'
+      preLoaderRoute: typeof AdminAnalyticsUserIdProgramIdRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/app/programs/$programId/lessons/$lessonId': {
       id: '/app/programs/$programId/lessons/$lessonId'
       path: '/lessons/$lessonId'
@@ -659,11 +698,13 @@ interface AdminRouteChildren {
   AdminProgramsProgramIdRoute: typeof AdminProgramsProgramIdRoute
   AdminReviewsSubmissionIdRoute: typeof AdminReviewsSubmissionIdRoute
   AdminSupportThreadIdRoute: typeof AdminSupportThreadIdRoute
+  AdminAnalyticsIndexRoute: typeof AdminAnalyticsIndexRoute
   AdminInvitesIndexRoute: typeof AdminInvitesIndexRoute
   AdminLessonsIndexRoute: typeof AdminLessonsIndexRoute
   AdminProgramsIndexRoute: typeof AdminProgramsIndexRoute
   AdminReviewsIndexRoute: typeof AdminReviewsIndexRoute
   AdminSupportIndexRoute: typeof AdminSupportIndexRoute
+  AdminAnalyticsUserIdProgramIdRoute: typeof AdminAnalyticsUserIdProgramIdRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
@@ -672,11 +713,13 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminProgramsProgramIdRoute: AdminProgramsProgramIdRoute,
   AdminReviewsSubmissionIdRoute: AdminReviewsSubmissionIdRoute,
   AdminSupportThreadIdRoute: AdminSupportThreadIdRoute,
+  AdminAnalyticsIndexRoute: AdminAnalyticsIndexRoute,
   AdminInvitesIndexRoute: AdminInvitesIndexRoute,
   AdminLessonsIndexRoute: AdminLessonsIndexRoute,
   AdminProgramsIndexRoute: AdminProgramsIndexRoute,
   AdminReviewsIndexRoute: AdminReviewsIndexRoute,
   AdminSupportIndexRoute: AdminSupportIndexRoute,
+  AdminAnalyticsUserIdProgramIdRoute: AdminAnalyticsUserIdProgramIdRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)

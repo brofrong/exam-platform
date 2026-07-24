@@ -299,4 +299,53 @@ export const queries = defineQueries({
 				);
 		},
 	),
+
+	// ── Analytics (analytics:read) ────────────────────────────────────────
+
+	/** All enrollments with student + program for the analytics table. */
+	analyticsEnrollments: defineQuery(({ ctx }) => {
+		requireCapability(ctx, "analytics:read");
+		return zql.enrollment
+			.orderBy("createdAt", "desc")
+			.related("user")
+			.related("program");
+	}),
+
+	/** Program outlines (topics → lessons → activities) for progress %. */
+	analyticsProgramOutlines: defineQuery(({ ctx }) => {
+		requireCapability(ctx, "analytics:read");
+		return zql.program
+			.orderBy("createdAt", "desc")
+			.related("topics", (q) =>
+				q
+					.orderBy("position", "asc")
+					.related("topicLessons", (tl) =>
+						tl
+							.orderBy("position", "asc")
+							.related("lesson", (lesson) =>
+								lesson.related("activities", (a) =>
+									a.orderBy("position", "asc"),
+								),
+							),
+					),
+			);
+	}),
+
+	/** All lesson progress rows (admin analytics). */
+	analyticsLessonProgress: defineQuery(({ ctx }) => {
+		requireCapability(ctx, "analytics:read");
+		return zql.lessonProgress
+			.related("lesson")
+			.related("user")
+			.related("program");
+	}),
+
+	/** All activity progress rows (admin analytics + last activity). */
+	analyticsActivityProgress: defineQuery(({ ctx }) => {
+		requireCapability(ctx, "analytics:read");
+		return zql.activityProgress
+			.related("activity")
+			.related("user")
+			.related("program");
+	}),
 });
