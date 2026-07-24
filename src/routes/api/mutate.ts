@@ -22,7 +22,11 @@ export const Route = createFileRoute("/api/mutate")({
 							return mutator.fn({
 								args,
 								tx,
-								ctx: { id: user.id, name: user.name },
+								ctx: {
+									id: user.id,
+									name: user.name,
+									role: user.role,
+								},
 							});
 						}),
 					request,

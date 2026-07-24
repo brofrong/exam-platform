@@ -19,7 +19,11 @@ export const Route = createFileRoute("/api/query")({
 						const query = mustGetQuery(queries, name);
 						return query.fn({
 							args,
-							ctx: { id: user.id, name: user.name },
+							ctx: {
+								id: user.id,
+								name: user.name,
+								role: user.role,
+							},
 						});
 					},
 					schema,

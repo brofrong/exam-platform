@@ -10,6 +10,7 @@ export type AuthUser = {
 export type ZeroContext = {
 	id: string;
 	name: string;
+	role: Role;
 };
 
 declare module "@rocicorp/zero" {

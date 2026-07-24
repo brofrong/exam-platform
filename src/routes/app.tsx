@@ -25,7 +25,7 @@ function AppLayout() {
 			schema={schema}
 			mutators={mutators}
 			userID={user.id}
-			context={{ id: user.id, name: user.name }}
+			context={{ id: user.id, name: user.name, role: user.role }}
 		>
 			<Outlet />
 		</ZeroProvider>
