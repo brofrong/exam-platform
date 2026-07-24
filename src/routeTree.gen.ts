@@ -24,9 +24,11 @@ import { Route as ApiZeroRouteImport } from './routes/api/zero'
 import { Route as ApiUploadRouteImport } from './routes/api/upload'
 import { Route as ApiQueryRouteImport } from './routes/api/query'
 import { Route as ApiMutateRouteImport } from './routes/api/mutate'
+import { Route as AdminProgramsIndexRouteImport } from './routes/admin/programs/index'
 import { Route as ApiZeroSplatRouteImport } from './routes/api/zero/$'
 import { Route as ApiFilesSplatRouteImport } from './routes/api/files/$'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as AdminProgramsProgramIdRouteImport } from './routes/admin/programs/$programId'
 
 const ZeroRoute = ZeroRouteImport.update({
   id: '/zero',
@@ -103,6 +105,11 @@ const ApiMutateRoute = ApiMutateRouteImport.update({
   path: '/api/mutate',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminProgramsIndexRoute = AdminProgramsIndexRouteImport.update({
+  id: '/programs/',
+  path: '/programs/',
+  getParentRoute: () => AdminRoute,
+} as any)
 const ApiZeroSplatRoute = ApiZeroSplatRouteImport.update({
   id: '/$',
   path: '/$',
@@ -117,6 +124,11 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AdminProgramsProgramIdRoute = AdminProgramsProgramIdRouteImport.update({
+  id: '/programs/$programId',
+  path: '/programs/$programId',
+  getParentRoute: () => AdminRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -135,9 +147,11 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/app/': typeof AppIndexRoute
   '/dev/': typeof DevIndexRoute
+  '/admin/programs/$programId': typeof AdminProgramsProgramIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/files/$': typeof ApiFilesSplatRoute
   '/api/zero/$': typeof ApiZeroSplatRoute
+  '/admin/programs/': typeof AdminProgramsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -152,9 +166,11 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/app': typeof AppIndexRoute
   '/dev': typeof DevIndexRoute
+  '/admin/programs/$programId': typeof AdminProgramsProgramIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/files/$': typeof ApiFilesSplatRoute
   '/api/zero/$': typeof ApiZeroSplatRoute
+  '/admin/programs': typeof AdminProgramsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -173,9 +189,11 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/app/': typeof AppIndexRoute
   '/dev/': typeof DevIndexRoute
+  '/admin/programs/$programId': typeof AdminProgramsProgramIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/files/$': typeof ApiFilesSplatRoute
   '/api/zero/$': typeof ApiZeroSplatRoute
+  '/admin/programs/': typeof AdminProgramsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -195,9 +213,11 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/app/'
     | '/dev/'
+    | '/admin/programs/$programId'
     | '/api/auth/$'
     | '/api/files/$'
     | '/api/zero/$'
+    | '/admin/programs/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -212,9 +232,11 @@ export interface FileRouteTypes {
     | '/admin'
     | '/app'
     | '/dev'
+    | '/admin/programs/$programId'
     | '/api/auth/$'
     | '/api/files/$'
     | '/api/zero/$'
+    | '/admin/programs'
   id:
     | '__root__'
     | '/'
@@ -232,9 +254,11 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/app/'
     | '/dev/'
+    | '/admin/programs/$programId'
     | '/api/auth/$'
     | '/api/files/$'
     | '/api/zero/$'
+    | '/admin/programs/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -359,6 +383,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiMutateRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/programs/': {
+      id: '/admin/programs/'
+      path: '/programs'
+      fullPath: '/admin/programs/'
+      preLoaderRoute: typeof AdminProgramsIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/api/zero/$': {
       id: '/api/zero/$'
       path: '/$'
@@ -380,15 +411,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/programs/$programId': {
+      id: '/admin/programs/$programId'
+      path: '/programs/$programId'
+      fullPath: '/admin/programs/$programId'
+      preLoaderRoute: typeof AdminProgramsProgramIdRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
 interface AdminRouteChildren {
   AdminIndexRoute: typeof AdminIndexRoute
+  AdminProgramsProgramIdRoute: typeof AdminProgramsProgramIdRoute
+  AdminProgramsIndexRoute: typeof AdminProgramsIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminIndexRoute: AdminIndexRoute,
+  AdminProgramsProgramIdRoute: AdminProgramsProgramIdRoute,
+  AdminProgramsIndexRoute: AdminProgramsIndexRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
