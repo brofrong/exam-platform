@@ -191,10 +191,10 @@ export const galleryRegistry: GalleryEntry[] = [
 		slug: "file-upload-answer",
 		title: "File Upload Answer",
 		description:
-			"Practice file upload widget wrapping FileDropzone (error/disabled).",
+			"File answer with preview, upload progress, and submit gated until upload finishes.",
 		category: "Forms",
 		component: FileUploadAnswerDemo,
-		note: "import { FileUploadAnswer } from '@/components/answer-widgets'",
+		note: "import { FileUploadAnswer, simulateUpload } from '@/components/answer-widgets'",
 	},
 	{
 		slug: "alert",

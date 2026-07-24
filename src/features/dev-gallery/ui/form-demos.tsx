@@ -6,6 +6,7 @@ import {
 	MultipleChoiceAnswer,
 	ShortTextAnswer,
 	SingleChoiceAnswer,
+	simulateUpload,
 } from "@/components/answer-widgets";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -316,11 +317,92 @@ export function MultipleChoiceAnswerDemo() {
 
 export function FileUploadAnswerDemo() {
 	const [file, setFile] = useState<File | null>(null);
+	const [status, setStatus] = useState<
+		"idle" | "uploading" | "uploaded" | "error"
+	>("idle");
+	const [submitted, setSubmitted] = useState(false);
+
+	const uploading = status === "uploading";
+	const canSubmit = status === "uploaded" && file !== null;
 
 	return (
 		<div className="grid w-full max-w-md gap-6">
-			<DemoSection title="Default">
-				<FileUploadAnswer value={file} onChange={setFile} />
+			<DemoSection title="С загрузкой и отправкой">
+				<form
+					className="grid gap-3"
+					data-testid="file-upload-answer-form"
+					onSubmit={(event) => {
+						event.preventDefault();
+						if (!canSubmit) return;
+						setSubmitted(true);
+					}}
+				>
+					<FileUploadAnswer
+						value={file}
+						onChange={(next) => {
+							setFile(next);
+							setSubmitted(false);
+							if (!next) setStatus("idle");
+						}}
+						onStatusChange={setStatus}
+						onUpload={(selected, { onProgress, signal }) =>
+							simulateUpload(selected, {
+								onProgress,
+								signal,
+								durationMs: 1600,
+							})
+						}
+					/>
+					<div className="grid gap-1.5">
+						<Button
+							type="submit"
+							disabled={!canSubmit}
+							data-testid="file-upload-answer-submit"
+							aria-describedby={
+								uploading
+									? "file-upload-answer-submit-hint"
+									: !file
+										? "file-upload-answer-submit-hint"
+										: undefined
+							}
+						>
+							Отправить ответ
+						</Button>
+						{uploading ? (
+							<p
+								id="file-upload-answer-submit-hint"
+								data-testid="file-upload-answer-submit-hint"
+								className="text-xs text-muted-foreground"
+							>
+								Дождитесь окончания загрузки файла на сервер
+							</p>
+						) : !file ? (
+							<p
+								id="file-upload-answer-submit-hint"
+								data-testid="file-upload-answer-submit-hint"
+								className="text-xs text-muted-foreground"
+							>
+								Прикрепите файл, чтобы отправить ответ
+							</p>
+						) : status === "error" ? (
+							<p
+								id="file-upload-answer-submit-hint"
+								data-testid="file-upload-answer-submit-hint"
+								className="text-xs text-destructive"
+							>
+								Исправьте ошибку загрузки перед отправкой
+							</p>
+						) : null}
+						{submitted ? (
+							<p
+								data-testid="file-upload-answer-submitted"
+								className="text-xs text-muted-foreground"
+							>
+								Ответ отправлен (демо)
+							</p>
+						) : null}
+					</div>
+				</form>
 			</DemoSection>
 			<Separator />
 			<DemoSection title="Error">
@@ -333,6 +415,8 @@ export function FileUploadAnswerDemo() {
 			<DemoSection title="Disabled">
 				<FileUploadAnswer
 					value={DEMO_PDF}
+					status="uploaded"
+					progress={100}
 					onChange={() => undefined}
 					disabled
 				/>
