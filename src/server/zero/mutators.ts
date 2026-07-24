@@ -1,5 +1,12 @@
 import { defineMutator, defineMutators } from "@rocicorp/zero";
 import { z } from "zod";
+import {
+	applyReviewResults,
+	type GradedAnswers,
+	gradeSubmission,
+	markAnswersPending,
+	type StudentAnswers,
+} from "#/server/grading/grade-submission";
 import { requireCapability, requireUser } from "#/server/zero/authz";
 import {
 	ACTIVITY_TYPES,
@@ -12,6 +19,35 @@ const publishStatusSchema = z.enum(PUBLISH_STATUSES);
 const activityTypeSchema = z.enum(ACTIVITY_TYPES);
 /** TipTap JSON document — must be JSON-serializable for Zero mutator args. */
 const activityContentSchema = z.record(z.string(), z.json());
+
+const shortTextAnswerSchema = z.object({
+	type: z.literal("short_text"),
+	value: z.string(),
+});
+const singleChoiceAnswerSchema = z.object({
+	type: z.literal("single_choice"),
+	optionId: z.string(),
+});
+const multipleChoiceAnswerSchema = z.object({
+	type: z.literal("multiple_choice"),
+	optionIds: z.array(z.string()),
+});
+const fileUploadAnswerSchema = z.object({
+	type: z.literal("file_upload"),
+	storageKey: z.string().min(1),
+	filename: z.string().min(1),
+	mime: z.string().min(1),
+	size: z.number().int().nonnegative(),
+});
+const studentAnswerSchema = z.discriminatedUnion("type", [
+	shortTextAnswerSchema,
+	singleChoiceAnswerSchema,
+	multipleChoiceAnswerSchema,
+	fileUploadAnswerSchema,
+]);
+const studentAnswersSchema = z.record(z.string(), studentAnswerSchema);
+
+const reviewResultSchema = z.enum(["correct", "incorrect"]);
 
 function newId(id: string | undefined): string {
 	return id ?? crypto.randomUUID();
@@ -301,6 +337,105 @@ export const mutators = defineMutators({
 				}
 				await tx.mutate.activity.update({ id, position });
 			}
+		},
+	),
+
+	// ── Practice submissions ──────────────────────────────────────────────
+
+	/**
+	 * Student practice submit. Auth required. Authoritative grading runs on
+	 * the server against full activity.content (includes correctAnswer).
+	 */
+	submitPractice: defineMutator(
+		z.object({
+			id: z.string().optional(),
+			programId: z.string(),
+			activityId: z.string(),
+			answers: studentAnswersSchema,
+		}),
+		async ({ ctx, args, tx }) => {
+			const user = requireUser(ctx);
+			const activity = await tx.run(
+				zql.activity.where("id", args.activityId).one(),
+			);
+			if (!activity || activity.type !== "practice") {
+				throw new Error("Not found");
+			}
+
+			const studentAnswers = args.answers as StudentAnswers;
+			const graded =
+				tx.location === "server"
+					? gradeSubmission(activity.content, studentAnswers)
+					: {
+							status: "pending" as const,
+							answers: markAnswersPending(studentAnswers),
+						};
+
+			const now = Date.now();
+			await tx.mutate.submission.insert({
+				id: newId(args.id),
+				userId: user.id,
+				programId: args.programId,
+				activityId: args.activityId,
+				answers: graded.answers,
+				status: graded.status,
+				reviewedBy: null,
+				reviewerComment: null,
+				reviewedAt: null,
+				createdAt: now,
+				updatedAt: now,
+			});
+		},
+	),
+
+	/**
+	 * Admin review: set per-question correct/incorrect + optional comment.
+	 * Requires `submission:review`.
+	 */
+	reviewSubmission: defineMutator(
+		z.object({
+			submissionId: z.string(),
+			results: z.record(z.string(), reviewResultSchema).optional(),
+			result: reviewResultSchema.optional(),
+			questionId: z.string().optional(),
+			comment: z.string().max(8000).nullable().optional(),
+		}),
+		async ({ ctx, args, tx }) => {
+			const reviewer = requireCapability(ctx, "submission:review");
+			const submission = await tx.run(
+				zql.submission.where("id", args.submissionId).one(),
+			);
+			if (!submission) {
+				throw new Error("Not found");
+			}
+
+			const results: Record<string, "correct" | "incorrect"> = {
+				...(args.results ?? {}),
+			};
+			if (args.questionId && args.result) {
+				results[args.questionId] = args.result;
+			}
+			if (Object.keys(results).length === 0) {
+				throw new Error("Invalid args");
+			}
+
+			const reviewed = applyReviewResults(
+				submission.answers as GradedAnswers,
+				results,
+			);
+			const now = Date.now();
+			await tx.mutate.submission.update({
+				id: args.submissionId,
+				answers: reviewed.answers,
+				status: reviewed.status,
+				reviewedBy: reviewer.id,
+				reviewerComment:
+					args.comment === undefined
+						? submission.reviewerComment
+						: args.comment,
+				reviewedAt: now,
+				updatedAt: now,
+			});
 		},
 	),
 

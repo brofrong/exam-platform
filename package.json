@@ -30,7 +30,7 @@
 		"db:generate": "drizzle-kit generate",
 		"db:migrate": "drizzle-kit migrate",
 		"db:studio": "drizzle-kit studio",
-		"zero:generate": "drizzle-zero generate --schema src/server/db/schema.ts --output src/server/zero/schema.ts && bun run scripts/fix-zero-schema.ts",
+		"zero:generate": "drizzle-zero generate --schema src/server/db/schema.ts --output src/server/zero/schema.ts --force && bun run scripts/fix-zero-schema.ts",
 		"smoke:s3": "bun --env-file=.env run scripts/smoke-s3.ts"
 	},
 	"dependencies": {

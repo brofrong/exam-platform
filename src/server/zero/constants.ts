@@ -11,3 +11,19 @@ export const EMPTY_TIPTAP_DOC: Record<string, unknown> = {
 	type: "doc",
 	content: [],
 };
+
+/** Submission lifecycle after practice submit / review. */
+export const SUBMISSION_STATUSES = ["pending", "graded"] as const;
+export type SubmissionStatus = (typeof SUBMISSION_STATUSES)[number];
+
+/** Per-question auto/manual review outcome (верно / неверно / ожидает). */
+export const QUESTION_RESULTS = ["correct", "incorrect", "pending"] as const;
+export type QuestionResult = (typeof QUESTION_RESULTS)[number];
+
+/** Progress row status for activity / lesson progress. */
+export const PROGRESS_STATUSES = [
+	"not_started",
+	"in_progress",
+	"completed",
+] as const;
+export type ProgressStatus = (typeof PROGRESS_STATUSES)[number];

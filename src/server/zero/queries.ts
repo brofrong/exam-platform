@@ -2,6 +2,7 @@ import { defineQueries, defineQuery } from "@rocicorp/zero";
 import { z } from "zod";
 import { requireCapability, requireUser } from "#/server/zero/authz";
 import { zql } from "#/server/zero/schema";
+import { can } from "#/shared/authz";
 
 /**
  * Domain queries — admin catalog reads require capabilities.
@@ -130,4 +131,50 @@ export const queries = defineQueries({
 				.related("activities", (q) => q.orderBy("position", "asc"));
 		},
 	),
+
+	// ── Submissions (Task 21 UI) ──────────────────────────────────────────
+
+	/** Student's own submissions for a practice activity. */
+	mySubmissionsByActivity: defineQuery(
+		z.object({ activityId: z.string() }),
+		({ ctx, args }) => {
+			const user = requireUser(ctx);
+			return zql.submission
+				.where("userId", user.id)
+				.where("activityId", args.activityId)
+				.orderBy("createdAt", "desc");
+		},
+	),
+
+	/** Student's submissions across a program. */
+	mySubmissionsByProgram: defineQuery(
+		z.object({ programId: z.string() }),
+		({ ctx, args }) => {
+			const user = requireUser(ctx);
+			return zql.submission
+				.where("userId", user.id)
+				.where("programId", args.programId)
+				.orderBy("createdAt", "desc");
+		},
+	),
+
+	/** Admin pending review queue. */
+	pendingSubmissions: defineQuery(({ ctx }) => {
+		requireCapability(ctx, "submission:review");
+		return zql.submission
+			.where("status", "pending")
+			.orderBy("createdAt", "asc")
+			.related("activity")
+			.related("program")
+			.related("user");
+	}),
+
+	/** Reviewer: any submission. Student: own only. */
+	submissionById: defineQuery(z.object({ id: z.string() }), ({ ctx, args }) => {
+		const user = requireUser(ctx);
+		const base = can(user.role, "submission:review")
+			? zql.submission.where("id", args.id)
+			: zql.submission.where("id", args.id).where("userId", user.id);
+		return base.one().related("activity").related("program").related("user");
+	}),
 });
