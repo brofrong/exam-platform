@@ -177,4 +177,22 @@ export const queries = defineQueries({
 			: zql.submission.where("id", args.id).where("userId", user.id);
 		return base.one().related("activity").related("program").related("user");
 	}),
+
+	// ── Invites (invite:create) ───────────────────────────────────────────
+
+	programInvites: defineQuery(({ ctx }) => {
+		requireCapability(ctx, "invite:create");
+		return zql.programInvite
+			.orderBy("createdAt", "desc")
+			.related("programs", (q) => q.related("program"));
+	}),
+
+	/** Student's own enrollments (used by Task 23 catalog). */
+	myEnrollments: defineQuery(({ ctx }) => {
+		const user = requireUser(ctx);
+		return zql.enrollment
+			.where("userId", user.id)
+			.related("program")
+			.orderBy("createdAt", "desc");
+	}),
 });

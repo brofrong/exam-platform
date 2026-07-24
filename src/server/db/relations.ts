@@ -1,9 +1,12 @@
 import { defineRelations } from "drizzle-orm";
 import { activitiesTable } from "#/server/db/activity/activity.schema";
 import { activityProgressTable } from "#/server/db/activity-progress/activity-progress.schema";
+import { enrollmentsTable } from "#/server/db/enrollment/enrollment.schema";
 import { lessonsTable } from "#/server/db/lesson/lesson.schema";
 import { lessonProgressTable } from "#/server/db/lesson-progress/lesson-progress.schema";
 import { programsTable } from "#/server/db/program/program.schema";
+import { programInvitesTable } from "#/server/db/program-invite/program-invite.schema";
+import { programInviteProgramsTable } from "#/server/db/program-invite/program-invite-program.schema";
 import { submissionsTable } from "#/server/db/submission/submission.schema";
 import { topicsTable } from "#/server/db/topic/topic.schema";
 import { topicLessonsTable } from "#/server/db/topic-lesson/topic-lesson.schema";
@@ -19,15 +22,22 @@ const DrizzleSchema = {
 	submission: submissionsTable,
 	activityProgress: activityProgressTable,
 	lessonProgress: lessonProgressTable,
+	programInvite: programInvitesTable,
+	programInviteProgram: programInviteProgramsTable,
+	enrollment: enrollmentsTable,
 };
 
 export const relations = defineRelations(DrizzleSchema, (r) => ({
-	user: {},
+	user: {
+		enrollments: r.many.enrollment(),
+	},
 	program: {
 		topics: r.many.topic(),
 		submissions: r.many.submission(),
 		activityProgress: r.many.activityProgress(),
 		lessonProgress: r.many.lessonProgress(),
+		enrollments: r.many.enrollment(),
+		invitePrograms: r.many.programInviteProgram(),
 	},
 	topic: {
 		program: r.one.program({
@@ -103,6 +113,37 @@ export const relations = defineRelations(DrizzleSchema, (r) => ({
 		lesson: r.one.lesson({
 			from: r.lessonProgress.lessonId,
 			to: r.lesson.id,
+		}),
+	},
+	programInvite: {
+		createdBy: r.one.user({
+			from: r.programInvite.createdByUserId,
+			to: r.user.id,
+		}),
+		usedBy: r.one.user({
+			from: r.programInvite.usedByUserId,
+			to: r.user.id,
+		}),
+		programs: r.many.programInviteProgram(),
+	},
+	programInviteProgram: {
+		invite: r.one.programInvite({
+			from: r.programInviteProgram.inviteId,
+			to: r.programInvite.id,
+		}),
+		program: r.one.program({
+			from: r.programInviteProgram.programId,
+			to: r.program.id,
+		}),
+	},
+	enrollment: {
+		user: r.one.user({
+			from: r.enrollment.userId,
+			to: r.user.id,
+		}),
+		program: r.one.program({
+			from: r.enrollment.programId,
+			to: r.program.id,
 		}),
 	},
 }));

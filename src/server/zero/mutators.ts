@@ -439,6 +439,42 @@ export const mutators = defineMutators({
 		},
 	),
 
+	// ── Invites (invite:create) ───────────────────────────────────────────
+
+	createProgramInvite: defineMutator(
+		z.object({
+			id: z.string().optional(),
+			token: z.string().min(8).max(128).optional(),
+			programIds: z.array(z.string().min(1)).min(1),
+			inviteeEmail: z.string().email().nullable().optional(),
+			inviteeName: z.string().max(255).nullable().optional(),
+			expiresAt: z.number().int().positive().nullable().optional(),
+		}),
+		async ({ ctx, args, tx }) => {
+			const user = requireCapability(ctx, "invite:create");
+			const id = newId(args.id);
+			const token = args.token ?? crypto.randomUUID();
+			const now = Date.now();
+			await tx.mutate.programInvite.insert({
+				id,
+				token,
+				createdByUserId: user.id,
+				inviteeEmail: args.inviteeEmail ?? null,
+				inviteeName: args.inviteeName ?? null,
+				expiresAt: args.expiresAt ?? null,
+				usedAt: null,
+				usedByUserId: null,
+				createdAt: now,
+			});
+			for (const programId of args.programIds) {
+				await tx.mutate.programInviteProgram.insert({
+					inviteId: id,
+					programId,
+				});
+			}
+		},
+	),
+
 	// ── Student progress (stub until Task 25) ─────────────────────────────
 
 	/** TODO(Task 25): persist activity_progress / lesson_progress. */

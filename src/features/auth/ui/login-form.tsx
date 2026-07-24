@@ -4,7 +4,11 @@ import { authClient } from "#/shared/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-export function LoginForm() {
+type LoginFormProps = {
+	returnUrl?: string;
+};
+
+export function LoginForm({ returnUrl = "/app" }: LoginFormProps) {
 	const navigate = useNavigate();
 	const [mode, setMode] = useState<"signin" | "signup">("signin");
 	const [name, setName] = useState("");
@@ -29,7 +33,7 @@ export function LoginForm() {
 				return;
 			}
 
-			await navigate({ to: "/app" });
+			await navigate({ href: returnUrl });
 		} catch {
 			setError("Не удалось войти");
 		} finally {
