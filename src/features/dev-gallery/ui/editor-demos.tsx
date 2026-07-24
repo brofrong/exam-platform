@@ -59,6 +59,19 @@ const SAMPLE_DOC: TheoryDoc = {
 				},
 			],
 		},
+		{
+			type: "paragraph",
+			content: [{ type: "text", text: "Видео-разбор (VK):" }],
+		},
+		{
+			type: "video",
+			attrs: {
+				provider: "vk",
+				sourceId: "-123456_789012",
+				embedUrl: "https://vk.com/video_ext.php?oid=-123456&id=789012",
+				originalUrl: "https://vk.com/video-123456_789012",
+			},
+		},
 	],
 };
 
@@ -70,7 +83,8 @@ export function TheoryEditorDemo() {
 			<section className="space-y-2">
 				<h3 className="text-sm font-medium text-foreground">TheoryEditor</h3>
 				<p className="text-sm text-muted-foreground">
-					StarterKit: заголовки, списки, жирный/курсив. Контент — TipTap JSON.
+					StarterKit + video: заголовки, списки, жирный/курсив, вставка VK /
+					YouTube. Контент — TipTap JSON.
 				</p>
 				<TheoryEditor content={doc} onChange={setDoc} />
 			</section>

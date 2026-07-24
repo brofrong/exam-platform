@@ -10,6 +10,7 @@ import {
 	Redo2Icon,
 	Undo2Icon,
 } from "lucide-react";
+import { InsertVideoButton } from "#/features/lesson-editor/ui/insert-video-dialog";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
@@ -132,6 +133,10 @@ export function TheoryToolbar({ editor }: TheoryToolbarProps) {
 			>
 				<ListOrderedIcon />
 			</ToolbarButton>
+
+			<Separator orientation="vertical" className="mx-1 h-5" />
+
+			<InsertVideoButton editor={editor} />
 		</div>
 	);
 }
