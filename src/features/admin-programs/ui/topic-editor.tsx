@@ -1,4 +1,5 @@
 import { useQuery, useZero } from "@rocicorp/zero/react";
+import { Link } from "@tanstack/react-router";
 import {
 	ArrowDownIcon,
 	ArrowUpIcon,
@@ -288,8 +289,14 @@ export function TopicEditor({ programId, topics }: TopicEditorProps) {
 										className="px-1 text-xs text-muted-foreground"
 										data-testid={`topic-lessons-empty-${topic.id}`}
 									>
-										Уроки не привязаны. Каталог уроков появится в Task 14 — пока
-										можно привязать существующие, если они уже есть.
+										Уроки не привязаны.{" "}
+										<Link
+											to="/admin/lessons"
+											className="underline underline-offset-2 hover:text-foreground"
+											data-testid={`topic-lessons-catalog-link-${topic.id}`}
+										>
+											Открыть каталог уроков
+										</Link>
 									</p>
 								) : (
 									<ul className="ml-2 flex flex-col gap-1.5 border-l pl-3">
@@ -467,14 +474,19 @@ export function TopicEditor({ programId, topics }: TopicEditorProps) {
 							<DialogTitle>Привязать урок</DialogTitle>
 							<DialogDescription>
 								Выберите урок из каталога. Если список пуст — сначала создайте
-								уроки в CMS (Task 14).
+								уроки в CMS уроков.
 							</DialogDescription>
 						</DialogHeader>
 
 						{(lessons ?? []).length === 0 ? (
 							<EmptyState
 								title="Каталог уроков пуст"
-								description="CMS уроков будет в Task 14. Программы и темы можно создавать без уроков."
+								description="Сначала создайте уроки в каталоге, затем вернитесь сюда."
+								action={
+									<Button asChild data-testid="topic-link-open-lessons">
+										<Link to="/admin/lessons">К каталогу уроков</Link>
+									</Button>
+								}
 							/>
 						) : availableLessons.length === 0 ? (
 							<p className="text-sm text-muted-foreground">

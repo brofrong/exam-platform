@@ -25,10 +25,12 @@ import { Route as ApiUploadRouteImport } from './routes/api/upload'
 import { Route as ApiQueryRouteImport } from './routes/api/query'
 import { Route as ApiMutateRouteImport } from './routes/api/mutate'
 import { Route as AdminProgramsIndexRouteImport } from './routes/admin/programs/index'
+import { Route as AdminLessonsIndexRouteImport } from './routes/admin/lessons/index'
 import { Route as ApiZeroSplatRouteImport } from './routes/api/zero/$'
 import { Route as ApiFilesSplatRouteImport } from './routes/api/files/$'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AdminProgramsProgramIdRouteImport } from './routes/admin/programs/$programId'
+import { Route as AdminLessonsLessonIdRouteImport } from './routes/admin/lessons/$lessonId'
 
 const ZeroRoute = ZeroRouteImport.update({
   id: '/zero',
@@ -110,6 +112,11 @@ const AdminProgramsIndexRoute = AdminProgramsIndexRouteImport.update({
   path: '/programs/',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminLessonsIndexRoute = AdminLessonsIndexRouteImport.update({
+  id: '/lessons/',
+  path: '/lessons/',
+  getParentRoute: () => AdminRoute,
+} as any)
 const ApiZeroSplatRoute = ApiZeroSplatRouteImport.update({
   id: '/$',
   path: '/$',
@@ -130,6 +137,11 @@ const AdminProgramsProgramIdRoute = AdminProgramsProgramIdRouteImport.update({
   path: '/programs/$programId',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminLessonsLessonIdRoute = AdminLessonsLessonIdRouteImport.update({
+  id: '/lessons/$lessonId',
+  path: '/lessons/$lessonId',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -147,10 +159,12 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/app/': typeof AppIndexRoute
   '/dev/': typeof DevIndexRoute
+  '/admin/lessons/$lessonId': typeof AdminLessonsLessonIdRoute
   '/admin/programs/$programId': typeof AdminProgramsProgramIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/files/$': typeof ApiFilesSplatRoute
   '/api/zero/$': typeof ApiZeroSplatRoute
+  '/admin/lessons/': typeof AdminLessonsIndexRoute
   '/admin/programs/': typeof AdminProgramsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -166,10 +180,12 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/app': typeof AppIndexRoute
   '/dev': typeof DevIndexRoute
+  '/admin/lessons/$lessonId': typeof AdminLessonsLessonIdRoute
   '/admin/programs/$programId': typeof AdminProgramsProgramIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/files/$': typeof ApiFilesSplatRoute
   '/api/zero/$': typeof ApiZeroSplatRoute
+  '/admin/lessons': typeof AdminLessonsIndexRoute
   '/admin/programs': typeof AdminProgramsIndexRoute
 }
 export interface FileRoutesById {
@@ -189,10 +205,12 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/app/': typeof AppIndexRoute
   '/dev/': typeof DevIndexRoute
+  '/admin/lessons/$lessonId': typeof AdminLessonsLessonIdRoute
   '/admin/programs/$programId': typeof AdminProgramsProgramIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/files/$': typeof ApiFilesSplatRoute
   '/api/zero/$': typeof ApiZeroSplatRoute
+  '/admin/lessons/': typeof AdminLessonsIndexRoute
   '/admin/programs/': typeof AdminProgramsIndexRoute
 }
 export interface FileRouteTypes {
@@ -213,10 +231,12 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/app/'
     | '/dev/'
+    | '/admin/lessons/$lessonId'
     | '/admin/programs/$programId'
     | '/api/auth/$'
     | '/api/files/$'
     | '/api/zero/$'
+    | '/admin/lessons/'
     | '/admin/programs/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -232,10 +252,12 @@ export interface FileRouteTypes {
     | '/admin'
     | '/app'
     | '/dev'
+    | '/admin/lessons/$lessonId'
     | '/admin/programs/$programId'
     | '/api/auth/$'
     | '/api/files/$'
     | '/api/zero/$'
+    | '/admin/lessons'
     | '/admin/programs'
   id:
     | '__root__'
@@ -254,10 +276,12 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/app/'
     | '/dev/'
+    | '/admin/lessons/$lessonId'
     | '/admin/programs/$programId'
     | '/api/auth/$'
     | '/api/files/$'
     | '/api/zero/$'
+    | '/admin/lessons/'
     | '/admin/programs/'
   fileRoutesById: FileRoutesById
 }
@@ -390,6 +414,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminProgramsIndexRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/lessons/': {
+      id: '/admin/lessons/'
+      path: '/lessons'
+      fullPath: '/admin/lessons/'
+      preLoaderRoute: typeof AdminLessonsIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/api/zero/$': {
       id: '/api/zero/$'
       path: '/$'
@@ -418,18 +449,29 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminProgramsProgramIdRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/lessons/$lessonId': {
+      id: '/admin/lessons/$lessonId'
+      path: '/lessons/$lessonId'
+      fullPath: '/admin/lessons/$lessonId'
+      preLoaderRoute: typeof AdminLessonsLessonIdRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
 interface AdminRouteChildren {
   AdminIndexRoute: typeof AdminIndexRoute
+  AdminLessonsLessonIdRoute: typeof AdminLessonsLessonIdRoute
   AdminProgramsProgramIdRoute: typeof AdminProgramsProgramIdRoute
+  AdminLessonsIndexRoute: typeof AdminLessonsIndexRoute
   AdminProgramsIndexRoute: typeof AdminProgramsIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminIndexRoute: AdminIndexRoute,
+  AdminLessonsLessonIdRoute: AdminLessonsLessonIdRoute,
   AdminProgramsProgramIdRoute: AdminProgramsProgramIdRoute,
+  AdminLessonsIndexRoute: AdminLessonsIndexRoute,
   AdminProgramsIndexRoute: AdminProgramsIndexRoute,
 }
 
