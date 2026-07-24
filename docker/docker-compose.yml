@@ -1,8 +1,8 @@
 services:
   app:
-    image: ${DOCKER_IMAGE:-brofrong/zero-test}:${DOCKER_TAG:-latest}
+    image: ${DOCKER_IMAGE:-brofrong/exam-platform}:${DOCKER_TAG:-latest}
     pull_policy: always
-    container_name: zero-test-app
+    container_name: exam-platform-app
     restart: unless-stopped
     ports:
       - "${APP_PORT:-3000}:3000"
@@ -22,7 +22,7 @@ services:
 
   zero-cache:
     image: rocicorp/zero:1.8.0
-    container_name: zero-test-cache
+    container_name: exam-platform-cache
     restart: unless-stopped
     stop_grace_period: 10m
     environment:
@@ -44,7 +44,7 @@ services:
 
   zero-postgres:
     image: postgres:18
-    container_name: zero-test-postgres
+    container_name: exam-platform-postgres
     restart: unless-stopped
     environment:
       POSTGRES_DB: zero

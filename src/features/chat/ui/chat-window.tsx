@@ -30,7 +30,7 @@ function authorNameFromMessage(item: { author?: unknown }): string {
 	if (item.author && typeof item.author === "object" && "name" in item.author) {
 		return String(item.author.name);
 	}
-	return "unknown";
+	return "неизвестно";
 }
 
 export function ChatWindow({
@@ -169,7 +169,7 @@ export function ChatWindow({
 		<>
 			<div className="border-b border-border px-6 py-4">
 				<h1 className="text-lg font-semibold text-foreground">
-					{chat?.title ?? "Chat"}
+					{chat?.title ?? "Чат"}
 				</h1>
 			</div>
 
@@ -180,11 +180,11 @@ export function ChatWindow({
 			>
 				{isLoadingMore && (
 					<p className="text-center text-xs text-muted-foreground">
-						Loading messages...
+						Загрузка сообщений...
 					</p>
 				)}
 				{messages.length === 0 ? (
-					<p className="text-sm text-muted-foreground">No messages yet</p>
+					<p className="text-sm text-muted-foreground">Пока нет сообщений</p>
 				) : (
 					messages.map((item) => (
 						<MessageBubble

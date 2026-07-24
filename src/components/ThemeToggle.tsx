@@ -6,9 +6,9 @@ const THEME_STORAGE_KEY = "theme";
 const MODES: ThemeMode[] = ["auto", "light", "dark"];
 
 const MODE_LABELS: Record<ThemeMode, string> = {
-	auto: "System theme",
-	light: "Light theme",
-	dark: "Dark theme",
+	auto: "Системная тема",
+	light: "Светлая тема",
+	dark: "Тёмная тема",
 };
 
 function getStoredTheme(): ThemeMode {
@@ -152,7 +152,7 @@ export default function ThemeToggle() {
 			type="button"
 			onClick={cycleTheme}
 			className="rounded-xl border border-border bg-card p-2 text-muted-foreground transition hover:bg-muted hover:text-foreground"
-			aria-label={`${MODE_LABELS[mode]}. Click to change.`}
+			aria-label={`${MODE_LABELS[mode]}. Нажмите, чтобы сменить.`}
 			title={MODE_LABELS[mode]}
 		>
 			<ThemeIcon mode={mode} />

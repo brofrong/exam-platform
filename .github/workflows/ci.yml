@@ -110,7 +110,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v6
         with:
-          images: ${{ vars.DOCKERHUB_IMAGE || 'brofrong/zero-test' }}
+          images: ${{ vars.DOCKERHUB_IMAGE || 'brofrong/exam-platform' }}
           tags: |
             type=raw,value=latest
             type=sha,prefix=,format=short

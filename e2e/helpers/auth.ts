@@ -23,7 +23,7 @@ async function openLogin(page: Page) {
 	await expect(async () => {
 		await page.getByTestId("auth-mode-signup").click();
 		await expect(
-			page.getByRole("heading", { name: "Create account" }),
+			page.getByRole("heading", { name: "Регистрация" }),
 		).toBeVisible({ timeout: 1_500 });
 	}).toPass({ timeout: 15_000 });
 }
@@ -67,7 +67,7 @@ export async function login(page: Page, user: TestUser) {
 
 	await expect(async () => {
 		await page.getByTestId("auth-mode-signin").click();
-		await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible({
+		await expect(page.getByRole("heading", { name: "Вход" })).toBeVisible({
 			timeout: 1_500,
 		});
 	}).toPass({ timeout: 15_000 });

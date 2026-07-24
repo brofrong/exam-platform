@@ -22,7 +22,7 @@ export function MessageComposer({
 			<Textarea
 				value={value}
 				onChange={(event) => onChange(event.target.value)}
-				placeholder="Write a message..."
+				placeholder="Напишите сообщение..."
 				rows={1}
 				data-testid="chat-message-input"
 				className="min-h-9 max-h-32 min-w-0 flex-1 resize-none"
@@ -40,7 +40,7 @@ export function MessageComposer({
 				data-testid="chat-send"
 			>
 				<Send />
-				Send
+				Отправить
 			</Button>
 		</form>
 	);
@@ -64,16 +64,16 @@ export function NewChatForm({
 			<Input
 				value={title}
 				onChange={(event) => onTitleChange(event.target.value)}
-				placeholder="Chat title"
+				placeholder="Название чата"
 				autoFocus
 				data-testid="chat-create-title"
 			/>
 			<div className="flex gap-2">
 				<Button type="submit" size="sm" data-testid="chat-create-submit">
-					Create
+					Создать
 				</Button>
 				<Button type="button" variant="outline" size="sm" onClick={onCancel}>
-					Cancel
+					Отмена
 				</Button>
 			</div>
 		</form>

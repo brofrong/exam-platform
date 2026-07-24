@@ -1,5 +1,5 @@
 {
-  "projectName": "zero-test",
+  "projectName": "exam-platform",
   "mode": "file-router",
   "typescript": true,
   "packageManager": "bun",

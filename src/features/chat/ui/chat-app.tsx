@@ -77,7 +77,7 @@ export function ChatApp({ user }: ChatAppProps) {
 					/>
 				) : (
 					<div className="flex flex-1 items-center justify-center text-muted-foreground">
-						Select a chat or create a new one
+						Выберите чат или создайте новый
 					</div>
 				)}
 			</main>
