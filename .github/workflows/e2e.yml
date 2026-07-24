@@ -56,4 +56,4 @@ jobs:
 
       - name: Stop e2e infrastructure
         if: always()
-        run: bun run test:e2e:infra:down
+        run: docker compose -f docker/docker-compose.e2e.yml down -v
