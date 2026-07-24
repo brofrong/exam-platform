@@ -3,6 +3,7 @@
 import { useState } from "react";
 import {
 	emptyTheoryDoc,
+	SINE_PLOT_LIVE_REACT_CODE,
 	type TheoryDoc,
 	TheoryEditor,
 	TheoryRenderer,
@@ -72,6 +73,16 @@ const SAMPLE_DOC: TheoryDoc = {
 				originalUrl: "https://vk.com/video-123456_789012",
 			},
 		},
+		{
+			type: "paragraph",
+			content: [{ type: "text", text: "Интерактив: график sin(x) (Mafs):" }],
+		},
+		{
+			type: "liveReact",
+			attrs: {
+				code: SINE_PLOT_LIVE_REACT_CODE,
+			},
+		},
 	],
 };
 
@@ -83,15 +94,18 @@ export function TheoryEditorDemo() {
 			<section className="space-y-2">
 				<h3 className="text-sm font-medium text-foreground">TheoryEditor</h3>
 				<p className="text-sm text-muted-foreground">
-					StarterKit + video: заголовки, списки, жирный/курсив, вставка VK /
-					YouTube. Контент — TipTap JSON.
+					StarterKit + video + liveReact: заголовки, списки, VK/YouTube, Mafs
+					через react-live. Scope whitelist: React, Mafs, Coordinates, Plot,
+					Theme (+ Line, Point, Vector, Transform, vec, useMovablePoint). Без
+					fetch/DOM вне корня. Контент — TipTap JSON.
 				</p>
 				<TheoryEditor content={doc} onChange={setDoc} />
 			</section>
 			<section className="space-y-2">
 				<h3 className="text-sm font-medium text-foreground">TheoryRenderer</h3>
 				<p className="text-sm text-muted-foreground">
-					Read-only рендер того же JSON (для student player).
+					Read-only рендер того же JSON (для student player). liveReact
+					использует тот же LiveReactBlock, без textarea исходника.
 				</p>
 				<div className="rounded-xl border border-border px-3 py-2">
 					<TheoryRenderer content={doc} />

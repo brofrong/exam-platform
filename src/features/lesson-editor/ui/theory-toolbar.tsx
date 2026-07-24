@@ -8,6 +8,7 @@ import {
 	ListIcon,
 	ListOrderedIcon,
 	Redo2Icon,
+	SplineIcon,
 	Undo2Icon,
 } from "lucide-react";
 import { InsertVideoButton } from "#/features/lesson-editor/ui/insert-video-dialog";
@@ -137,6 +138,13 @@ export function TheoryToolbar({ editor }: TheoryToolbarProps) {
 			<Separator orientation="vertical" className="mx-1 h-5" />
 
 			<InsertVideoButton editor={editor} />
+			<ToolbarButton
+				label="Вставить интерактив"
+				testId="theory-toolbar-live-react"
+				onClick={() => editor.chain().focus().insertLiveReact().run()}
+			>
+				<SplineIcon />
+			</ToolbarButton>
 		</div>
 	);
 }
