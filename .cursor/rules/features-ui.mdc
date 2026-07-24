@@ -15,7 +15,7 @@ export const Route = createFileRoute("/_authenticated/")({
 });
 function Page() {
   const { user } = Route.useRouteContext();
-  return <ChatApp user={user} />;
+  return <StudentHome user={user} />;
 }
 
 // ❌ BAD — large UI / Zero logic inside the route file
@@ -24,15 +24,15 @@ function Page() {
 ## Feature structure
 
 ```
-features/chat/
+features/<name>/
   ui/          # React components
-  lib/         # pure helpers, types, pagination
+  lib/         # pure helpers, types
   index.ts     # public exports only
 ```
 
 - Pass data and callbacks as props; avoid deep imports across features.
 - Prefer shadcn primitives (`Button`, `Input`, `Textarea`, `ScrollArea`, …) over custom one-off controls.
 - Import UI: `import { Button } from "@/components/ui/button"`.
-- Import app code: `import { ChatApp } from "#/features/chat"`.
+- Import app code: `import { StudentHome } from "#/features/student-home"`.
 - Do not edit generated `routeTree.gen.ts`.
 - Theme tokens are standard shadcn CSS variables in `src/styles.css` (`background`, `foreground`, `primary`, `muted`, `border`, `sidebar`, …). Prefer those utilities in features; do not invent a parallel palette.

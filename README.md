@@ -4,7 +4,7 @@
 
 Стек: [TanStack Start](https://tanstack.com/start), [Rocicorp Zero](https://zerosync.dev/), [Drizzle](https://orm.drizzle.team/), [Better Auth](https://www.better-auth.com/), Tailwind CSS v4, shadcn/ui и [Bun](https://bun.sh/).
 
-В репозитории пока есть демо realtime-чата (`features/chat`), вертикальные feature-slices, правила для Cursor/агентов и Playwright E2E.
+В репозитории — вертикальные feature-slices, правила для Cursor/агентов и Playwright E2E. Продуктовый LMS в разработке.
 
 Лицензия: [MIT](LICENSE).
 
@@ -22,9 +22,7 @@ bun run db:migrate
 bun run dev
 ```
 
-Откройте [http://localhost:3000](http://localhost:3000), зарегистрируйтесь и попробуйте чат.
-
-> **Демо-авторизация Zero:** любой вошедший пользователь видит все чаты и может писать в любой `chatId`. Так задумано для демо синхронизации — перед продакшеном замените. См. [`src/server/zero/authz.demo.ts`](src/server/zero/authz.demo.ts).
+Откройте [http://localhost:3000](http://localhost:3000) и зарегистрируйтесь.
 
 ## Структура проекта
 

@@ -26,7 +26,7 @@ src/
 - Prefer **Vertical Feature Slices**. Colocate feature UI + feature helpers under `features/<name>/`.
 - Keep **routes thin**: compose a feature, pass route context as props. No business UI in route files.
 - Export the feature public API from `features/<name>/index.ts`.
-- App imports use `#/*` (e.g. `#/features/chat`). shadcn uses `@/components/ui/*` and `@/lib/utils`.
+- App imports use `#/*` (e.g. `#/features/auth`). shadcn uses `@/components/ui/*` and `@/lib/utils`.
 - Do **not** put Node-only imports (`pg`, drizzle `db`, fs) in `server/zero/` — client imports from there.
 - Do **not** invent FSD layers (`entities`, `widgets`, `pages` as FSD). Stick to this layout.
 - Format/lint with Biome (tabs, double quotes). Run `bun run check` before claiming done.

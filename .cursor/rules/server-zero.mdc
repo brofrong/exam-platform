@@ -17,8 +17,8 @@ alwaysApply: false
 - `schema.ts` is generated from Drizzle (`bun run zero:generate`). The script runs `scripts/fix-zero-schema.ts` to keep primitive `customType` (`string` / `number` / `boolean`).
 - Extend `queries.ts` / `mutators.ts` registries; wire through existing `/api/query` and `/api/mutate`.
 - Mutators must check `ctx?.id` (auth) before writing.
-- **Demo authz is intentionally open** among signed-in users (all chats / any `chatId`). Do not ship that pattern — see `server/zero/authz.demo.ts` for membership/ownership examples.
-- Shared constants used by Zero + UI (e.g. `MESSAGE_PAGE_SIZE`) live in `server/zero/constants.ts`, not in features.
+- Scope queries/mutators with real authz (membership / capabilities). Do not ship demo-open patterns.
+- Shared constants used by Zero + UI live in `server/zero/constants.ts`, not in features.
 - Client usage: `useQuery(queries.*)`, `zero.mutate(mutators.*)`, `ZeroProvider` in authenticated layout.
 
 ## Auth

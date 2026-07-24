@@ -2,44 +2,14 @@ import { defineMutator, defineMutators } from "@rocicorp/zero";
 import { z } from "zod";
 
 /**
- * DEMO: mutators only require a signed-in user (`ctx.id`).
- * See `./authz.demo.ts` for membership / ownership checks to copy.
+ * Domain mutators — stub keeps the registry non-empty for TypeScript until LMS
+ * mutators land. Always rejects; remove when real mutators exist.
  */
 export const mutators = defineMutators({
-	createChat: defineMutator(
-		z.object({ id: z.string(), title: z.string().min(1).max(255) }),
-		async ({ ctx, args: { id, title }, tx }) => {
-			if (!ctx?.id) {
-				throw new Error("Unauthorized");
-			}
-			await tx.mutate.chat.insert({
-				id,
-				title,
-				createdBy: ctx.id,
-				createdAt: Date.now(),
-			});
-		},
-	),
-
-	sendMessage: defineMutator(
-		z.object({
-			id: z.string(),
-			chatId: z.string(),
-			content: z.string().min(1).max(4000),
-		}),
-		async ({ ctx, args: { id, chatId, content }, tx }) => {
-			if (!ctx?.id) {
-				throw new Error("Unauthorized");
-			}
-			// DEMO OPEN AUTHZ: any signed-in user may write to any chatId.
-			// Production: verify membership/ownership for chatId (see authz.demo.ts).
-			await tx.mutate.message.insert({
-				id,
-				chatId,
-				authorId: ctx.id,
-				content,
-				createdAt: Date.now(),
-			});
-		},
-	),
+	_unavailable: defineMutator(z.object({}), async ({ ctx }) => {
+		if (!ctx?.id) {
+			throw new Error("Unauthorized");
+		}
+		throw new Error("No domain mutators registered yet");
+	}),
 });

@@ -28,12 +28,12 @@ async function openLogin(page: Page) {
 	}).toPass({ timeout: 15_000 });
 }
 
-async function waitForChatShell(page: Page) {
+async function waitForHomeShell(page: Page) {
 	await page.waitForURL((url) => {
 		const path = url.pathname;
 		return path === "/" || path === "";
 	});
-	await expect(page.getByTestId("chat-logout")).toBeVisible({
+	await expect(page.getByTestId("home-shell")).toBeVisible({
 		timeout: 60_000,
 	});
 }
@@ -58,7 +58,7 @@ export async function signup(page: Page, user: TestUser) {
 		`signup failed: ${response.status()} ${await response.text()}`,
 	).toBeTruthy();
 
-	await waitForChatShell(page);
+	await waitForHomeShell(page);
 }
 
 export async function login(page: Page, user: TestUser) {
@@ -87,11 +87,11 @@ export async function login(page: Page, user: TestUser) {
 		`login failed: ${response.status()} ${await response.text()}`,
 	).toBeTruthy();
 
-	await waitForChatShell(page);
+	await waitForHomeShell(page);
 }
 
 export async function logout(page: Page) {
-	await page.getByTestId("chat-logout").click();
+	await page.getByTestId("home-logout").click();
 	await page.waitForURL((url) => url.pathname.includes("/login"));
 	await expect(page.getByTestId("auth-submit")).toBeVisible();
 }
