@@ -8,6 +8,8 @@ type SimulateUploadResult = {
 	key: string;
 };
 
+type FileUploadStatus = "idle" | "uploading" | "uploaded" | "error";
+
 function formatFileSize(bytes: number): string {
 	if (bytes < 1024) {
 		return `${bytes} Б`;
@@ -24,6 +26,16 @@ function formatFileSize(bytes: number): string {
 
 function isImageFile(file: File): boolean {
 	return file.type.startsWith("image/");
+}
+
+function aggregateFileUploadStatus(
+	statuses: readonly FileUploadStatus[],
+): FileUploadStatus {
+	if (statuses.length === 0) return "idle";
+	if (statuses.some((status) => status === "uploading")) return "uploading";
+	if (statuses.some((status) => status === "error")) return "error";
+	if (statuses.every((status) => status === "uploaded")) return "uploaded";
+	return "idle";
 }
 
 function delay(ms: number, signal?: AbortSignal): Promise<void> {
@@ -70,5 +82,10 @@ async function simulateUpload(
 	return { key: `mock/${file.name}` };
 }
 
-export type { SimulateUploadOptions, SimulateUploadResult };
-export { formatFileSize, isImageFile, simulateUpload };
+export type { FileUploadStatus, SimulateUploadOptions, SimulateUploadResult };
+export {
+	aggregateFileUploadStatus,
+	formatFileSize,
+	isImageFile,
+	simulateUpload,
+};

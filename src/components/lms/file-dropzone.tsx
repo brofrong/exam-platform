@@ -5,7 +5,11 @@ import { useId, useState } from "react";
 import { cn } from "@/lib/utils";
 
 type FileDropzoneProps = {
-	onFile: (file: File) => void;
+	/** Called with every selected file (always an array). Prefer this for multi-select. */
+	onFiles?: (files: File[]) => void;
+	/** Called once per selected file (or first only when `multiple` is false). */
+	onFile?: (file: File) => void;
+	multiple?: boolean;
 	accept?: string;
 	disabled?: boolean;
 	label?: string;
@@ -14,7 +18,9 @@ type FileDropzoneProps = {
 };
 
 function FileDropzone({
+	onFiles,
 	onFile,
+	multiple = false,
 	accept,
 	disabled = false,
 	label = "Перетащите файл сюда",
@@ -23,12 +29,25 @@ function FileDropzone({
 }: FileDropzoneProps) {
 	const inputId = useId();
 	const [dragging, setDragging] = useState(false);
-	const [fileName, setFileName] = useState<string | null>(null);
+	const [fileSummary, setFileSummary] = useState<string | null>(null);
 
-	function handleFile(file: File | undefined) {
-		if (!file || disabled) return;
-		setFileName(file.name);
-		onFile(file);
+	function emitFiles(list: FileList | File[] | null | undefined) {
+		if (!list || disabled) return;
+		const files = Array.from(list);
+		if (files.length === 0) return;
+
+		const selected = multiple ? files : files.slice(0, 1);
+		setFileSummary(
+			selected.length === 1
+				? selected[0].name
+				: `Выбрано файлов: ${selected.length}`,
+		);
+		onFiles?.(selected);
+		if (onFile) {
+			for (const file of selected) {
+				onFile(file);
+			}
+		}
 	}
 
 	return (
@@ -38,6 +57,7 @@ function FileDropzone({
 			data-slot="file-dropzone"
 			data-testid="file-dropzone"
 			data-dragging={dragging || undefined}
+			data-multiple={multiple || undefined}
 			className={cn(
 				"flex w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border bg-muted/30 px-6 py-10 text-center transition-colors",
 				dragging && "border-primary bg-primary/5",
@@ -63,18 +83,19 @@ function FileDropzone({
 				event.preventDefault();
 				event.stopPropagation();
 				setDragging(false);
-				handleFile(event.dataTransfer.files?.[0]);
+				emitFiles(event.dataTransfer.files);
 			}}
 		>
 			<input
 				id={inputId}
 				type="file"
 				accept={accept}
+				multiple={multiple}
 				disabled={disabled}
 				className="sr-only"
 				data-testid="file-dropzone-input"
 				onChange={(event) => {
-					handleFile(event.target.files?.[0]);
+					emitFiles(event.target.files);
 					event.target.value = "";
 				}}
 			/>
@@ -87,8 +108,8 @@ function FileDropzone({
 				</span>
 				<span className="text-sm font-medium">{label}</span>
 				<span className="text-xs text-muted-foreground">{hint}</span>
-				{fileName ? (
-					<span className="mt-1 text-xs text-foreground">{fileName}</span>
+				{fileSummary ? (
+					<span className="mt-1 text-xs text-foreground">{fileSummary}</span>
 				) : null}
 			</label>
 		</div>

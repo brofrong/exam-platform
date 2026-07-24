@@ -1,5 +1,6 @@
 export type {
 	FileUploadAnswerProps,
+	FileUploadEntry,
 	FileUploadStatus,
 } from "@/components/answer-widgets/file-upload-answer";
 export { FileUploadAnswer } from "@/components/answer-widgets/file-upload-answer";
@@ -8,6 +9,7 @@ export type {
 	SimulateUploadResult,
 } from "@/components/answer-widgets/lib/file-upload";
 export {
+	aggregateFileUploadStatus,
 	formatFileSize,
 	isImageFile,
 	simulateUpload,

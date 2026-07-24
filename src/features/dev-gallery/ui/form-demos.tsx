@@ -316,18 +316,18 @@ export function MultipleChoiceAnswerDemo() {
 }
 
 export function FileUploadAnswerDemo() {
-	const [file, setFile] = useState<File | null>(null);
+	const [files, setFiles] = useState<File[]>([]);
 	const [status, setStatus] = useState<
 		"idle" | "uploading" | "uploaded" | "error"
 	>("idle");
 	const [submitted, setSubmitted] = useState(false);
 
 	const uploading = status === "uploading";
-	const canSubmit = status === "uploaded" && file !== null;
+	const canSubmit = status === "uploaded" && files.length > 0;
 
 	return (
 		<div className="grid w-full max-w-md gap-6">
-			<DemoSection title="С загрузкой и отправкой">
+			<DemoSection title="Несколько файлов с загрузкой">
 				<form
 					className="grid gap-3"
 					data-testid="file-upload-answer-form"
@@ -338,11 +338,12 @@ export function FileUploadAnswerDemo() {
 					}}
 				>
 					<FileUploadAnswer
-						value={file}
+						multiple
+						value={files}
 						onChange={(next) => {
-							setFile(next);
+							setFiles(next);
 							setSubmitted(false);
-							if (!next) setStatus("idle");
+							if (next.length === 0) setStatus("idle");
 						}}
 						onStatusChange={setStatus}
 						onUpload={(selected, { onProgress, signal }) =>
@@ -359,11 +360,9 @@ export function FileUploadAnswerDemo() {
 							disabled={!canSubmit}
 							data-testid="file-upload-answer-submit"
 							aria-describedby={
-								uploading
+								uploading || files.length === 0 || status === "error"
 									? "file-upload-answer-submit-hint"
-									: !file
-										? "file-upload-answer-submit-hint"
-										: undefined
+									: undefined
 							}
 						>
 							Отправить ответ
@@ -374,15 +373,15 @@ export function FileUploadAnswerDemo() {
 								data-testid="file-upload-answer-submit-hint"
 								className="text-xs text-muted-foreground"
 							>
-								Дождитесь окончания загрузки файла на сервер
+								Дождитесь окончания загрузки всех файлов на сервер
 							</p>
-						) : !file ? (
+						) : files.length === 0 ? (
 							<p
 								id="file-upload-answer-submit-hint"
 								data-testid="file-upload-answer-submit-hint"
 								className="text-xs text-muted-foreground"
 							>
-								Прикрепите файл, чтобы отправить ответ
+								Прикрепите файлы, чтобы отправить ответ
 							</p>
 						) : status === "error" ? (
 							<p
@@ -398,11 +397,20 @@ export function FileUploadAnswerDemo() {
 								data-testid="file-upload-answer-submitted"
 								className="text-xs text-muted-foreground"
 							>
-								Ответ отправлен (демо)
+								Ответ отправлен (демо) · файлов: {files.length}
 							</p>
 						) : null}
 					</div>
 				</form>
+			</DemoSection>
+			<Separator />
+			<DemoSection title="Один файл">
+				<FileUploadAnswer
+					multiple={false}
+					value={[]}
+					onChange={() => undefined}
+					label="Прикрепите файл"
+				/>
 			</DemoSection>
 			<Separator />
 			<DemoSection title="Error">
@@ -414,9 +422,8 @@ export function FileUploadAnswerDemo() {
 			<Separator />
 			<DemoSection title="Disabled">
 				<FileUploadAnswer
-					value={DEMO_PDF}
-					status="uploaded"
-					progress={100}
+					multiple={false}
+					value={[DEMO_PDF]}
 					onChange={() => undefined}
 					disabled
 				/>

@@ -191,7 +191,7 @@ export const galleryRegistry: GalleryEntry[] = [
 		slug: "file-upload-answer",
 		title: "File Upload Answer",
 		description:
-			"File answer with preview, upload progress, and submit gated until upload finishes.",
+			"Multi-file answer with per-file preview/progress; submit gated until all uploads finish.",
 		category: "Forms",
 		component: FileUploadAnswerDemo,
 		note: "import { FileUploadAnswer, simulateUpload } from '@/components/answer-widgets'",
@@ -367,7 +367,7 @@ export const galleryRegistry: GalleryEntry[] = [
 		description: "Drag-and-drop file picker for practice uploads.",
 		category: "LMS composites",
 		component: FileDropzoneDemo,
-		note: "import { FileDropzone } from '@/components/lms' — calls onFile(File), no upload API.",
+		note: "import { FileDropzone } from '@/components/lms' — onFiles(File[]) / onFile(File), optional multiple.",
 	},
 	{
 		slug: "publish-toggle",

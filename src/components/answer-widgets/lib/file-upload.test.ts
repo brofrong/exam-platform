@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import {
+	aggregateFileUploadStatus,
 	formatFileSize,
 	isImageFile,
 	simulateUpload,
@@ -27,6 +28,28 @@ describe("isImageFile", () => {
 		expect(
 			isImageFile(new File([], "doc.pdf", { type: "application/pdf" })),
 		).toBe(false);
+	});
+});
+
+describe("aggregateFileUploadStatus", () => {
+	test("returns idle for empty list", () => {
+		expect(aggregateFileUploadStatus([])).toBe("idle");
+	});
+
+	test("prefers uploading over other statuses", () => {
+		expect(aggregateFileUploadStatus(["uploaded", "uploading", "error"])).toBe(
+			"uploading",
+		);
+	});
+
+	test("returns error when any file failed and none uploading", () => {
+		expect(aggregateFileUploadStatus(["uploaded", "error"])).toBe("error");
+	});
+
+	test("returns uploaded when every file uploaded", () => {
+		expect(aggregateFileUploadStatus(["uploaded", "uploaded"])).toBe(
+			"uploaded",
+		);
 	});
 });
 

@@ -3,6 +3,8 @@
 import { FileIcon, XIcon } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 import {
+	aggregateFileUploadStatus,
+	type FileUploadStatus,
 	formatFileSize,
 	isImageFile,
 } from "@/components/answer-widgets/lib/file-upload";
@@ -11,25 +13,29 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 
-type FileUploadStatus = "idle" | "uploading" | "uploaded" | "error";
+type FileUploadEntry = {
+	id: string;
+	file: File;
+	status: FileUploadStatus;
+	progress: number;
+	previewUrl: string | null;
+	error: string | null;
+};
 
 type FileUploadAnswerProps = {
-	value?: File | null;
-	onChange: (file: File | null) => void;
-	/** Controlled status; when omitted, managed internally if `onUpload` is set. */
-	status?: FileUploadStatus;
-	/** Controlled progress 0–100. */
-	progress?: number;
-	/** Controlled object/preview URL for images. */
-	previewUrl?: string | null;
+	/** Allow selecting/dropping several files. Default `true`. */
+	multiple?: boolean;
+	value?: File[];
+	onChange: (files: File[]) => void;
 	/**
-	 * Pluggable uploader. Receives progress callbacks so real S3 uploads
-	 * can report determinate progress later.
+	 * Pluggable uploader. Called once per file. Receives progress callbacks so
+	 * real S3 uploads can report determinate progress later.
 	 */
 	onUpload?: (
 		file: File,
 		ctx: { onProgress: (progress: number) => void; signal: AbortSignal },
 	) => Promise<unknown>;
+	/** Aggregate status across all files (`uploading` if any file is uploading). */
 	onStatusChange?: (status: FileUploadStatus) => void;
 	error?: string;
 	disabled?: boolean;
@@ -39,241 +45,313 @@ type FileUploadAnswerProps = {
 	className?: string;
 };
 
+function createEntryId() {
+	return crypto.randomUUID();
+}
+
+function createEntry(
+	file: File,
+	status: FileUploadStatus,
+	progress: number,
+): FileUploadEntry {
+	return {
+		id: createEntryId(),
+		file,
+		status,
+		progress,
+		previewUrl: isImageFile(file) ? URL.createObjectURL(file) : null,
+		error: null,
+	};
+}
+
 function FileUploadAnswer({
-	value = null,
+	multiple = true,
+	value = [],
 	onChange,
-	status: statusProp,
-	progress: progressProp,
-	previewUrl: previewUrlProp,
 	onUpload,
 	onStatusChange,
 	error,
 	disabled = false,
-	label = "Прикрепите файл",
+	label,
 	hint = "или нажмите, чтобы выбрать",
 	accept,
 	className,
 }: FileUploadAnswerProps) {
 	const errorId = useId();
-	const progressId = useId();
-	const abortRef = useRef<AbortController | null>(null);
-	const objectUrlRef = useRef<string | null>(null);
-
-	const [internalStatus, setInternalStatus] = useState<FileUploadStatus>(
-		value ? "uploaded" : "idle",
+	const abortMapRef = useRef(new Map<string, AbortController>());
+	const entriesRef = useRef<FileUploadEntry[]>([]);
+	const [entries, setEntries] = useState<FileUploadEntry[]>(() =>
+		value.map((file) => createEntry(file, "uploaded", 100)),
 	);
-	const [internalProgress, setInternalProgress] = useState(0);
-	const [internalPreviewUrl, setInternalPreviewUrl] = useState<string | null>(
-		null,
+	const statusRef = useRef<FileUploadStatus>(
+		aggregateFileUploadStatus(entries.map((entry) => entry.status)),
 	);
-	const [uploadError, setUploadError] = useState<string | null>(null);
 
-	const statusControlled = statusProp !== undefined;
-	const progressControlled = progressProp !== undefined;
-	const previewControlled = previewUrlProp !== undefined;
+	entriesRef.current = entries;
 
-	const status = statusControlled ? statusProp : internalStatus;
-	const progress = progressControlled ? progressProp : internalProgress;
-	const previewUrl = previewControlled ? previewUrlProp : internalPreviewUrl;
-
+	const resolvedLabel =
+		label ?? (multiple ? "Прикрепите файлы" : "Прикрепите файл");
 	const invalid = Boolean(error);
+	const status = aggregateFileUploadStatus(
+		entries.map((entry) => entry.status),
+	);
 	const busy = status === "uploading";
-	const showDropzone = !value;
+	const showDropzone = multiple || entries.length === 0;
 
-	function setStatus(next: FileUploadStatus) {
-		if (!statusControlled) {
-			setInternalStatus(next);
-		}
-		onStatusChange?.(next);
-	}
-
-	function setProgress(next: number) {
-		if (!progressControlled) {
-			setInternalProgress(next);
+	function emitStatus(nextEntries: FileUploadEntry[]) {
+		const next = aggregateFileUploadStatus(
+			nextEntries.map((entry) => entry.status),
+		);
+		if (statusRef.current !== next) {
+			statusRef.current = next;
+			onStatusChange?.(next);
 		}
 	}
 
-	function revokeObjectUrl() {
-		if (objectUrlRef.current) {
-			URL.revokeObjectURL(objectUrlRef.current);
-			objectUrlRef.current = null;
-		}
-		if (!previewControlled) {
-			setInternalPreviewUrl(null);
+	function patchEntry(
+		id: string,
+		patch: Partial<Omit<FileUploadEntry, "id" | "file">>,
+	) {
+		setEntries((current) => {
+			const next = current.map((entry) =>
+				entry.id === id ? { ...entry, ...patch } : entry,
+			);
+			emitStatus(next);
+			return next;
+		});
+	}
+
+	function revokeEntry(entry: FileUploadEntry) {
+		if (entry.previewUrl) {
+			URL.revokeObjectURL(entry.previewUrl);
 		}
 	}
 
-	function clearUpload() {
-		abortRef.current?.abort();
-		abortRef.current = null;
-		revokeObjectUrl();
-		setUploadError(null);
-		setProgress(0);
-		setStatus("idle");
-		onChange(null);
+	function removeEntry(id: string) {
+		abortMapRef.current.get(id)?.abort();
+		abortMapRef.current.delete(id);
+
+		setEntries((current) => {
+			const target = current.find((entry) => entry.id === id);
+			if (target) revokeEntry(target);
+			const next = current.filter((entry) => entry.id !== id);
+			onChange(next.map((entry) => entry.file));
+			emitStatus(next);
+			return next;
+		});
 	}
 
 	useEffect(() => {
 		return () => {
-			abortRef.current?.abort();
-			if (objectUrlRef.current) {
-				URL.revokeObjectURL(objectUrlRef.current);
+			for (const controller of abortMapRef.current.values()) {
+				controller.abort();
+			}
+			abortMapRef.current.clear();
+			for (const entry of entriesRef.current) {
+				if (entry.previewUrl) {
+					URL.revokeObjectURL(entry.previewUrl);
+				}
 			}
 		};
 	}, []);
 
-	async function handleFile(file: File) {
-		if (disabled || busy) return;
-
-		abortRef.current?.abort();
-		revokeObjectUrl();
-		setUploadError(null);
-
-		if (!previewControlled && isImageFile(file)) {
-			const url = URL.createObjectURL(file);
-			objectUrlRef.current = url;
-			setInternalPreviewUrl(url);
-		}
-
-		onChange(file);
-		setProgress(0);
-
+	async function startUpload(entry: FileUploadEntry) {
 		if (!onUpload) {
-			setStatus("uploaded");
-			setProgress(100);
+			patchEntry(entry.id, { status: "uploaded", progress: 100, error: null });
 			return;
 		}
 
 		const controller = new AbortController();
-		abortRef.current = controller;
-		setStatus("uploading");
+		abortMapRef.current.get(entry.id)?.abort();
+		abortMapRef.current.set(entry.id, controller);
+		patchEntry(entry.id, { status: "uploading", progress: 0, error: null });
 
 		try {
-			await onUpload(file, {
-				onProgress: setProgress,
+			await onUpload(entry.file, {
+				onProgress: (progress) => {
+					patchEntry(entry.id, { progress });
+				},
 				signal: controller.signal,
 			});
 			if (controller.signal.aborted) return;
-			setProgress(100);
-			setStatus("uploaded");
+			patchEntry(entry.id, {
+				status: "uploaded",
+				progress: 100,
+				error: null,
+			});
 		} catch (cause) {
 			if (controller.signal.aborted) return;
 			const message =
 				cause instanceof Error ? cause.message : "Не удалось загрузить файл";
-			setUploadError(message);
-			setStatus("error");
+			patchEntry(entry.id, { status: "error", error: message });
 		} finally {
-			if (abortRef.current === controller) {
-				abortRef.current = null;
+			if (abortMapRef.current.get(entry.id) === controller) {
+				abortMapRef.current.delete(entry.id);
 			}
 		}
 	}
 
-	const displayError = error ?? uploadError;
+	function handleFiles(files: File[]) {
+		if (disabled || files.length === 0) return;
+		if (!multiple && busy) return;
+
+		const incoming = multiple ? files : files.slice(0, 1);
+		const created = incoming.map((file) =>
+			createEntry(
+				file,
+				onUpload ? "uploading" : "uploaded",
+				onUpload ? 0 : 100,
+			),
+		);
+
+		setEntries((current) => {
+			if (!multiple) {
+				for (const entry of current) {
+					abortMapRef.current.get(entry.id)?.abort();
+					abortMapRef.current.delete(entry.id);
+					revokeEntry(entry);
+				}
+			}
+			const next = multiple ? [...current, ...created] : created;
+			onChange(next.map((entry) => entry.file));
+			emitStatus(next);
+			return next;
+		});
+
+		for (const entry of created) {
+			void startUpload(entry);
+		}
+	}
+
+	const itemErrors = entries
+		.map((entry) => entry.error)
+		.filter((message): message is string => Boolean(message));
+	const displayError = error ?? itemErrors[0] ?? null;
 
 	return (
 		<div
 			data-slot="file-upload-answer"
 			data-testid="file-upload-answer"
 			data-status={status}
+			data-multiple={multiple || undefined}
 			className={cn("grid w-full gap-2", className)}
-			aria-describedby={
-				[invalid || uploadError ? errorId : null, busy ? progressId : null]
-					.filter(Boolean)
-					.join(" ") || undefined
-			}
+			aria-describedby={invalid || displayError ? errorId : undefined}
 		>
+			{entries.length > 0 ? (
+				<ul data-testid="file-upload-answer-list" className="grid w-full gap-2">
+					{entries.map((entry) => {
+						const itemBusy = entry.status === "uploading";
+						return (
+							<li
+								key={entry.id}
+								data-testid="file-upload-answer-item"
+								data-status={entry.status}
+								className={cn(
+									"grid gap-3 rounded-xl border border-border bg-muted/30 p-3",
+									invalid && "border-destructive",
+									itemBusy && "ring-1 ring-primary/20",
+									entry.status === "error" && "border-destructive",
+								)}
+							>
+								<div className="flex items-start gap-3">
+									{entry.previewUrl ? (
+										<img
+											src={entry.previewUrl}
+											alt=""
+											data-testid="file-upload-answer-thumbnail"
+											className="size-14 shrink-0 rounded-lg object-cover ring-1 ring-foreground/10"
+										/>
+									) : (
+										<span
+											data-testid="file-upload-answer-file-icon"
+											className="flex size-14 shrink-0 items-center justify-center rounded-lg bg-background text-muted-foreground ring-1 ring-foreground/10"
+										>
+											<FileIcon className="size-5" />
+										</span>
+									)}
+									<div className="min-w-0 flex-1">
+										<p
+											data-testid="file-upload-answer-name"
+											className="truncate text-sm font-medium"
+										>
+											{entry.file.name}
+										</p>
+										<p
+											data-testid="file-upload-answer-size"
+											className="text-xs text-muted-foreground"
+										>
+											{formatFileSize(entry.file.size)}
+										</p>
+										{entry.status === "uploaded" ? (
+											<p
+												data-testid="file-upload-answer-uploaded"
+												className="mt-1 text-xs text-muted-foreground"
+											>
+												Файл загружен
+											</p>
+										) : null}
+										{itemBusy ? (
+											<p
+												data-testid="file-upload-answer-uploading-label"
+												className="mt-1 text-xs text-muted-foreground"
+											>
+												Загрузка на сервер… {Math.round(entry.progress)}%
+											</p>
+										) : null}
+										{entry.error ? (
+											<p
+												data-testid="file-upload-answer-item-error"
+												className="mt-1 text-xs text-destructive"
+											>
+												{entry.error}
+											</p>
+										) : null}
+									</div>
+									<Button
+										type="button"
+										variant="ghost"
+										size="icon-sm"
+										disabled={disabled}
+										aria-label={`Удалить ${entry.file.name}`}
+										data-testid="file-upload-answer-remove"
+										onClick={() => removeEntry(entry.id)}
+									>
+										<XIcon />
+									</Button>
+								</div>
+								{itemBusy ? (
+									<div className="grid gap-1.5">
+										<Progress
+											value={entry.progress}
+											data-testid="file-upload-answer-progress"
+											aria-valuemin={0}
+											aria-valuemax={100}
+											aria-valuenow={Math.round(entry.progress)}
+											aria-label={`Прогресс загрузки ${entry.file.name}`}
+										/>
+									</div>
+								) : null}
+							</li>
+						);
+					})}
+				</ul>
+			) : null}
+
 			{showDropzone ? (
 				<FileDropzone
-					onFile={handleFile}
+					onFiles={handleFiles}
+					multiple={multiple}
 					accept={accept}
 					disabled={disabled}
-					label={label}
+					label={resolvedLabel}
 					hint={hint}
-					className={cn(invalid && "border-destructive")}
-				/>
-			) : value ? (
-				<div
-					data-testid="file-upload-answer-preview"
 					className={cn(
-						"grid gap-3 rounded-xl border border-border bg-muted/30 p-3",
 						invalid && "border-destructive",
-						busy && "ring-1 ring-primary/20",
+						entries.length > 0 && "py-6",
 					)}
-				>
-					<div className="flex items-start gap-3">
-						{previewUrl ? (
-							<img
-								src={previewUrl}
-								alt=""
-								data-testid="file-upload-answer-thumbnail"
-								className="size-14 shrink-0 rounded-lg object-cover ring-1 ring-foreground/10"
-							/>
-						) : (
-							<span
-								data-testid="file-upload-answer-file-icon"
-								className="flex size-14 shrink-0 items-center justify-center rounded-lg bg-background text-muted-foreground ring-1 ring-foreground/10"
-							>
-								<FileIcon className="size-5" />
-							</span>
-						)}
-						<div className="min-w-0 flex-1">
-							<p
-								data-testid="file-upload-answer-name"
-								className="truncate text-sm font-medium"
-							>
-								{value.name}
-							</p>
-							<p
-								data-testid="file-upload-answer-size"
-								className="text-xs text-muted-foreground"
-							>
-								{formatFileSize(value.size)}
-							</p>
-							{status === "uploaded" ? (
-								<p
-									data-testid="file-upload-answer-uploaded"
-									className="mt-1 text-xs text-muted-foreground"
-								>
-									Файл загружен
-								</p>
-							) : null}
-							{busy ? (
-								<p
-									id={progressId}
-									data-testid="file-upload-answer-uploading-label"
-									className="mt-1 text-xs text-muted-foreground"
-								>
-									Загрузка на сервер… {Math.round(progress)}%
-								</p>
-							) : null}
-						</div>
-						<Button
-							type="button"
-							variant="ghost"
-							size="icon-sm"
-							disabled={disabled}
-							aria-label="Удалить файл"
-							data-testid="file-upload-answer-remove"
-							onClick={clearUpload}
-						>
-							<XIcon />
-						</Button>
-					</div>
-					{busy ? (
-						<div className="grid gap-1.5">
-							<Progress
-								value={progress}
-								data-testid="file-upload-answer-progress"
-								aria-valuemin={0}
-								aria-valuemax={100}
-								aria-valuenow={Math.round(progress)}
-								aria-label="Прогресс загрузки"
-							/>
-						</div>
-					) : null}
-				</div>
+				/>
 			) : null}
+
 			{displayError ? (
 				<p
 					id={errorId}
@@ -289,4 +367,4 @@ function FileUploadAnswer({
 }
 
 export { FileUploadAnswer };
-export type { FileUploadAnswerProps, FileUploadStatus };
+export type { FileUploadAnswerProps, FileUploadEntry, FileUploadStatus };
