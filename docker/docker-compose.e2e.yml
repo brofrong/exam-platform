@@ -1,0 +1,44 @@
+services:
+  zero-cache-e2e:
+    image: rocicorp/zero:1.8.0
+    container_name: zero-cache-e2e
+    stop_grace_period: 10m
+    depends_on:
+      zero-postgres-e2e:
+        condition: service_healthy
+    ports:
+      - "4849:4848"
+    environment:
+      ZERO_UPSTREAM_DB: postgres://postgres:pass@zero-postgres-e2e:5432/zero
+      ZERO_CVR_DB: postgres://postgres:pass@zero-postgres-e2e:5432/zero
+      ZERO_CHANGE_DB: postgres://postgres:pass@zero-postgres-e2e:5432/zero
+      ZERO_REPLICA_FILE: /data/replica.db
+      ZERO_ADMIN_PASSWORD: e2epassword
+      ZERO_QUERY_URL: http://host.docker.internal:3100/api/query
+      ZERO_MUTATE_URL: http://host.docker.internal:3100/api/mutate
+      ZERO_ENABLE_CRUD_MUTATIONS: "false"
+      ZERO_QUERY_FORWARD_COOKIES: "true"
+      ZERO_MUTATE_FORWARD_COOKIES: "true"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - zero-cache-e2e-data:/data
+
+  zero-postgres-e2e:
+    image: postgres:18
+    container_name: zero-postgres-e2e
+    environment:
+      POSTGRES_DB: zero
+      POSTGRES_PASSWORD: pass
+    ports:
+      - "5433:5432"
+    command: postgres -c wal_level=logical
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d zero"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  zero-cache-e2e-data:
+    driver: local

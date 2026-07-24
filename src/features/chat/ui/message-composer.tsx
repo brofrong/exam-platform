@@ -24,6 +24,7 @@ export function MessageComposer({
 				onChange={(event) => onChange(event.target.value)}
 				placeholder="Напишите сообщение..."
 				rows={1}
+				data-testid="chat-message-input"
 				className="min-h-9 max-h-32 min-w-0 flex-1 resize-none"
 				onKeyDown={(event) => {
 					if (event.key === "Enter" && !event.shiftKey) {
@@ -32,7 +33,12 @@ export function MessageComposer({
 					}
 				}}
 			/>
-			<Button type="submit" disabled={!value.trim()} size="default">
+			<Button
+				type="submit"
+				disabled={!value.trim()}
+				size="default"
+				data-testid="chat-send"
+			>
 				<Send />
 				Отправить
 			</Button>
@@ -60,9 +66,10 @@ export function NewChatForm({
 				onChange={(event) => onTitleChange(event.target.value)}
 				placeholder="Название чата"
 				autoFocus
+				data-testid="chat-create-title"
 			/>
 			<div className="flex gap-2">
-				<Button type="submit" size="sm">
+				<Button type="submit" size="sm" data-testid="chat-create-submit">
 					Создать
 				</Button>
 				<Button type="button" variant="outline" size="sm" onClick={onCancel}>

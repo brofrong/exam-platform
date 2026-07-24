@@ -4,7 +4,12 @@ dist
 dist-ssr
 *.local
 .env
+.env.e2e
 .nitro
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
 .tanstack
 .wrangler
 .output

@@ -20,11 +20,13 @@ Cursor project rules in `.cursor/rules/` are the source of truth:
 | DB migrate | `bun run db:migrate` |
 | Generate Zero schema | `bun run zero:generate` |
 | Add shadcn component | `bunx shadcn@latest add <name>` |
+| E2E | `bun run test:e2e` (starts e2e compose + migrate) |
 
 ## Do / Don't
 
 - **Do** put new product UI in `src/features/<name>/` and keep routes thin.
 - **Do** use `#/` for app imports and `@/` for shadcn/`cn`.
 - **Do** keep `server/zero` isomorphic (no Node-only deps).
+- **Do** use unique emails/titles in E2E; keep `data-testid` on interactive UI.
 - **Don't** dump logic into `src/routes/*` or recreate `src/utils` / top-level `src/zero`.
-- **Don't** commit secrets (`.env`) or edit `routeTree.gen.ts` by hand.
+- **Don't** commit secrets (`.env`, `.env.e2e`) or edit `routeTree.gen.ts` by hand.

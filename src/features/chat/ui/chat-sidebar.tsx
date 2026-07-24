@@ -64,6 +64,7 @@ export function ChatSidebar({
 					type="button"
 					variant="ghost"
 					size="icon-sm"
+					data-testid="chat-logout"
 					onClick={onLogout}
 					aria-label="Выйти"
 					title="Выйти"
@@ -83,7 +84,12 @@ export function ChatSidebar({
 						onCancel={onCancelCreate}
 					/>
 				) : (
-					<Button type="button" className="w-full" onClick={onStartCreate}>
+					<Button
+						type="button"
+						className="w-full"
+						data-testid="chat-new"
+						onClick={onStartCreate}
+					>
 						<MessageSquarePlus />
 						Новый чат
 					</Button>
@@ -93,7 +99,7 @@ export function ChatSidebar({
 			<Separator />
 
 			<ScrollArea className="flex-1">
-				<div className="space-y-0.5 p-2">
+				<div className="space-y-0.5 p-2" data-testid="chat-list">
 					{chats.length === 0 ? (
 						<p className="px-3 py-6 text-center text-sm text-muted-foreground">
 							Пока нет чатов
@@ -103,6 +109,7 @@ export function ChatSidebar({
 							<button
 								key={chat.id}
 								type="button"
+								data-testid="chat-list-item"
 								onClick={() => onSelectChat(chat.id)}
 								className={cn(
 									"w-full rounded-lg px-3 py-2 text-left text-sm transition-colors",

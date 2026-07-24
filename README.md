@@ -94,7 +94,22 @@ bunx shadcn@latest add button
 | Миграции | `bun run db:migrate` |
 | Drizzle Studio | `bun run db:studio` |
 | Zero schema | `bun run zero:generate` |
-| Тесты | `bun run test` |
+| Unit-тесты | `bun run test` |
+| E2E | `bun run test:e2e` |
+
+### E2E (Playwright)
+
+Отдельный стек на портах **5433** (Postgres), **4849** (Zero) и app на **3100**, чтобы не мешать dev (`3000` / `5432` / `4848`).
+
+```bash
+cp .env.e2e.example .env.e2e   # если ещё нет
+bunx playwright install chromium
+bun run test:e2e
+```
+
+`test:e2e` сам поднимает `docker/docker-compose.e2e.yml`, гоняет миграции и стартует app через Playwright `webServer`. Данные в тестах уникальные (email/чат на каждый прогон) — БД между тестами не чистится.
+
+Остановить infra: `bun run test:e2e:infra:down` (с `-v` снесёт volume).
 
 ### Auth и данные
 
@@ -109,4 +124,4 @@ bun run build
 bun run start
 ```
 
-Полный стек в Docker — корневой [`docker-compose.yml`](docker-compose.yml) и [`Dockerfile`](Dockerfile).
+Полный стек в Docker — [`docker/docker-compose.yml`](docker/docker-compose.yml) и [`Dockerfile`](Dockerfile).

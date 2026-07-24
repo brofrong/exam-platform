@@ -26,6 +26,7 @@
 |--------|-----------|-----------|
 | Postgres | `5433` | `5432` |
 | Zero cache | `4849` | `4848` |
+| App (Playwright webServer) | `3100` | — |
 
 Имена: `zero-postgres-e2e`, `zero-cache-e2e`, volume `zero-cache-e2e-data`.
 

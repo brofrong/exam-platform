@@ -66,6 +66,7 @@ function LoginPage() {
 				<div className="mt-4 flex rounded-xl border border-border p-1">
 					<button
 						type="button"
+						data-testid="auth-mode-signin"
 						onClick={() => {
 							setMode("signin");
 							setError(null);
@@ -80,6 +81,7 @@ function LoginPage() {
 					</button>
 					<button
 						type="button"
+						data-testid="auth-mode-signup"
 						onClick={() => {
 							setMode("signup");
 							setError(null);
@@ -105,6 +107,7 @@ function LoginPage() {
 							</label>
 							<input
 								id="name"
+								data-testid="auth-name"
 								value={name}
 								onChange={(event) => setName(event.target.value)}
 								placeholder="например, Alice"
@@ -123,6 +126,7 @@ function LoginPage() {
 						</label>
 						<input
 							id="email"
+							data-testid="auth-email"
 							type="email"
 							value={email}
 							onChange={(event) => setEmail(event.target.value)}
@@ -141,6 +145,7 @@ function LoginPage() {
 						</label>
 						<input
 							id="password"
+							data-testid="auth-password"
 							type="password"
 							value={password}
 							onChange={(event) => setPassword(event.target.value)}
@@ -155,6 +160,7 @@ function LoginPage() {
 
 					<button
 						type="submit"
+						data-testid="auth-submit"
 						disabled={isSubmitting || !canSubmit}
 						className="w-full rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-brand-foreground disabled:opacity-50"
 					>

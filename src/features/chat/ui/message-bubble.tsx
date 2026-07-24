@@ -12,7 +12,11 @@ export function MessageBubble({
 	isOwn,
 }: MessageBubbleProps) {
 	return (
-		<div className={cn("flex", isOwn ? "justify-end" : "justify-start")}>
+		<div
+			className={cn("flex", isOwn ? "justify-end" : "justify-start")}
+			data-testid="chat-message"
+			data-own={isOwn ? "true" : "false"}
+		>
 			<div
 				className={cn(
 					"max-w-[75%] rounded-2xl px-4 py-2 text-sm shadow-sm",
