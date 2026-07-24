@@ -2,6 +2,7 @@ import { NodeViewWrapper, type ReactNodeViewProps } from "@tiptap/react";
 import * as React from "react";
 import { useEffect, useId, useState } from "react";
 import { LiveError, LivePreview, LiveProvider } from "react-live";
+import { isolateNodeViewClipboard } from "#/features/lesson-editor/lib/grip-only-stop-event";
 import { prepareLiveReactCode } from "#/features/lesson-editor/lib/prepare-live-react-code";
 import { NodeDragHandle } from "#/features/lesson-editor/ui/node-drag-handle";
 import { Label } from "@/components/ui/label";
@@ -227,6 +228,9 @@ export function LiveReactBlock({
 						value={draft}
 						onChange={(event) => setDraft(event.target.value)}
 						onBlur={() => commitDraft()}
+						onCopy={isolateNodeViewClipboard}
+						onCut={isolateNodeViewClipboard}
+						onPaste={isolateNodeViewClipboard}
 						rows={12}
 						className="font-mono text-xs"
 						data-testid="theory-live-react-source"

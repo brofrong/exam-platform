@@ -1,6 +1,7 @@
 import type { ReactNodeViewProps } from "@tiptap/react";
 import { NodeViewWrapper } from "@tiptap/react";
 import { PlusIcon, Trash2Icon } from "lucide-react";
+import { isolateNodeViewClipboard } from "#/features/lesson-editor/lib/grip-only-stop-event";
 import {
 	parseGrading,
 	parseOptions,
@@ -305,6 +306,9 @@ export function QuestionNodeView({
 						onChange={(event) =>
 							updateAttributes({ prompt: event.target.value })
 						}
+						onCopy={isolateNodeViewClipboard}
+						onCut={isolateNodeViewClipboard}
+						onPaste={isolateNodeViewClipboard}
 					/>
 				</div>
 			) : (
@@ -338,6 +342,9 @@ export function QuestionNodeView({
 											),
 										})
 									}
+									onCopy={isolateNodeViewClipboard}
+									onCut={isolateNodeViewClipboard}
+									onPaste={isolateNodeViewClipboard}
 								/>
 								<Button
 									type="button"
