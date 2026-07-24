@@ -1,0 +1,74 @@
+import { Link } from "@tanstack/react-router";
+import type { ReactNode } from "react";
+import {
+	galleryRegistry,
+	getEntriesByCategory,
+} from "#/features/dev-gallery/lib/registry";
+import { cn } from "@/lib/utils";
+
+type DevGalleryLayoutProps = {
+	children: ReactNode;
+	activeSlug?: string;
+};
+
+export function DevGalleryLayout({
+	children,
+	activeSlug,
+}: DevGalleryLayoutProps) {
+	const groups = getEntriesByCategory();
+
+	return (
+		<div
+			className="mx-auto flex w-full max-w-7xl gap-8 px-4 py-6"
+			data-testid="dev-gallery"
+		>
+			<aside className="hidden w-56 shrink-0 md:block">
+				<div className="sticky top-24 space-y-6">
+					<div>
+						<Link
+							to="/dev"
+							className="text-sm font-semibold text-foreground no-underline hover:underline"
+						>
+							Components
+						</Link>
+						<p className="mt-1 text-xs text-muted-foreground">
+							{galleryRegistry.length} entries
+						</p>
+					</div>
+					<nav className="space-y-5" aria-label="Component gallery">
+						{groups.map(({ category, entries }) => (
+							<div key={category} className="space-y-1.5">
+								<p className="px-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">
+									{category}
+								</p>
+								<ul className="space-y-0.5">
+									{entries.map((entry) => {
+										const active = entry.slug === activeSlug;
+										return (
+											<li key={entry.slug}>
+												<Link
+													to="/dev/$slug"
+													params={{ slug: entry.slug }}
+													data-testid={`dev-nav-item-${entry.slug}`}
+													className={cn(
+														"block rounded-md px-2 py-1.5 text-sm no-underline transition-colors",
+														active
+															? "bg-muted font-medium text-foreground"
+															: "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+													)}
+												>
+													{entry.title}
+												</Link>
+											</li>
+										);
+									})}
+								</ul>
+							</div>
+						))}
+					</nav>
+				</div>
+			</aside>
+			<div className="min-w-0 flex-1">{children}</div>
+		</div>
+	);
+}

@@ -19,6 +19,7 @@ import { Route as DevIndexRouteImport } from './routes/dev/index'
 import { Route as AppIndexRouteImport } from './routes/app/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as ZeroSplatRouteImport } from './routes/zero/$'
+import { Route as DevSlugRouteImport } from './routes/dev/$slug'
 import { Route as ApiZeroRouteImport } from './routes/api/zero'
 import { Route as ApiQueryRouteImport } from './routes/api/query'
 import { Route as ApiMutateRouteImport } from './routes/api/mutate'
@@ -75,6 +76,11 @@ const ZeroSplatRoute = ZeroSplatRouteImport.update({
   path: '/$',
   getParentRoute: () => ZeroRoute,
 } as any)
+const DevSlugRoute = DevSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => DevRoute,
+} as any)
 const ApiZeroRoute = ApiZeroRouteImport.update({
   id: '/api/zero',
   path: '/api/zero',
@@ -111,6 +117,7 @@ export interface FileRoutesByFullPath {
   '/api/mutate': typeof ApiMutateRoute
   '/api/query': typeof ApiQueryRoute
   '/api/zero': typeof ApiZeroRouteWithChildren
+  '/dev/$slug': typeof DevSlugRoute
   '/zero/$': typeof ZeroSplatRoute
   '/admin/': typeof AdminIndexRoute
   '/app/': typeof AppIndexRoute
@@ -125,6 +132,7 @@ export interface FileRoutesByTo {
   '/api/mutate': typeof ApiMutateRoute
   '/api/query': typeof ApiQueryRoute
   '/api/zero': typeof ApiZeroRouteWithChildren
+  '/dev/$slug': typeof DevSlugRoute
   '/zero/$': typeof ZeroSplatRoute
   '/admin': typeof AdminIndexRoute
   '/app': typeof AppIndexRoute
@@ -143,6 +151,7 @@ export interface FileRoutesById {
   '/api/mutate': typeof ApiMutateRoute
   '/api/query': typeof ApiQueryRoute
   '/api/zero': typeof ApiZeroRouteWithChildren
+  '/dev/$slug': typeof DevSlugRoute
   '/zero/$': typeof ZeroSplatRoute
   '/admin/': typeof AdminIndexRoute
   '/app/': typeof AppIndexRoute
@@ -162,6 +171,7 @@ export interface FileRouteTypes {
     | '/api/mutate'
     | '/api/query'
     | '/api/zero'
+    | '/dev/$slug'
     | '/zero/$'
     | '/admin/'
     | '/app/'
@@ -176,6 +186,7 @@ export interface FileRouteTypes {
     | '/api/mutate'
     | '/api/query'
     | '/api/zero'
+    | '/dev/$slug'
     | '/zero/$'
     | '/admin'
     | '/app'
@@ -193,6 +204,7 @@ export interface FileRouteTypes {
     | '/api/mutate'
     | '/api/query'
     | '/api/zero'
+    | '/dev/$slug'
     | '/zero/$'
     | '/admin/'
     | '/app/'
@@ -286,6 +298,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ZeroSplatRouteImport
       parentRoute: typeof ZeroRoute
     }
+    '/dev/$slug': {
+      id: '/dev/$slug'
+      path: '/$slug'
+      fullPath: '/dev/$slug'
+      preLoaderRoute: typeof DevSlugRouteImport
+      parentRoute: typeof DevRoute
+    }
     '/api/zero': {
       id: '/api/zero'
       path: '/api/zero'
@@ -345,10 +364,12 @@ const AppRouteChildren: AppRouteChildren = {
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 interface DevRouteChildren {
+  DevSlugRoute: typeof DevSlugRoute
   DevIndexRoute: typeof DevIndexRoute
 }
 
 const DevRouteChildren: DevRouteChildren = {
+  DevSlugRoute: DevSlugRoute,
   DevIndexRoute: DevIndexRoute,
 }
 
