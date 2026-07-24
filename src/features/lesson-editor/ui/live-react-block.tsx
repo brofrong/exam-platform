@@ -94,7 +94,7 @@ function LiveReactPreviewPane({ code }: { code: string }) {
 
 	return (
 		<div
-			className="min-h-[12rem] bg-muted/30 p-2"
+			className="min-h-48 bg-muted/30 p-2"
 			data-testid="theory-live-react-preview-pane"
 		>
 			{loadError ? (
@@ -114,7 +114,7 @@ function LiveReactPreviewPane({ code }: { code: string }) {
 			) : (
 				<LiveProvider code={prepared} scope={scope} noInline language="tsx">
 					<LivePreview
-						className="live-react-preview w-full overflow-auto"
+						className="live-react-preview w-full select-none overflow-auto"
 						data-testid="theory-live-react-preview"
 					/>
 					<LiveError
@@ -165,11 +165,24 @@ export function LiveReactBlock({
 			data-testid="theory-live-react-block"
 		>
 			{editable ? (
-				<div className="flex items-center justify-between gap-3 border-b border-border px-3 py-2">
-					<p className="text-xs text-muted-foreground">
-						{mode === "edit" ? "Редактор" : "Превью"} · scope: React, Mafs,
-						Coordinates, Plot, Theme, …
-					</p>
+				<div className="flex select-none items-center justify-between gap-3 border-b border-border px-3 py-2">
+					<div className="flex min-w-0 items-center gap-2">
+						<button
+							type="button"
+							className="inline-flex shrink-0 cursor-grab touch-none items-center rounded px-1 py-0.5 text-xs text-muted-foreground active:cursor-grabbing"
+							contentEditable={false}
+							data-drag-handle
+							data-testid="theory-live-react-drag-handle"
+							aria-label="Переместить блок LiveReact"
+							title="Переместить"
+						>
+							⋮⋮
+						</button>
+						<p className="truncate text-xs text-muted-foreground">
+							LiveReact · {mode === "edit" ? "Редактор" : "Превью"} · scope:
+							React, Mafs, Coordinates, Plot, Theme, …
+						</p>
+					</div>
 					<div className="flex items-center gap-2">
 						<span
 							className={cn(
@@ -208,7 +221,16 @@ export function LiveReactBlock({
 						</Label>
 					</div>
 				</div>
-			) : null}
+			) : (
+				// TipTap falls back to whole-node drag when no handle exists;
+				// keep a non-interactive handle so Mafs keeps pointer events.
+				<span
+					aria-hidden
+					className="pointer-events-none sr-only"
+					contentEditable={false}
+					data-drag-handle
+				/>
+			)}
 
 			{showEditor ? (
 				<div className="p-2" data-testid="theory-live-react-edit-pane">
@@ -248,7 +270,6 @@ export function LiveReactNodeView({
 		<NodeViewWrapper
 			as="div"
 			className="my-3"
-			data-drag-handle
 			data-testid="theory-live-react-node"
 		>
 			<LiveReactBlock

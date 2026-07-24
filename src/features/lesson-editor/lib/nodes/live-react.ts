@@ -60,6 +60,20 @@ export const LiveReact = Node.create({
 	},
 
 	addNodeView() {
-		return ReactNodeViewRenderer(LiveReactNodeView);
+		return ReactNodeViewRenderer(LiveReactNodeView, {
+			// Default TipTap stopEvent lets ProseMirror handle mousedown on
+			// selectable nodes, which steals pan/drag from Mafs. Stop all
+			// events inside the node except the explicit drag handle.
+			stopEvent: ({ event }) => {
+				const target = event.target;
+				if (!(target instanceof Element)) {
+					return true;
+				}
+				if (target.closest("[data-drag-handle]")) {
+					return false;
+				}
+				return true;
+			},
+		});
 	},
 });
