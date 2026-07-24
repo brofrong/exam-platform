@@ -1,3 +1,5 @@
+name: exam-platform
+
 services:
   app:
     image: ${DOCKER_IMAGE:-brofrong/exam-platform}:${DOCKER_TAG:-latest}

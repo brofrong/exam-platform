@@ -1,3 +1,5 @@
+name: exam-platform-e2e
+
 services:
   zero-cache-e2e:
     image: rocicorp/zero:1.8.0

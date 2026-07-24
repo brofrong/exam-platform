@@ -1,3 +1,5 @@
+name: exam-platform-dev
+
 services:
   zero-cache:
     image: rocicorp/zero:1.8.0
