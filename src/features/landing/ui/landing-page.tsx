@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Check } from "lucide-react";
 import { LandingNav } from "#/features/landing/ui/landing-nav";
 import { ReviewsMarquee } from "#/features/landing/ui/reviews-marquee";
+import { SocialLinks } from "#/features/landing/ui/social-links";
 import {
 	Accordion,
 	AccordionContent,
@@ -10,7 +11,6 @@ import {
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Particles } from "@/components/ui/particles";
-import { ShineBorder } from "@/components/ui/shine-border";
 import { cn } from "@/lib/utils";
 
 const STATS = [
@@ -158,7 +158,7 @@ const FAQ = [
 
 export function LandingPage() {
 	return (
-		<div className="landing" data-testid="landing-page" id="top">
+		<div className="landing light" data-testid="landing-page" id="top">
 			<LandingNav />
 
 			{/* Hero — brand + particles background */}
@@ -235,6 +235,18 @@ export function LandingPage() {
 								</div>
 							))}
 						</div>
+
+						<div className="mt-10">
+							<p className="mb-4 text-sm font-medium tracking-wide text-[color:var(--pm-amber)] uppercase">
+								Соцсети
+							</p>
+							<SocialLinks
+								size="lg"
+								showLabels
+								data-testid="landing-about-socials"
+							/>
+						</div>
+
 						<Button
 							asChild
 							variant="link"
@@ -309,19 +321,12 @@ export function LandingPage() {
 								key={format.id}
 								id={format.id}
 								className={cn(
-									"relative flex flex-col overflow-hidden rounded-2xl border bg-white p-6 shadow-sm sm:p-7",
+									"flex flex-col rounded-2xl border bg-white p-6 shadow-sm sm:p-7",
 									format.featured
-										? "border-transparent"
+										? "border-[color:var(--pm-amber)] ring-1 ring-[color:var(--pm-amber)]/40"
 										: "border-[color:var(--pm-navy)]/10",
 								)}
 							>
-								{format.featured ? (
-									<ShineBorder
-										borderWidth={1.5}
-										duration={10}
-										shineColor={["#e8a54b", "#f0b85f", "#c4842e"]}
-									/>
-								) : null}
 								<div className="flex flex-wrap items-center gap-2">
 									<h3 className="font-display whitespace-nowrap text-xl font-semibold sm:text-2xl">
 										{format.title}
@@ -489,6 +494,11 @@ export function LandingPage() {
 						<p className="mt-3 max-w-sm text-sm text-white/60">
 							© 2026 Самозанятая Скачкова Виктория Олеговна
 						</p>
+						<SocialLinks
+							size="lg"
+							className="mt-5"
+							data-testid="landing-footer-socials"
+						/>
 					</div>
 					<div className="flex flex-col gap-2 text-sm">
 						<a
@@ -497,7 +507,7 @@ export function LandingPage() {
 							rel="noreferrer"
 							className="text-white/80 no-underline hover:text-[color:var(--pm-amber)]"
 						>
-							Telegram → t.me/math_physics_2020
+							Написать в Telegram
 						</a>
 						<Link
 							to="/login"

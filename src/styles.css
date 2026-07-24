@@ -5,7 +5,9 @@
 @import "@fontsource-variable/literata";
 @import "@fontsource-variable/manrope";
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (
+	&:where(.dark, .dark *):not(:where(.light, .light *))
+);
 
 :root {
 	--radius: 0.625rem;
@@ -176,7 +178,7 @@
 	}
 }
 
-/* PHYS&MATH landing — navy + amber brand surface */
+/* PHYS&MATH landing — fixed brand theme (ignores app light/dark) */
 .landing {
 	--pm-navy: #0b1c33;
 	--pm-ink: #071525;
@@ -184,6 +186,28 @@
 	--pm-amber-bright: #f0b85f;
 	--pm-amber-deep: #c4842e;
 	--pm-cream: #f3efe6;
+
+	/* Lock shadcn tokens so Button/Accordion stay readable */
+	--background: #ffffff;
+	--foreground: #0b1c33;
+	--card: #ffffff;
+	--card-foreground: #0b1c33;
+	--popover: #ffffff;
+	--popover-foreground: #0b1c33;
+	--primary: #0b1c33;
+	--primary-foreground: #f3efe6;
+	--secondary: #f3efe6;
+	--secondary-foreground: #0b1c33;
+	--muted: #ebe6db;
+	--muted-foreground: #5a6a7c;
+	--accent: #ebe6db;
+	--accent-foreground: #0b1c33;
+	--destructive: oklch(0.577 0.245 27.325);
+	--border: rgb(11 28 51 / 12%);
+	--input: rgb(11 28 51 / 14%);
+	--ring: #e8a54b;
+
+	color-scheme: light;
 	font-family: var(--font-landing-sans);
 	background: var(--pm-navy);
 	color: white;

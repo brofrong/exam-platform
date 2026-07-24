@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { SocialLinks } from "#/features/landing/ui/social-links";
 import { authClient } from "#/shared/auth-client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -89,7 +90,13 @@ export function LandingNav() {
 					: "border-b border-transparent bg-gradient-to-b from-[color:var(--pm-navy)]/70 to-transparent",
 			)}
 		>
-			<nav className="mx-auto flex h-16 w-full max-w-6xl items-center gap-4 px-4 sm:h-[4.25rem] sm:px-6">
+			<nav className="mx-auto flex h-16 w-full max-w-6xl items-center gap-3 px-4 sm:h-[4.25rem] sm:gap-4 sm:px-6">
+				<SocialLinks
+					size="md"
+					className="hidden sm:flex"
+					data-testid="landing-nav-socials"
+				/>
+
 				<a
 					href="#top"
 					className="font-display text-lg font-semibold tracking-[0.04em] text-white no-underline sm:text-xl"
@@ -158,6 +165,11 @@ export function LandingNav() {
 								{link.label}
 							</a>
 						))}
+						<SocialLinks
+							size="lg"
+							className="pt-2"
+							data-testid="landing-nav-socials-mobile"
+						/>
 					</div>
 				</div>
 			) : null}
