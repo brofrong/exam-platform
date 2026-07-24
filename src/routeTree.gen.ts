@@ -42,7 +42,7 @@ import { Route as AdminReviewsSubmissionIdRouteImport } from './routes/admin/rev
 import { Route as AdminProgramsProgramIdRouteImport } from './routes/admin/programs/$programId'
 import { Route as AdminLessonsLessonIdRouteImport } from './routes/admin/lessons/$lessonId'
 import { Route as AdminAnalyticsUserIdProgramIdRouteImport } from './routes/admin/analytics/$userId/$programId'
-import { Route as AppProgramsProgramIdLessonsLessonIdRouteImport } from './routes/app/programs/$programId/lessons/$lessonId'
+import { Route as AppProgramsProgramIdLessonsLessonIdRouteImport } from './routes/app/programs/$programId_.lessons.$lessonId'
 
 const ZeroRoute = ZeroRouteImport.update({
   id: '/zero',
@@ -213,9 +213,9 @@ const AdminAnalyticsUserIdProgramIdRoute =
   } as any)
 const AppProgramsProgramIdLessonsLessonIdRoute =
   AppProgramsProgramIdLessonsLessonIdRouteImport.update({
-    id: '/lessons/$lessonId',
-    path: '/lessons/$lessonId',
-    getParentRoute: () => AppProgramsProgramIdRoute,
+    id: '/programs/$programId_/lessons/$lessonId',
+    path: '/programs/$programId/lessons/$lessonId',
+    getParentRoute: () => AppRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -244,7 +244,7 @@ export interface FileRoutesByFullPath {
   '/api/files/$': typeof ApiFilesSplatRoute
   '/api/invite/activate': typeof ApiInviteActivateRoute
   '/api/zero/$': typeof ApiZeroSplatRoute
-  '/app/programs/$programId': typeof AppProgramsProgramIdRouteWithChildren
+  '/app/programs/$programId': typeof AppProgramsProgramIdRoute
   '/admin/analytics/': typeof AdminAnalyticsIndexRoute
   '/admin/invites/': typeof AdminInvitesIndexRoute
   '/admin/lessons/': typeof AdminLessonsIndexRoute
@@ -277,7 +277,7 @@ export interface FileRoutesByTo {
   '/api/files/$': typeof ApiFilesSplatRoute
   '/api/invite/activate': typeof ApiInviteActivateRoute
   '/api/zero/$': typeof ApiZeroSplatRoute
-  '/app/programs/$programId': typeof AppProgramsProgramIdRouteWithChildren
+  '/app/programs/$programId': typeof AppProgramsProgramIdRoute
   '/admin/analytics': typeof AdminAnalyticsIndexRoute
   '/admin/invites': typeof AdminInvitesIndexRoute
   '/admin/lessons': typeof AdminLessonsIndexRoute
@@ -314,7 +314,7 @@ export interface FileRoutesById {
   '/api/files/$': typeof ApiFilesSplatRoute
   '/api/invite/activate': typeof ApiInviteActivateRoute
   '/api/zero/$': typeof ApiZeroSplatRoute
-  '/app/programs/$programId': typeof AppProgramsProgramIdRouteWithChildren
+  '/app/programs/$programId': typeof AppProgramsProgramIdRoute
   '/admin/analytics/': typeof AdminAnalyticsIndexRoute
   '/admin/invites/': typeof AdminInvitesIndexRoute
   '/admin/lessons/': typeof AdminLessonsIndexRoute
@@ -322,7 +322,7 @@ export interface FileRoutesById {
   '/admin/reviews/': typeof AdminReviewsIndexRoute
   '/admin/support/': typeof AdminSupportIndexRoute
   '/admin/analytics/$userId/$programId': typeof AdminAnalyticsUserIdProgramIdRoute
-  '/app/programs/$programId/lessons/$lessonId': typeof AppProgramsProgramIdLessonsLessonIdRoute
+  '/app/programs/$programId_/lessons/$lessonId': typeof AppProgramsProgramIdLessonsLessonIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -429,7 +429,7 @@ export interface FileRouteTypes {
     | '/admin/reviews/'
     | '/admin/support/'
     | '/admin/analytics/$userId/$programId'
-    | '/app/programs/$programId/lessons/$lessonId'
+    | '/app/programs/$programId_/lessons/$lessonId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -682,12 +682,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAnalyticsUserIdProgramIdRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/app/programs/$programId/lessons/$lessonId': {
-      id: '/app/programs/$programId/lessons/$lessonId'
-      path: '/lessons/$lessonId'
+    '/app/programs/$programId_/lessons/$lessonId': {
+      id: '/app/programs/$programId_/lessons/$lessonId'
+      path: '/programs/$programId/lessons/$lessonId'
       fullPath: '/app/programs/$programId/lessons/$lessonId'
       preLoaderRoute: typeof AppProgramsProgramIdLessonsLessonIdRouteImport
-      parentRoute: typeof AppProgramsProgramIdRoute
+      parentRoute: typeof AppRoute
     }
   }
 }
@@ -724,28 +724,19 @@ const AdminRouteChildren: AdminRouteChildren = {
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
-interface AppProgramsProgramIdRouteChildren {
-  AppProgramsProgramIdLessonsLessonIdRoute: typeof AppProgramsProgramIdLessonsLessonIdRoute
-}
-
-const AppProgramsProgramIdRouteChildren: AppProgramsProgramIdRouteChildren = {
-  AppProgramsProgramIdLessonsLessonIdRoute:
-    AppProgramsProgramIdLessonsLessonIdRoute,
-}
-
-const AppProgramsProgramIdRouteWithChildren =
-  AppProgramsProgramIdRoute._addFileChildren(AppProgramsProgramIdRouteChildren)
-
 interface AppRouteChildren {
   AppSupportRoute: typeof AppSupportRoute
   AppIndexRoute: typeof AppIndexRoute
-  AppProgramsProgramIdRoute: typeof AppProgramsProgramIdRouteWithChildren
+  AppProgramsProgramIdRoute: typeof AppProgramsProgramIdRoute
+  AppProgramsProgramIdLessonsLessonIdRoute: typeof AppProgramsProgramIdLessonsLessonIdRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppSupportRoute: AppSupportRoute,
   AppIndexRoute: AppIndexRoute,
-  AppProgramsProgramIdRoute: AppProgramsProgramIdRouteWithChildren,
+  AppProgramsProgramIdRoute: AppProgramsProgramIdRoute,
+  AppProgramsProgramIdLessonsLessonIdRoute:
+    AppProgramsProgramIdLessonsLessonIdRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

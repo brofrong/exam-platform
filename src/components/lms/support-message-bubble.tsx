@@ -44,7 +44,12 @@ function SupportMessageBubble({
 					<span className="font-medium">{authorName}</span>
 					{timestamp ? <span>{timestamp}</span> : null}
 				</div>
-				<p className="whitespace-pre-wrap text-pretty">{body}</p>
+				<p
+					className="whitespace-pre-wrap text-pretty"
+					data-testid="support-message-body"
+				>
+					{body}
+				</p>
 			</div>
 		</div>
 	);

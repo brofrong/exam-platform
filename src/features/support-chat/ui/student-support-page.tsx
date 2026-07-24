@@ -29,7 +29,7 @@ export function StudentSupportPage({
 	userName,
 }: StudentSupportPageProps) {
 	const zero = useZero();
-	const [thread] = useQuery(queries.mySupportThread());
+	const [thread, threadDetails] = useQuery(queries.mySupportThread());
 	const [body, setBody] = useState("");
 	const [error, setError] = useState<string | null>(null);
 	const [isSending, setIsSending] = useState(false);
@@ -37,7 +37,8 @@ export function StudentSupportPage({
 
 	const messages = thread?.messages ?? [];
 	const lastMessageId = messages.at(-1)?.id;
-	const loading = thread === undefined;
+	// `.one()` with no row stays `undefined` after sync — use details, not data.
+	const loading = threadDetails.type === "unknown";
 
 	useEffect(() => {
 		if (!lastMessageId) {

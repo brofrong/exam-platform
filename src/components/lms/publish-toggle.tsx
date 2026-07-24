@@ -32,7 +32,7 @@ function PublishToggle({
 				id={id}
 				checked={published}
 				disabled={disabled}
-				data-testid="publish-toggle"
+				data-testid={id}
 				onCheckedChange={onPublishedChange}
 			/>
 			<Label htmlFor={id} className="cursor-pointer">

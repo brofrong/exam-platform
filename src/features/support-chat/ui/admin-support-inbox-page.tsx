@@ -27,7 +27,7 @@ function previewBody(body: string, max = 96): string {
 
 export function AdminSupportInboxPage() {
 	const navigate = useNavigate();
-	const [threads] = useQuery(queries.supportThreads());
+	const [threads, threadsDetails] = useQuery(queries.supportThreads());
 
 	const items = (threads ?? []).map((thread) => {
 		const last = thread.messages?.[0];
@@ -67,7 +67,7 @@ export function AdminSupportInboxPage() {
 				}
 			/>
 
-			{threads === undefined ? (
+			{threadsDetails.type === "unknown" ? (
 				<p className="text-sm text-muted-foreground">Загрузка тредов…</p>
 			) : items.length === 0 ? (
 				<EmptyState

@@ -31,7 +31,9 @@ export function AdminSupportThreadPage({
 	userName,
 }: AdminSupportThreadPageProps) {
 	const zero = useZero();
-	const [thread] = useQuery(queries.supportThreadById({ id: threadId }));
+	const [thread, threadDetails] = useQuery(
+		queries.supportThreadById({ id: threadId }),
+	);
 	const [body, setBody] = useState("");
 	const [error, setError] = useState<string | null>(null);
 	const [isSending, setIsSending] = useState(false);
@@ -71,7 +73,7 @@ export function AdminSupportThreadPage({
 		}
 	}
 
-	if (thread === undefined) {
+	if (threadDetails.type === "unknown") {
 		return (
 			<main className="mx-auto w-full max-w-3xl px-4 py-10">
 				<p className="text-sm text-muted-foreground">Загрузка треда…</p>
@@ -79,7 +81,7 @@ export function AdminSupportThreadPage({
 		);
 	}
 
-	if (thread === null) {
+	if (thread == null) {
 		return (
 			<main
 				className="mx-auto w-full max-w-3xl px-4 py-10"

@@ -19,7 +19,7 @@
 		"preview": "vite preview",
 		"typecheck": "tsc --noEmit",
 		"test": "bun test src",
-		"test:e2e:infra": "docker compose -f docker/docker-compose.e2e.yml up -d --wait",
+		"test:e2e:infra": "docker compose -f docker/docker-compose.e2e.yml up -d --wait zero-postgres-e2e zero-cache-e2e minio-e2e && docker compose -f docker/docker-compose.e2e.yml up --no-deps minio-e2e-init",
 		"test:e2e:infra:down": "docker compose -f docker/docker-compose.e2e.yml down -v",
 		"test:e2e:prepare": "bun --env-file=.env.e2e run db:migrate",
 		"test:e2e": "bun run test:e2e:infra && bun run test:e2e:prepare && playwright test",
