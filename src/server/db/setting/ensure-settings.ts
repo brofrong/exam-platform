@@ -2,6 +2,7 @@ import { randomBytes } from "node:crypto";
 import { eq } from "drizzle-orm";
 import type { db } from "#/server/db/db";
 import { appSettingsTable } from "#/server/db/setting/setting.schema";
+import { env } from "#/shared/env";
 
 export const BETTER_AUTH_SECRET_KEY = "BETTER_AUTH_SECRET";
 
@@ -9,8 +10,15 @@ function generateSecret(): string {
 	return randomBytes(32).toString("base64");
 }
 
-/** Ensure required app settings exist; generate BETTER_AUTH_SECRET if missing. */
+/**
+ * Prefer `BETTER_AUTH_SECRET` from env (required for multi-instance).
+ * Fall back to generating once and persisting in `app_setting` for local DX.
+ */
 export async function ensureAppSettings(database: typeof db): Promise<string> {
+	if (env.BETTER_AUTH_SECRET) {
+		return env.BETTER_AUTH_SECRET;
+	}
+
 	const existing = await database
 		.select({ value: appSettingsTable.value })
 		.from(appSettingsTable)

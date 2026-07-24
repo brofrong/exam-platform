@@ -11,7 +11,8 @@
 	"explorer.fileNesting.enabled": true,
 	"explorer.fileNesting.expand": false,
 	"explorer.fileNesting.patterns": {
-		"package.json": "bun.lock, biome.json, components.json, drizzle.config.ts, tsconfig.json, tsr.config.json, vite.config.ts, server.ts, .cta.json, .gitignore, .env, .env.*",
+		".env": ".env, .env.*",
+		"package.json": "bun.lock, biome.json, components.json, drizzle.config.ts, tsconfig.json, tsr.config.json, vite.config.ts, server.ts, .cta.json, playwright.config.ts",
 		"Dockerfile": ".Dockerfile, .dockerignore"
 	},
 	"[javascript]": {

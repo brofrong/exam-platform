@@ -14,17 +14,20 @@ alwaysApply: false
 
 ## Zero (`server/zero`)
 
-- `schema.ts` is generated from Drizzle (`bun run zero:generate`).
-- Prefer **primitive** `customType` (`string` / `number`). Raw generate often yields `unknown` — fix primitives if types break (do not leave `unknown` in app code).
+- `schema.ts` is generated from Drizzle (`bun run zero:generate`). The script runs `scripts/fix-zero-schema.ts` to keep primitive `customType` (`string` / `number` / `boolean`).
 - Extend `queries.ts` / `mutators.ts` registries; wire through existing `/api/query` and `/api/mutate`.
 - Mutators must check `ctx?.id` (auth) before writing.
+- **Demo authz is intentionally open** among signed-in users (all chats / any `chatId`). Do not ship that pattern — see `server/zero/authz.demo.ts` for membership/ownership examples.
+- Shared constants used by Zero + UI (e.g. `MESSAGE_PAGE_SIZE`) live in `server/zero/constants.ts`, not in features.
 - Client usage: `useQuery(queries.*)`, `zero.mutate(mutators.*)`, `ZeroProvider` in authenticated layout.
 
 ## Auth
 
-- Better Auth server: `server/auth/`. Client: `#/shared/auth-client`.
+- Better Auth server: `server/auth/`. Client: `#/shared/auth-client`. UI: `features/auth`.
+- Prefer `BETTER_AUTH_SECRET` from env; DB `app_setting` bootstrap is a local-dev fallback (`ensure-settings.ts`).
 - Gate pages with `getCurrentUser()` + redirect; API handlers use `authenticateRequest`.
 
 ## Env
 
 - Typed env in `#/shared/env` (`@t3-oss/env-core` + zod). Do not read raw `process.env` in app code.
+- Ship `.env.example` for clones; keep it in sync with `#/shared/env`.

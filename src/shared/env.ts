@@ -7,6 +7,8 @@ export const env = createEnv({
 		APP_URL: z.string().default("http://localhost:3000"),
 		ZERO_UPSTREAM_DB: z.string(),
 		ZERO_CACHE_UPSTREAM_URL: z.string().default("http://localhost:4848"),
+		/** Prefer explicit secret in prod / multi-instance. DB bootstrap is the fallback. */
+		BETTER_AUTH_SECRET: z.string().min(32).optional(),
 	},
 	client: {},
 	runtimeEnv: {

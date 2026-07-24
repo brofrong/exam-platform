@@ -1,4 +1,6 @@
-export const MESSAGE_PAGE_SIZE = 20;
+import { MESSAGE_PAGE_SIZE } from "#/server/zero/constants";
+
+export { MESSAGE_PAGE_SIZE };
 
 export type MessageCursor = {
 	createdAt: number;

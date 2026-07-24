@@ -27,8 +27,33 @@ export const Route = createRootRoute({
 			},
 		],
 	}),
+	pendingComponent: RootPending,
+	errorComponent: RootError,
 	shellComponent: RootDocument,
 });
+
+function RootPending() {
+	return (
+		<main className="page-wrap flex min-h-[calc(100vh-8rem)] items-center justify-center px-4 py-10">
+			<p className="text-sm text-text-muted">Загрузка...</p>
+		</main>
+	);
+}
+
+function RootError({ error }: { error: Error }) {
+	return (
+		<main className="page-wrap flex min-h-[calc(100vh-8rem)] items-center justify-center px-4 py-10">
+			<div className="max-w-md space-y-2 text-center">
+				<h1 className="text-lg font-semibold text-text-heading">
+					Что-то пошло не так
+				</h1>
+				<p className="text-sm text-text-muted">
+					{error.message || "Неизвестная ошибка"}
+				</p>
+			</div>
+		</main>
+	);
+}
 
 function RootDocument({ children }: { children: React.ReactNode }) {
 	return (

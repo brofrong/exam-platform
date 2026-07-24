@@ -36,5 +36,5 @@ src/
 1. `src/features/<name>/{ui,lib,index.ts}`
 2. Thin route under `src/routes/` that renders the feature
 3. Domain tables in `src/server/db/<entity>/`
-4. Zero queries/mutators in `src/server/zero/` (extend existing registries)
+4. Zero queries/mutators in `src/server/zero/` (extend existing registries; do not keep demo-open authz for real features)
 5. UI via shadcn in `components/ui` — add with `bunx shadcn@latest add <component>`

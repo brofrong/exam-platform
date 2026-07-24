@@ -23,6 +23,8 @@ COPY --from=deps /app/node_modules ./node_modules
 
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/server.ts ./server.ts
+# Stable path used by resolveMigrationsFolder() in db.ts; keep module-relative copy as fallback.
+COPY --from=builder /app/src/server/db/migrations ./src/server/db/migrations
 COPY --from=builder /app/src/server/db/migrations ./dist/server/assets/migrations
 
 RUN groupadd --system app \

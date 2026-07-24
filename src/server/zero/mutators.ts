@@ -1,6 +1,10 @@
 import { defineMutator, defineMutators } from "@rocicorp/zero";
 import { z } from "zod";
 
+/**
+ * DEMO: mutators only require a signed-in user (`ctx.id`).
+ * See `./authz.demo.ts` for membership / ownership checks to copy.
+ */
 export const mutators = defineMutators({
 	createChat: defineMutator(
 		z.object({ id: z.string(), title: z.string().min(1).max(255) }),
@@ -27,6 +31,8 @@ export const mutators = defineMutators({
 			if (!ctx?.id) {
 				throw new Error("Unauthorized");
 			}
+			// DEMO OPEN AUTHZ: any signed-in user may write to any chatId.
+			// Production: verify membership/ownership for chatId (see authz.demo.ts).
 			await tx.mutate.message.insert({
 				id,
 				chatId,

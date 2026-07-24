@@ -3,6 +3,11 @@ services:
     image: rocicorp/zero:1.8.0
     container_name: zero-cache
     stop_grace_period: 10m
+    depends_on:
+      zero-postgres:
+        condition: service_healthy
+    ports:
+      - "4848:4848"
     environment:
       ZERO_UPSTREAM_DB: postgres://postgres:pass@zero-postgres:5432/zero
       ZERO_CVR_DB: postgres://postgres:pass@zero-postgres:5432/zero
@@ -13,9 +18,11 @@ services:
       ZERO_ADMIN_PASSWORD: randompassword
       ZERO_QUERY_URL: http://host.docker.internal:3000/api/query
       ZERO_MUTATE_URL: http://host.docker.internal:3000/api/mutate
-      ZERO_ENABLE_CRUD_MUTATIONS: 'false'
-      ZERO_QUERY_FORWARD_COOKIES: 'true'
-      ZERO_MUTATE_FORWARD_COOKIES: 'true'
+      ZERO_ENABLE_CRUD_MUTATIONS: "false"
+      ZERO_QUERY_FORWARD_COOKIES: "true"
+      ZERO_MUTATE_FORWARD_COOKIES: "true"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - zero-cache-data:/data
 
@@ -29,8 +36,10 @@ services:
       - "5432:5432"
     command: postgres -c wal_level=logical
     healthcheck:
-      test: pg_isready
+      test: ["CMD-SHELL", "pg_isready -U postgres -d zero"]
       interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   zero-cache-data:
