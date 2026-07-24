@@ -7,6 +7,8 @@ import { programsTable } from "./program/program.schema";
 import { programInvitesTable } from "./program-invite/program-invite.schema";
 import { programInviteProgramsTable } from "./program-invite/program-invite-program.schema";
 import { submissionsTable } from "./submission/submission.schema";
+import { supportMessagesTable } from "./support-message/support-message.schema";
+import { supportThreadsTable } from "./support-thread/support-thread.schema";
 import { topicsTable } from "./topic/topic.schema";
 import { topicLessonsTable } from "./topic-lesson/topic-lesson.schema";
 import { usersTable } from "./user/user.schema";
@@ -21,6 +23,8 @@ export { programInvitesTable as programInvite } from "./program-invite/program-i
 export { programInviteProgramsTable as programInviteProgram } from "./program-invite/program-invite-program.schema";
 export { relations } from "./relations";
 export { submissionsTable as submission } from "./submission/submission.schema";
+export { supportMessagesTable as supportMessage } from "./support-message/support-message.schema";
+export { supportThreadsTable as supportThread } from "./support-thread/support-thread.schema";
 export { topicsTable as topic } from "./topic/topic.schema";
 export { topicLessonsTable as topicLesson } from "./topic-lesson/topic-lesson.schema";
 export { usersTable as user } from "./user/user.schema";
@@ -39,4 +43,6 @@ export const DrizzleSchema = {
 	programInvite: programInvitesTable,
 	programInviteProgram: programInviteProgramsTable,
 	enrollment: enrollmentsTable,
+	supportThread: supportThreadsTable,
+	supportMessage: supportMessagesTable,
 };

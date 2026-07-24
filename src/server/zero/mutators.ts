@@ -15,6 +15,7 @@ import {
 } from "#/server/zero/constants";
 import { aggregateLessonProgress } from "#/server/zero/recompute-lesson-progress";
 import { zql } from "#/server/zero/schema";
+import { can } from "#/shared/authz";
 
 const publishStatusSchema = z.enum(PUBLISH_STATUSES);
 const activityTypeSchema = z.enum(ACTIVITY_TYPES);
@@ -729,6 +730,67 @@ export const mutators = defineMutators({
 				videoPositionSec: args.videoPositionSec,
 				videoPercent: args.videoPercent,
 				now,
+			});
+		},
+	),
+
+	// ── Support chat ──────────────────────────────────────────────────────
+
+	/**
+	 * Send a support message. Students auto-create their one thread on first
+	 * send. Admins with `support:reply` reply to an existing `threadId`.
+	 */
+	sendSupportMessage: defineMutator(
+		z.object({
+			body: z.string().min(1).max(8000),
+			threadId: z.string().optional(),
+			messageId: z.string().optional(),
+		}),
+		async ({ ctx, args, tx }) => {
+			const user = requireUser(ctx);
+			const body = args.body.trim();
+			if (body.length === 0) {
+				throw new Error("Empty message");
+			}
+
+			const now = Date.now();
+			const messageId = newId(args.messageId);
+			const canReply = can(user.role, "support:reply");
+			let threadId: string;
+
+			if (args.threadId) {
+				const thread = (await tx.run(
+					zql.supportThread.where("id", args.threadId).one(),
+				)) as { id: string; studentUserId: string } | undefined;
+				if (!thread) {
+					throw new Error("Thread not found");
+				}
+				if (thread.studentUserId !== user.id && !canReply) {
+					throw new Error("Forbidden");
+				}
+				threadId = thread.id;
+			} else {
+				const existing = (await tx.run(
+					zql.supportThread.where("studentUserId", user.id).one(),
+				)) as { id: string } | undefined;
+				if (existing) {
+					threadId = existing.id;
+				} else {
+					threadId = newId(undefined);
+					await tx.mutate.supportThread.insert({
+						id: threadId,
+						studentUserId: user.id,
+						createdAt: now,
+					});
+				}
+			}
+
+			await tx.mutate.supportMessage.insert({
+				id: messageId,
+				threadId,
+				authorId: user.id,
+				body,
+				createdAt: now,
 			});
 		},
 	),

@@ -21,10 +21,12 @@ import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as ZeroSplatRouteImport } from './routes/zero/$'
 import { Route as InviteTokenRouteImport } from './routes/invite/$token'
 import { Route as DevSlugRouteImport } from './routes/dev/$slug'
+import { Route as AppSupportRouteImport } from './routes/app/support'
 import { Route as ApiZeroRouteImport } from './routes/api/zero'
 import { Route as ApiUploadRouteImport } from './routes/api/upload'
 import { Route as ApiQueryRouteImport } from './routes/api/query'
 import { Route as ApiMutateRouteImport } from './routes/api/mutate'
+import { Route as AdminSupportIndexRouteImport } from './routes/admin/support/index'
 import { Route as AdminReviewsIndexRouteImport } from './routes/admin/reviews/index'
 import { Route as AdminProgramsIndexRouteImport } from './routes/admin/programs/index'
 import { Route as AdminLessonsIndexRouteImport } from './routes/admin/lessons/index'
@@ -34,6 +36,7 @@ import { Route as ApiZeroSplatRouteImport } from './routes/api/zero/$'
 import { Route as ApiInviteActivateRouteImport } from './routes/api/invite/activate'
 import { Route as ApiFilesSplatRouteImport } from './routes/api/files/$'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as AdminSupportThreadIdRouteImport } from './routes/admin/support/$threadId'
 import { Route as AdminReviewsSubmissionIdRouteImport } from './routes/admin/reviews/$submissionId'
 import { Route as AdminProgramsProgramIdRouteImport } from './routes/admin/programs/$programId'
 import { Route as AdminLessonsLessonIdRouteImport } from './routes/admin/lessons/$lessonId'
@@ -99,6 +102,11 @@ const DevSlugRoute = DevSlugRouteImport.update({
   path: '/$slug',
   getParentRoute: () => DevRoute,
 } as any)
+const AppSupportRoute = AppSupportRouteImport.update({
+  id: '/support',
+  path: '/support',
+  getParentRoute: () => AppRoute,
+} as any)
 const ApiZeroRoute = ApiZeroRouteImport.update({
   id: '/api/zero',
   path: '/api/zero',
@@ -118,6 +126,11 @@ const ApiMutateRoute = ApiMutateRouteImport.update({
   id: '/api/mutate',
   path: '/api/mutate',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AdminSupportIndexRoute = AdminSupportIndexRouteImport.update({
+  id: '/support/',
+  path: '/support/',
+  getParentRoute: () => AdminRoute,
 } as any)
 const AdminReviewsIndexRoute = AdminReviewsIndexRouteImport.update({
   id: '/reviews/',
@@ -164,6 +177,11 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminSupportThreadIdRoute = AdminSupportThreadIdRouteImport.update({
+  id: '/support/$threadId',
+  path: '/support/$threadId',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminReviewsSubmissionIdRoute =
   AdminReviewsSubmissionIdRouteImport.update({
     id: '/reviews/$submissionId',
@@ -198,6 +216,7 @@ export interface FileRoutesByFullPath {
   '/api/query': typeof ApiQueryRoute
   '/api/upload': typeof ApiUploadRoute
   '/api/zero': typeof ApiZeroRouteWithChildren
+  '/app/support': typeof AppSupportRoute
   '/dev/$slug': typeof DevSlugRoute
   '/invite/$token': typeof InviteTokenRoute
   '/zero/$': typeof ZeroSplatRoute
@@ -207,6 +226,7 @@ export interface FileRoutesByFullPath {
   '/admin/lessons/$lessonId': typeof AdminLessonsLessonIdRoute
   '/admin/programs/$programId': typeof AdminProgramsProgramIdRoute
   '/admin/reviews/$submissionId': typeof AdminReviewsSubmissionIdRoute
+  '/admin/support/$threadId': typeof AdminSupportThreadIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/files/$': typeof ApiFilesSplatRoute
   '/api/invite/activate': typeof ApiInviteActivateRoute
@@ -216,6 +236,7 @@ export interface FileRoutesByFullPath {
   '/admin/lessons/': typeof AdminLessonsIndexRoute
   '/admin/programs/': typeof AdminProgramsIndexRoute
   '/admin/reviews/': typeof AdminReviewsIndexRoute
+  '/admin/support/': typeof AdminSupportIndexRoute
   '/app/programs/$programId/lessons/$lessonId': typeof AppProgramsProgramIdLessonsLessonIdRoute
 }
 export interface FileRoutesByTo {
@@ -226,6 +247,7 @@ export interface FileRoutesByTo {
   '/api/query': typeof ApiQueryRoute
   '/api/upload': typeof ApiUploadRoute
   '/api/zero': typeof ApiZeroRouteWithChildren
+  '/app/support': typeof AppSupportRoute
   '/dev/$slug': typeof DevSlugRoute
   '/invite/$token': typeof InviteTokenRoute
   '/zero/$': typeof ZeroSplatRoute
@@ -235,6 +257,7 @@ export interface FileRoutesByTo {
   '/admin/lessons/$lessonId': typeof AdminLessonsLessonIdRoute
   '/admin/programs/$programId': typeof AdminProgramsProgramIdRoute
   '/admin/reviews/$submissionId': typeof AdminReviewsSubmissionIdRoute
+  '/admin/support/$threadId': typeof AdminSupportThreadIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/files/$': typeof ApiFilesSplatRoute
   '/api/invite/activate': typeof ApiInviteActivateRoute
@@ -244,6 +267,7 @@ export interface FileRoutesByTo {
   '/admin/lessons': typeof AdminLessonsIndexRoute
   '/admin/programs': typeof AdminProgramsIndexRoute
   '/admin/reviews': typeof AdminReviewsIndexRoute
+  '/admin/support': typeof AdminSupportIndexRoute
   '/app/programs/$programId/lessons/$lessonId': typeof AppProgramsProgramIdLessonsLessonIdRoute
 }
 export interface FileRoutesById {
@@ -258,6 +282,7 @@ export interface FileRoutesById {
   '/api/query': typeof ApiQueryRoute
   '/api/upload': typeof ApiUploadRoute
   '/api/zero': typeof ApiZeroRouteWithChildren
+  '/app/support': typeof AppSupportRoute
   '/dev/$slug': typeof DevSlugRoute
   '/invite/$token': typeof InviteTokenRoute
   '/zero/$': typeof ZeroSplatRoute
@@ -267,6 +292,7 @@ export interface FileRoutesById {
   '/admin/lessons/$lessonId': typeof AdminLessonsLessonIdRoute
   '/admin/programs/$programId': typeof AdminProgramsProgramIdRoute
   '/admin/reviews/$submissionId': typeof AdminReviewsSubmissionIdRoute
+  '/admin/support/$threadId': typeof AdminSupportThreadIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/files/$': typeof ApiFilesSplatRoute
   '/api/invite/activate': typeof ApiInviteActivateRoute
@@ -276,6 +302,7 @@ export interface FileRoutesById {
   '/admin/lessons/': typeof AdminLessonsIndexRoute
   '/admin/programs/': typeof AdminProgramsIndexRoute
   '/admin/reviews/': typeof AdminReviewsIndexRoute
+  '/admin/support/': typeof AdminSupportIndexRoute
   '/app/programs/$programId/lessons/$lessonId': typeof AppProgramsProgramIdLessonsLessonIdRoute
 }
 export interface FileRouteTypes {
@@ -291,6 +318,7 @@ export interface FileRouteTypes {
     | '/api/query'
     | '/api/upload'
     | '/api/zero'
+    | '/app/support'
     | '/dev/$slug'
     | '/invite/$token'
     | '/zero/$'
@@ -300,6 +328,7 @@ export interface FileRouteTypes {
     | '/admin/lessons/$lessonId'
     | '/admin/programs/$programId'
     | '/admin/reviews/$submissionId'
+    | '/admin/support/$threadId'
     | '/api/auth/$'
     | '/api/files/$'
     | '/api/invite/activate'
@@ -309,6 +338,7 @@ export interface FileRouteTypes {
     | '/admin/lessons/'
     | '/admin/programs/'
     | '/admin/reviews/'
+    | '/admin/support/'
     | '/app/programs/$programId/lessons/$lessonId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -319,6 +349,7 @@ export interface FileRouteTypes {
     | '/api/query'
     | '/api/upload'
     | '/api/zero'
+    | '/app/support'
     | '/dev/$slug'
     | '/invite/$token'
     | '/zero/$'
@@ -328,6 +359,7 @@ export interface FileRouteTypes {
     | '/admin/lessons/$lessonId'
     | '/admin/programs/$programId'
     | '/admin/reviews/$submissionId'
+    | '/admin/support/$threadId'
     | '/api/auth/$'
     | '/api/files/$'
     | '/api/invite/activate'
@@ -337,6 +369,7 @@ export interface FileRouteTypes {
     | '/admin/lessons'
     | '/admin/programs'
     | '/admin/reviews'
+    | '/admin/support'
     | '/app/programs/$programId/lessons/$lessonId'
   id:
     | '__root__'
@@ -350,6 +383,7 @@ export interface FileRouteTypes {
     | '/api/query'
     | '/api/upload'
     | '/api/zero'
+    | '/app/support'
     | '/dev/$slug'
     | '/invite/$token'
     | '/zero/$'
@@ -359,6 +393,7 @@ export interface FileRouteTypes {
     | '/admin/lessons/$lessonId'
     | '/admin/programs/$programId'
     | '/admin/reviews/$submissionId'
+    | '/admin/support/$threadId'
     | '/api/auth/$'
     | '/api/files/$'
     | '/api/invite/activate'
@@ -368,6 +403,7 @@ export interface FileRouteTypes {
     | '/admin/lessons/'
     | '/admin/programs/'
     | '/admin/reviews/'
+    | '/admin/support/'
     | '/app/programs/$programId/lessons/$lessonId'
   fileRoutesById: FileRoutesById
 }
@@ -474,6 +510,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DevSlugRouteImport
       parentRoute: typeof DevRoute
     }
+    '/app/support': {
+      id: '/app/support'
+      path: '/support'
+      fullPath: '/app/support'
+      preLoaderRoute: typeof AppSupportRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/api/zero': {
       id: '/api/zero'
       path: '/api/zero'
@@ -501,6 +544,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/mutate'
       preLoaderRoute: typeof ApiMutateRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/admin/support/': {
+      id: '/admin/support/'
+      path: '/support'
+      fullPath: '/admin/support/'
+      preLoaderRoute: typeof AdminSupportIndexRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/admin/reviews/': {
       id: '/admin/reviews/'
@@ -565,6 +615,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/support/$threadId': {
+      id: '/admin/support/$threadId'
+      path: '/support/$threadId'
+      fullPath: '/admin/support/$threadId'
+      preLoaderRoute: typeof AdminSupportThreadIdRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/reviews/$submissionId': {
       id: '/admin/reviews/$submissionId'
       path: '/reviews/$submissionId'
@@ -601,10 +658,12 @@ interface AdminRouteChildren {
   AdminLessonsLessonIdRoute: typeof AdminLessonsLessonIdRoute
   AdminProgramsProgramIdRoute: typeof AdminProgramsProgramIdRoute
   AdminReviewsSubmissionIdRoute: typeof AdminReviewsSubmissionIdRoute
+  AdminSupportThreadIdRoute: typeof AdminSupportThreadIdRoute
   AdminInvitesIndexRoute: typeof AdminInvitesIndexRoute
   AdminLessonsIndexRoute: typeof AdminLessonsIndexRoute
   AdminProgramsIndexRoute: typeof AdminProgramsIndexRoute
   AdminReviewsIndexRoute: typeof AdminReviewsIndexRoute
+  AdminSupportIndexRoute: typeof AdminSupportIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
@@ -612,10 +671,12 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminLessonsLessonIdRoute: AdminLessonsLessonIdRoute,
   AdminProgramsProgramIdRoute: AdminProgramsProgramIdRoute,
   AdminReviewsSubmissionIdRoute: AdminReviewsSubmissionIdRoute,
+  AdminSupportThreadIdRoute: AdminSupportThreadIdRoute,
   AdminInvitesIndexRoute: AdminInvitesIndexRoute,
   AdminLessonsIndexRoute: AdminLessonsIndexRoute,
   AdminProgramsIndexRoute: AdminProgramsIndexRoute,
   AdminReviewsIndexRoute: AdminReviewsIndexRoute,
+  AdminSupportIndexRoute: AdminSupportIndexRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
@@ -633,11 +694,13 @@ const AppProgramsProgramIdRouteWithChildren =
   AppProgramsProgramIdRoute._addFileChildren(AppProgramsProgramIdRouteChildren)
 
 interface AppRouteChildren {
+  AppSupportRoute: typeof AppSupportRoute
   AppIndexRoute: typeof AppIndexRoute
   AppProgramsProgramIdRoute: typeof AppProgramsProgramIdRouteWithChildren
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppSupportRoute: AppSupportRoute,
   AppIndexRoute: AppIndexRoute,
   AppProgramsProgramIdRoute: AppProgramsProgramIdRouteWithChildren,
 }

@@ -3,6 +3,7 @@ import {
 	BookOpenIcon,
 	ClipboardCheckIcon,
 	LinkIcon,
+	MessageCircleIcon,
 	NotebookPenIcon,
 } from "lucide-react";
 import { PageHeader } from "@/components/lms";
@@ -74,6 +75,24 @@ function AdminHomePage() {
 							<span className="block font-medium">Проверка работ</span>
 							<span className="block text-xs font-normal text-muted-foreground">
 								Очередь ответов с ручной проверкой
+							</span>
+						</span>
+					</Link>
+				</Button>
+				<Button
+					asChild
+					variant="outline"
+					className="h-auto justify-start gap-3 px-4 py-3"
+					data-testid="admin-nav-support"
+				>
+					<Link to="/admin/support">
+						<span className="flex size-9 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+							<MessageCircleIcon className="size-4" />
+						</span>
+						<span className="text-left">
+							<span className="block font-medium">Поддержка</span>
+							<span className="block text-xs font-normal text-muted-foreground">
+								Чаты с учениками
 							</span>
 						</span>
 					</Link>

@@ -8,6 +8,8 @@ import { programsTable } from "#/server/db/program/program.schema";
 import { programInvitesTable } from "#/server/db/program-invite/program-invite.schema";
 import { programInviteProgramsTable } from "#/server/db/program-invite/program-invite-program.schema";
 import { submissionsTable } from "#/server/db/submission/submission.schema";
+import { supportMessagesTable } from "#/server/db/support-message/support-message.schema";
+import { supportThreadsTable } from "#/server/db/support-thread/support-thread.schema";
 import { topicsTable } from "#/server/db/topic/topic.schema";
 import { topicLessonsTable } from "#/server/db/topic-lesson/topic-lesson.schema";
 import { usersTable } from "#/server/db/user/user.schema";
@@ -25,11 +27,15 @@ const DrizzleSchema = {
 	programInvite: programInvitesTable,
 	programInviteProgram: programInviteProgramsTable,
 	enrollment: enrollmentsTable,
+	supportThread: supportThreadsTable,
+	supportMessage: supportMessagesTable,
 };
 
 export const relations = defineRelations(DrizzleSchema, (r) => ({
 	user: {
 		enrollments: r.many.enrollment(),
+		supportThreads: r.many.supportThread(),
+		supportMessages: r.many.supportMessage(),
 	},
 	program: {
 		topics: r.many.topic(),
@@ -144,6 +150,23 @@ export const relations = defineRelations(DrizzleSchema, (r) => ({
 		program: r.one.program({
 			from: r.enrollment.programId,
 			to: r.program.id,
+		}),
+	},
+	supportThread: {
+		student: r.one.user({
+			from: r.supportThread.studentUserId,
+			to: r.user.id,
+		}),
+		messages: r.many.supportMessage(),
+	},
+	supportMessage: {
+		thread: r.one.supportThread({
+			from: r.supportMessage.threadId,
+			to: r.supportThread.id,
+		}),
+		author: r.one.user({
+			from: r.supportMessage.authorId,
+			to: r.user.id,
 		}),
 	},
 }));

@@ -1,5 +1,5 @@
 import { useQuery } from "@rocicorp/zero/react";
-import { useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { BookOpenIcon, MessageCircleIcon } from "lucide-react";
 import {
 	averageEnrolledProgress,
@@ -37,6 +37,45 @@ function formatSubmittedAt(ms: number): string {
 		hour: "2-digit",
 		minute: "2-digit",
 	});
+}
+
+function previewBody(body: string, max = 120): string {
+	const trimmed = body.trim();
+	if (trimmed.length <= max) {
+		return trimmed;
+	}
+	return `${trimmed.slice(0, max - 1)}…`;
+}
+
+function SupportPreviewCard() {
+	const [thread] = useQuery(queries.mySupportThread());
+	const messages = thread?.messages ?? [];
+	const last = messages.length > 0 ? messages[messages.length - 1] : undefined;
+
+	const description = last
+		? previewBody(last.body)
+		: "Напишите преподавателю — ответ появится в чате.";
+
+	return (
+		<Card data-testid="support-preview-card">
+			<CardHeader>
+				<div className="flex items-start gap-3">
+					<MessageCircleIcon className="mt-0.5 size-5 text-muted-foreground" />
+					<div className="space-y-1">
+						<CardTitle>Чат с преподавателем</CardTitle>
+						<CardDescription data-testid="support-preview-last">
+							{description}
+						</CardDescription>
+					</div>
+				</div>
+			</CardHeader>
+			<CardFooter>
+				<Button asChild variant="outline" data-testid="support-preview-link">
+					<Link to="/app/support">Открыть чат</Link>
+				</Button>
+			</CardFooter>
+		</Card>
+	);
 }
 
 export function StudentHomePage({ userName }: StudentHomePageProps) {
@@ -162,28 +201,7 @@ export function StudentHomePage({ userName }: StudentHomePageProps) {
 
 					<section className="space-y-3" data-testid="home-support-preview">
 						<h2 className="font-heading text-lg font-medium">Поддержка</h2>
-						<Card data-testid="support-preview-card">
-							<CardHeader>
-								<div className="flex items-start gap-3">
-									<MessageCircleIcon className="mt-0.5 size-5 text-muted-foreground" />
-									<div className="space-y-1">
-										<CardTitle>Чат с преподавателем</CardTitle>
-										<CardDescription>
-											Скоро — здесь появится переписка с преподавателем.
-										</CardDescription>
-									</div>
-								</div>
-							</CardHeader>
-							<CardFooter>
-								<Button
-									asChild
-									variant="outline"
-									data-testid="support-preview-link"
-								>
-									<a href="/app/support">Открыть чат</a>
-								</Button>
-							</CardFooter>
-						</Card>
+						<SupportPreviewCard />
 					</section>
 
 					<section className="space-y-3" data-testid="home-programs">

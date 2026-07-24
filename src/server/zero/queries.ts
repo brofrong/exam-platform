@@ -258,4 +258,45 @@ export const queries = defineQueries({
 			.related("program", (q) => q.where("status", "published"))
 			.orderBy("createdAt", "desc");
 	}),
+
+	// ── Support chat ──────────────────────────────────────────────────────
+
+	/** Student's own support thread with messages (may be null before first send). */
+	mySupportThread: defineQuery(({ ctx }) => {
+		const user = requireUser(ctx);
+		return zql.supportThread
+			.where("studentUserId", user.id)
+			.one()
+			.related("messages", (q) =>
+				q.orderBy("createdAt", "asc").related("author"),
+			);
+	}),
+
+	/** Admin inbox: all threads with student + messages (newest first). */
+	supportThreads: defineQuery(({ ctx }) => {
+		requireCapability(ctx, "support:reply");
+		return zql.supportThread
+			.orderBy("createdAt", "desc")
+			.related("student")
+			.related("messages", (q) => q.orderBy("createdAt", "desc"));
+	}),
+
+	/** Thread detail: owner student or admin with support:reply. */
+	supportThreadById: defineQuery(
+		z.object({ id: z.string() }),
+		({ ctx, args }) => {
+			const user = requireUser(ctx);
+			const base = can(user.role, "support:reply")
+				? zql.supportThread.where("id", args.id)
+				: zql.supportThread
+						.where("id", args.id)
+						.where("studentUserId", user.id);
+			return base
+				.one()
+				.related("student")
+				.related("messages", (q) =>
+					q.orderBy("createdAt", "asc").related("author"),
+				);
+		},
+	),
 });
