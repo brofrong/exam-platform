@@ -13,6 +13,7 @@ import {
 	EMPTY_TIPTAP_DOC,
 	PUBLISH_STATUSES,
 } from "#/server/zero/constants";
+import { aggregateLessonProgress } from "#/server/zero/recompute-lesson-progress";
 import { zql } from "#/server/zero/schema";
 
 const publishStatusSchema = z.enum(PUBLISH_STATUSES);
@@ -51,6 +52,176 @@ const reviewResultSchema = z.enum(["correct", "incorrect"]);
 
 function newId(id: string | undefined): string {
 	return id ?? crypto.randomUUID();
+}
+
+/** Minimal tx surface used by progress writers (avoids exporting Zero Transaction). */
+type MutatorTx = {
+	run: <T>(query: T) => Promise<unknown>;
+	mutate: {
+		activityProgress: {
+			upsert: (row: {
+				userId: string;
+				programId: string;
+				activityId: string;
+				status: string;
+				videoPositionSec?: number | null;
+				videoPercent?: number | null;
+				completedAt?: number | null;
+			}) => Promise<void>;
+			update: (row: {
+				userId: string;
+				programId: string;
+				activityId: string;
+				status?: string;
+				videoPositionSec?: number | null;
+				videoPercent?: number | null;
+				completedAt?: number | null;
+			}) => Promise<void>;
+		};
+		lessonProgress: {
+			upsert: (row: {
+				userId: string;
+				programId: string;
+				lessonId: string;
+				status: string;
+				percent: number;
+				completedAt?: number | null;
+			}) => Promise<void>;
+		};
+	};
+};
+
+async function requireEnrollment(
+	tx: MutatorTx,
+	userId: string,
+	programId: string,
+) {
+	const enrollment = (await tx.run(
+		zql.enrollment.where("userId", userId).where("programId", programId).one(),
+	)) as { id: string } | undefined;
+	if (!enrollment) {
+		throw new Error("Forbidden");
+	}
+	return enrollment;
+}
+
+async function requireActivityInProgram(
+	tx: MutatorTx,
+	activityId: string,
+	programId: string,
+) {
+	const activity = (await tx.run(zql.activity.where("id", activityId).one())) as
+		| { id: string; lessonId: string; type: string; content: unknown }
+		| undefined;
+	if (!activity) {
+		throw new Error("Not found");
+	}
+
+	const topics = (await tx.run(
+		zql.topic.where("programId", programId),
+	)) as Array<{ id: string }>;
+	const topicIds = new Set(topics.map((topic) => topic.id));
+	const links = (await tx.run(
+		zql.topicLesson.where("lessonId", activity.lessonId),
+	)) as Array<{ topicId: string }>;
+	if (!links.some((link) => topicIds.has(link.topicId))) {
+		throw new Error("Forbidden");
+	}
+	return activity;
+}
+
+async function recomputeLessonProgress(
+	tx: MutatorTx,
+	userId: string,
+	programId: string,
+	lessonId: string,
+	now: number,
+) {
+	const activities = (await tx.run(
+		zql.activity.where("lessonId", lessonId),
+	)) as Array<{ id: string }>;
+	const activityIds = new Set(activities.map((activity) => activity.id));
+	const progressRows = (await tx.run(
+		zql.activityProgress.where("userId", userId).where("programId", programId),
+	)) as Array<{ activityId: string; status: string }>;
+	const completedCount = progressRows.filter(
+		(row) => activityIds.has(row.activityId) && row.status === "completed",
+	).length;
+	const aggregate = aggregateLessonProgress(
+		activities.length,
+		completedCount,
+		now,
+	);
+	await tx.mutate.lessonProgress.upsert({
+		userId,
+		programId,
+		lessonId,
+		status: aggregate.status,
+		percent: aggregate.percent,
+		completedAt: aggregate.completedAt,
+	});
+}
+
+async function upsertActivityProgress(
+	tx: MutatorTx,
+	input: {
+		userId: string;
+		programId: string;
+		activityId: string;
+		lessonId: string;
+		status: "in_progress" | "completed";
+		videoPositionSec?: number | null;
+		videoPercent?: number | null;
+		now: number;
+	},
+) {
+	const existing = (await tx.run(
+		zql.activityProgress
+			.where("userId", input.userId)
+			.where("programId", input.programId)
+			.where("activityId", input.activityId)
+			.one(),
+	)) as
+		| {
+				status: string;
+				videoPositionSec: number | null;
+				videoPercent: number | null;
+				completedAt: number | null;
+		  }
+		| undefined;
+
+	const alreadyCompleted = existing?.status === "completed";
+	const nextStatus =
+		alreadyCompleted || input.status === "completed"
+			? "completed"
+			: "in_progress";
+	const videoPositionSec =
+		input.videoPositionSec !== undefined
+			? input.videoPositionSec
+			: (existing?.videoPositionSec ?? null);
+	const videoPercent =
+		input.videoPercent !== undefined
+			? input.videoPercent
+			: (existing?.videoPercent ?? null);
+	const completedAt =
+		nextStatus === "completed" ? (existing?.completedAt ?? input.now) : null;
+
+	await tx.mutate.activityProgress.upsert({
+		userId: input.userId,
+		programId: input.programId,
+		activityId: input.activityId,
+		status: nextStatus,
+		videoPositionSec,
+		videoPercent,
+		completedAt,
+	});
+	await recomputeLessonProgress(
+		tx,
+		input.userId,
+		input.programId,
+		input.lessonId,
+		input.now,
+	);
 }
 
 export const mutators = defineMutators({
@@ -355,10 +526,13 @@ export const mutators = defineMutators({
 		}),
 		async ({ ctx, args, tx }) => {
 			const user = requireUser(ctx);
-			const activity = await tx.run(
-				zql.activity.where("id", args.activityId).one(),
+			await requireEnrollment(tx as MutatorTx, user.id, args.programId);
+			const activity = await requireActivityInProgram(
+				tx as MutatorTx,
+				args.activityId,
+				args.programId,
 			);
-			if (!activity || activity.type !== "practice") {
+			if (activity.type !== "practice") {
 				throw new Error("Not found");
 			}
 
@@ -384,6 +558,15 @@ export const mutators = defineMutators({
 				reviewedAt: null,
 				createdAt: now,
 				updatedAt: now,
+			});
+
+			await upsertActivityProgress(tx as MutatorTx, {
+				userId: user.id,
+				programId: args.programId,
+				activityId: args.activityId,
+				lessonId: activity.lessonId,
+				status: "completed",
+				now,
 			});
 		},
 	),
@@ -475,21 +658,78 @@ export const mutators = defineMutators({
 		},
 	),
 
-	// ── Student progress (stub until Task 25) ─────────────────────────────
+	// ── Student progress ──────────────────────────────────────────────────
 
-	/** TODO(Task 25): persist activity_progress / lesson_progress. */
+	/**
+	 * Mark a theory (or any) activity completed — «Изучено» /
+	 * «Отметить просмотренным». Upserts activity_progress and recomputes
+	 * lesson_progress.percent = completed / total activities in the lesson.
+	 */
 	markActivityStudied: defineMutator(
 		z.object({
 			activityId: z.string(),
+			programId: z.string(),
+			videoPositionSec: z.number().int().nonnegative().nullable().optional(),
+			videoPercent: z.number().min(0).max(100).nullable().optional(),
 		}),
-		async ({ ctx, args }) => {
-			requireUser(ctx);
-			console.info(
-				"[progress stub] markActivityStudied",
+		async ({ ctx, args, tx }) => {
+			const user = requireUser(ctx);
+			await requireEnrollment(tx as MutatorTx, user.id, args.programId);
+			const activity = await requireActivityInProgram(
+				tx as MutatorTx,
 				args.activityId,
-				"user",
-				ctx.id,
+				args.programId,
 			);
+			const now = Date.now();
+			await upsertActivityProgress(tx as MutatorTx, {
+				userId: user.id,
+				programId: args.programId,
+				activityId: args.activityId,
+				lessonId: activity.lessonId,
+				status: "completed",
+				videoPositionSec: args.videoPositionSec,
+				videoPercent: args.videoPercent,
+				now,
+			});
+		},
+	),
+
+	/**
+	 * Best-effort video position. VK/YouTube iframes usually do not expose
+	 * reliable postMessage progress under sandbox — callers may still push
+	 * position when available; otherwise use markActivityStudied /
+	 * «Отметить просмотренным». Does not demote an already-completed row.
+	 */
+	updateVideoProgress: defineMutator(
+		z.object({
+			activityId: z.string(),
+			programId: z.string(),
+			videoPositionSec: z.number().int().nonnegative().optional(),
+			videoPercent: z.number().min(0).max(100).optional(),
+			completed: z.boolean().optional(),
+		}),
+		async ({ ctx, args, tx }) => {
+			const user = requireUser(ctx);
+			await requireEnrollment(tx as MutatorTx, user.id, args.programId);
+			const activity = await requireActivityInProgram(
+				tx as MutatorTx,
+				args.activityId,
+				args.programId,
+			);
+			const now = Date.now();
+			const markComplete =
+				args.completed === true ||
+				(args.videoPercent !== undefined && args.videoPercent >= 95);
+			await upsertActivityProgress(tx as MutatorTx, {
+				userId: user.id,
+				programId: args.programId,
+				activityId: args.activityId,
+				lessonId: activity.lessonId,
+				status: markComplete ? "completed" : "in_progress",
+				videoPositionSec: args.videoPositionSec,
+				videoPercent: args.videoPercent,
+				now,
+			});
 		},
 	),
 });

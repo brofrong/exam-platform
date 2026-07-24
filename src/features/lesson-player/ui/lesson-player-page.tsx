@@ -100,6 +100,7 @@ export function LessonPlayerPage({
 							</div>
 							{activity.type === "theory" ? (
 								<TheoryActivityView
+									programId={programId}
 									activityId={activity.id}
 									content={activity.content}
 								/>

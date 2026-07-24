@@ -202,7 +202,7 @@ export const queries = defineQueries({
 			.related("program");
 	}),
 
-	/** Student's lesson progress rows (may be empty until Task 25 writers). */
+	/** Student's lesson progress rows (synced from progress mutators). */
 	myLessonProgress: defineQuery(({ ctx }) => {
 		const user = requireUser(ctx);
 		return zql.lessonProgress
@@ -211,7 +211,7 @@ export const queries = defineQueries({
 			.related("program");
 	}),
 
-	/** Student's activity progress rows (may be empty until Task 25 writers). */
+	/** Student's activity progress rows (synced from progress mutators). */
 	myActivityProgress: defineQuery(({ ctx }) => {
 		const user = requireUser(ctx);
 		return zql.activityProgress
