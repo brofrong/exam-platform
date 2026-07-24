@@ -6,7 +6,8 @@ import { can } from "#/shared/authz";
 
 /**
  * Domain queries — admin catalog reads require capabilities.
- * Student reads require auth and published status (enrollment in Task 23).
+ * Student reads require auth, enrollment, and published status.
+ * Admins browsing student routes use the same enrollment rules.
  */
 export const queries = defineQueries({
 	me: defineQuery(({ ctx }) => {
@@ -85,24 +86,26 @@ export const queries = defineQueries({
 		return zql.activity.where("id", args.id).one();
 	}),
 
-	// ── Student (auth + published; enrollment filter in Task 23) ─────────
+	// ── Student (auth + enrollment + published) ──────────────────────────
 
-	/** TODO(Task 23): gate by enrollment, not only published status. */
+	/** Published programs the current user is enrolled in. */
 	publishedPrograms: defineQuery(({ ctx }) => {
-		requireUser(ctx);
+		const user = requireUser(ctx);
 		return zql.program
 			.where("status", "published")
+			.whereExists("enrollments", (q) => q.where("userId", user.id))
 			.orderBy("createdAt", "desc");
 	}),
 
-	/** TODO(Task 23): gate by enrollment, not only published status. */
+	/** One enrolled + published program with published topics/lessons. */
 	publishedProgramById: defineQuery(
 		z.object({ id: z.string() }),
 		({ ctx, args }) => {
-			requireUser(ctx);
+			const user = requireUser(ctx);
 			return zql.program
 				.where("id", args.id)
 				.where("status", "published")
+				.whereExists("enrollments", (q) => q.where("userId", user.id))
 				.one()
 				.related("topics", (q) =>
 					q
@@ -119,14 +122,30 @@ export const queries = defineQueries({
 		},
 	),
 
-	/** TODO(Task 23): gate by enrollment / program membership. */
+	/**
+	 * Published lesson + activities, only if linked to a published topic
+	 * inside a published program the user is enrolled in.
+	 */
 	publishedLessonById: defineQuery(
 		z.object({ id: z.string() }),
 		({ ctx, args }) => {
-			requireUser(ctx);
+			const user = requireUser(ctx);
 			return zql.lesson
 				.where("id", args.id)
 				.where("status", "published")
+				.whereExists("topicLessons", (tl) =>
+					tl.whereExists("topic", (topic) =>
+						topic
+							.where("status", "published")
+							.whereExists("program", (program) =>
+								program
+									.where("status", "published")
+									.whereExists("enrollments", (e) =>
+										e.where("userId", user.id),
+									),
+							),
+					),
+				)
 				.one()
 				.related("activities", (q) => q.orderBy("position", "asc"));
 		},
@@ -187,12 +206,13 @@ export const queries = defineQueries({
 			.related("programs", (q) => q.related("program"));
 	}),
 
-	/** Student's own enrollments (used by Task 23 catalog). */
+	/** Student's own enrollments with published programs only. */
 	myEnrollments: defineQuery(({ ctx }) => {
 		const user = requireUser(ctx);
 		return zql.enrollment
 			.where("userId", user.id)
-			.related("program")
+			.whereExists("program", (q) => q.where("status", "published"))
+			.related("program", (q) => q.where("status", "published"))
 			.orderBy("createdAt", "desc");
 	}),
 });

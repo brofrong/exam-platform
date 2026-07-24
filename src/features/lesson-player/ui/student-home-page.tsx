@@ -19,7 +19,7 @@ export function StudentHomePage({ userName }: StudentHomePageProps) {
 		>
 			<PageHeader
 				title="Кабинет"
-				description={`Вы вошли как ${userName}. Выберите опубликованную программу.`}
+				description={`Вы вошли как ${userName}. Выберите программу, к которой у вас есть доступ.`}
 			/>
 
 			{programs === undefined ? (
@@ -28,7 +28,7 @@ export function StudentHomePage({ userName }: StudentHomePageProps) {
 				<EmptyState
 					icon={<BookOpenIcon />}
 					title="Пока нет программ"
-					description="Когда администратор опубликует программу, она появится здесь."
+					description="Активируйте приглашение, чтобы получить доступ к опубликованным программам."
 				/>
 			) : (
 				<ul className="flex flex-col gap-2" data-testid="student-programs-list">
