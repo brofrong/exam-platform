@@ -1,9 +1,9 @@
 import { ZeroProvider } from "@rocicorp/zero/react";
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { getCurrentUser } from "#/server/auth/get-current-user";
-import { getZeroCacheURL } from "#/utils/zero-cache-url";
-import { mutators } from "#/zero/mutators";
-import { schema } from "#/zero/schema";
+import { mutators } from "#/server/zero/mutators";
+import { schema } from "#/server/zero/schema";
+import { getZeroCacheURL } from "#/shared/zero-cache-url";
 
 export const Route = createFileRoute("/_authenticated")({
 	beforeLoad: async () => {

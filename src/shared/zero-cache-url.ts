@@ -1,4 +1,4 @@
-import { env } from "#/utils/env";
+import { env } from "#/shared/env";
 
 /** Zero cache is served via the app proxy at `/zero`. */
 export function getZeroCacheURL(): string {

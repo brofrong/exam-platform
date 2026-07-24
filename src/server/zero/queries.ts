@@ -1,6 +1,6 @@
 import { defineQueries, defineQuery } from "@rocicorp/zero";
 import { z } from "zod";
-import { MESSAGE_PAGE_SIZE } from "#/utils/chat-pagination";
+import { MESSAGE_PAGE_SIZE } from "#/features/chat/lib/pagination";
 import { zql } from "./schema";
 
 const messageCursorSchema = z.object({

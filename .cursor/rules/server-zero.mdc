@@ -1,0 +1,30 @@
+---
+description: Server, Drizzle, and Zero sync conventions
+globs: src/server/**/*.{ts,tsx},src/routes/api/**/*.{ts,tsx},drizzle.config.ts
+alwaysApply: false
+---
+
+# Server & Zero
+
+## Drizzle
+
+- One domain folder per table: `server/db/<entity>/<entity>.schema.ts`.
+- Re-export via `server/db/schema.ts` and relations in `server/db/relations.ts`.
+- Migrations: `bun run db:generate` then `bun run db:migrate`.
+
+## Zero (`server/zero`)
+
+- `schema.ts` is generated from Drizzle (`bun run zero:generate`).
+- Prefer **primitive** `customType` (`string` / `number`). Raw generate often yields `unknown` — fix primitives if types break (do not leave `unknown` in app code).
+- Extend `queries.ts` / `mutators.ts` registries; wire through existing `/api/query` and `/api/mutate`.
+- Mutators must check `ctx?.id` (auth) before writing.
+- Client usage: `useQuery(queries.*)`, `zero.mutate(mutators.*)`, `ZeroProvider` in authenticated layout.
+
+## Auth
+
+- Better Auth server: `server/auth/`. Client: `#/shared/auth-client`.
+- Gate pages with `getCurrentUser()` + redirect; API handlers use `authenticateRequest`.
+
+## Env
+
+- Typed env in `#/shared/env` (`@t3-oss/env-core` + zod). Do not read raw `process.env` in app code.

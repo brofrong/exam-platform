@@ -1,5 +1,10 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap");
 @import "tailwindcss" source("./");
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/geist";
+
+@custom-variant dark (&:is(.dark *));
 @plugin "@tailwindcss/typography";
 
 @theme {
@@ -430,6 +435,37 @@
   --hero-glow-a: rgb(68 193 207 / 0.28);
   --hero-glow-b: rgb(29 121 130 / 0.16);
   --header-bg: color-mix(in oklab, var(--bg-surface) 84%, transparent);
+
+  /* shadcn semantic tokens → existing theme */
+  --background: var(--bg-page);
+  --foreground: var(--text-body);
+  --card: var(--bg-surface);
+  --card-foreground: var(--text-heading);
+  --popover: var(--bg-elevated);
+  --popover-foreground: var(--text-heading);
+  --primary: var(--brand-default);
+  --primary-foreground: var(--brand-foreground);
+  --secondary: var(--bg-sunken);
+  --secondary-foreground: var(--text-heading);
+  --muted: var(--bg-sunken);
+  --muted-foreground: var(--text-muted);
+  --destructive: var(--error-default);
+  --border: var(--border-default);
+  --input: var(--border-default);
+  --chart-1: var(--brand-default);
+  --chart-2: var(--accent-default);
+  --chart-3: var(--neutral-500);
+  --chart-4: var(--neutral-400);
+  --chart-5: var(--neutral-700);
+  --radius: 0.625rem;
+  --sidebar: var(--bg-surface);
+  --sidebar-foreground: var(--text-heading);
+  --sidebar-primary: var(--brand-default);
+  --sidebar-primary-foreground: var(--brand-foreground);
+  --sidebar-accent: var(--bg-sunken);
+  --sidebar-accent-foreground: var(--text-heading);
+  --sidebar-border: var(--border-subtle);
+  --sidebar-ring: var(--ring);
 }
 
 :root[data-theme="dark"] {
@@ -580,6 +616,7 @@
   * {
     box-sizing: border-box;
     border-color: var(--color-border);
+    @apply border-border outline-ring/50;
   }
 
   html,
@@ -600,6 +637,7 @@
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    @apply bg-background text-foreground;
   }
 
   body::before {
@@ -655,6 +693,9 @@
   ::selection {
     background: var(--selection-background);
     color: var(--selection-foreground);
+  }
+  html {
+    @apply font-sans;
   }
 }
 
@@ -984,4 +1025,37 @@ a {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+@theme inline {
+  --font-heading: var(--font-sans);
+  --font-sans: "Geist Variable", "Inter", sans-serif;
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-destructive: var(--destructive);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
 }

@@ -53,8 +53,20 @@ function applyTheme(mode: ThemeMode) {
 function ThemeIcon({ mode }: { mode: ThemeMode }) {
 	if (mode === "light") {
 		return (
-			<svg viewBox="0 0 24 24" aria-hidden="true" width="20" height="20" fill="none">
-				<circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="1.75" />
+			<svg
+				viewBox="0 0 24 24"
+				aria-hidden="true"
+				width="20"
+				height="20"
+				fill="none"
+			>
+				<circle
+					cx="12"
+					cy="12"
+					r="4"
+					stroke="currentColor"
+					strokeWidth="1.75"
+				/>
 				<path
 					stroke="currentColor"
 					strokeWidth="1.75"
@@ -67,7 +79,13 @@ function ThemeIcon({ mode }: { mode: ThemeMode }) {
 
 	if (mode === "dark") {
 		return (
-			<svg viewBox="0 0 24 24" aria-hidden="true" width="20" height="20" fill="none">
+			<svg
+				viewBox="0 0 24 24"
+				aria-hidden="true"
+				width="20"
+				height="20"
+				fill="none"
+			>
 				<path
 					fill="currentColor"
 					d="M14.5 2.5a8.5 8.5 0 1 0 9 9 6.5 6.5 0 0 1-9-9Z"
@@ -77,7 +95,13 @@ function ThemeIcon({ mode }: { mode: ThemeMode }) {
 	}
 
 	return (
-		<svg viewBox="0 0 24 24" aria-hidden="true" width="20" height="20" fill="none">
+		<svg
+			viewBox="0 0 24 24"
+			aria-hidden="true"
+			width="20"
+			height="20"
+			fill="none"
+		>
 			<rect
 				x="3"
 				y="4"
@@ -87,7 +111,12 @@ function ThemeIcon({ mode }: { mode: ThemeMode }) {
 				stroke="currentColor"
 				strokeWidth="1.75"
 			/>
-			<path stroke="currentColor" strokeWidth="1.75" d="M8 20h8" strokeLinecap="round" />
+			<path
+				stroke="currentColor"
+				strokeWidth="1.75"
+				d="M8 20h8"
+				strokeLinecap="round"
+			/>
 		</svg>
 	);
 }

@@ -4,8 +4,8 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import { migrate } from "drizzle-orm/node-postgres/migrator";
 import { relations } from "#/server/db/relations";
 import { ensureAppSettings } from "#/server/db/setting/ensure-settings";
-import { env } from "#/utils/env";
-import { schema } from "#/zero/schema";
+import { schema } from "#/server/zero/schema";
+import { env } from "#/shared/env";
 
 export const db = drizzle(env.ZERO_UPSTREAM_DB, { relations });
 

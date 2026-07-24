@@ -1,0 +1,40 @@
+---
+description: Project architecture — Vertical Feature Slices, folders, aliases, stack
+alwaysApply: true
+---
+
+# Architecture
+
+Stack: TanStack Start, Drizzle, Rocicorp Zero, Better Auth, Tailwind v4, shadcn/ui, Bun.
+
+## Folder layout
+
+```
+src/
+  routes/           # thin pages + API handlers only
+  features/<name>/  # vertical slice: ui/, lib/, index.ts
+  components/ui/    # shadcn primitives only
+  components/       # app shell (Header, ThemeToggle, …)
+  server/auth|db/   # Node-only server code
+  server/zero/      # isomorphic Zero schema/queries/mutators (client-safe)
+  shared/           # env, auth-client, cross-cutting helpers
+  lib/utils.ts      # cn() for shadcn
+```
+
+## Rules
+
+- Prefer **Vertical Feature Slices**. Colocate feature UI + feature helpers under `features/<name>/`.
+- Keep **routes thin**: compose a feature, pass route context as props. No business UI in route files.
+- Export the feature public API from `features/<name>/index.ts`.
+- App imports use `#/*` (e.g. `#/features/chat`). shadcn uses `@/components/ui/*` and `@/lib/utils`.
+- Do **not** put Node-only imports (`pg`, drizzle `db`, fs) in `server/zero/` — client imports from there.
+- Do **not** invent FSD layers (`entities`, `widgets`, `pages` as FSD). Stick to this layout.
+- Format/lint with Biome (tabs, double quotes). Run `bun run check` before claiming done.
+
+## New feature checklist
+
+1. `src/features/<name>/{ui,lib,index.ts}`
+2. Thin route under `src/routes/` that renders the feature
+3. Domain tables in `src/server/db/<entity>/`
+4. Zero queries/mutators in `src/server/zero/` (extend existing registries)
+5. UI via shadcn in `components/ui` — add with `bunx shadcn@latest add <component>`

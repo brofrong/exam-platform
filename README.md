@@ -1,204 +1,112 @@
-Welcome to your new TanStack Start app! 
+# Starter: TanStack Start + Zero
 
-# Getting Started
+Стартер для своих проектов. Клонируй репозиторий, переименуй под задачу и развивай приложение на готовом стеке.
 
-To run this application:
+В комплекте: **TanStack Start**, **Drizzle**, **Rocicorp Zero**, **Better Auth**, **Tailwind CSS v4**, **shadcn/ui**, **Bun**. Демо-фича — синхронный чат (`features/chat`).
+
+## Быстрый старт
+
+### 1. Клонировать и переименовать
+
+```bash
+git clone <url-этого-репо> my-app
+cd my-app
+```
+
+В [`package.json`](package.json) поменяй `"name"` на имя проекта. При желании обнови title в [`src/routes/__root.tsx`](src/routes/__root.tsx).
+
+### 2. Установить зависимости
+
+Нужен [Bun](https://bun.sh/) ≥ 1.4 и Docker (для Postgres + Zero cache).
 
 ```bash
 bun install
-bun --bun run dev
 ```
 
-# Building For Production
+### 3. Окружение
 
-To build this application for production:
+Создай `.env` в корне (можно скопировать значения ниже):
 
 ```bash
-bun --bun run build
+APP_URL="http://localhost:3000"
+ZERO_UPSTREAM_DB="postgres://postgres:pass@localhost:5432/zero"
+ZERO_CACHE_UPSTREAM_URL="http://localhost:4848"
+ZERO_QUERY_URL="http://localhost:3000/api/query"
+ZERO_MUTATE_URL="http://localhost:3000/api/mutate"
 ```
 
-## Testing
-
-This project uses [Vitest](https://vitest.dev/) for testing. You can run the tests with:
+### 4. Инфраструктура (Postgres + Zero)
 
 ```bash
-bun --bun run test
+docker compose -f docker/docker-compose.dev.yml up -d
 ```
 
-## Styling
-
-This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
-
-### Removing Tailwind CSS
-
-If you prefer not to use Tailwind CSS:
-
-1. Remove the demo pages in `src/routes/demo/`
-2. Replace the Tailwind import in `src/styles.css` with your own styles
-3. Remove `tailwindcss()` from the plugins array in `vite.config.ts`
-4. Uninstall the packages: `bun install @tailwindcss/vite tailwindcss -D`
-
-## Linting & Formatting
-
-This project uses [Biome](https://biomejs.dev/) for linting and formatting. The following scripts are available:
-
+### 5. Миграции и dev-сервер
 
 ```bash
-bun --bun run lint
-bun --bun run format
-bun --bun run check
+bun run db:migrate
+bun run dev
 ```
 
+Приложение: [http://localhost:3000](http://localhost:3000). Зарегистрируйся / войди — откроется демо-чат.
 
+## Разработка
 
-## Routing
+### Структура
 
-This project uses [TanStack Router](https://tanstack.com/router) with file-based routing. Routes are managed as files in `src/routes`.
+Код организован как **Vertical Feature Slices**:
 
-### Adding A Route
-
-To add a new route to your application just add a new file in the `./src/routes` directory.
-
-TanStack will automatically generate the content of the route file for you.
-
-Now that you have two routes you can use a `Link` component to navigate between them.
-
-### Adding Links
-
-To use SPA (Single Page Application) navigation you will need to import the `Link` component from `@tanstack/react-router`.
-
-```tsx
-import { Link } from "@tanstack/react-router";
+```text
+src/
+  routes/              # тонкие страницы и API
+  features/<name>/     # фича: ui/, lib/, index.ts
+  components/ui/       # shadcn
+  components/          # shell (Header, ThemeToggle, …)
+  server/auth|db/      # сервер (Node-only)
+  server/zero/         # Zero schema / queries / mutators (изоморфно)
+  shared/              # env, auth-client, общие хелперы
 ```
 
-Then anywhere in your JSX you can use it like so:
+Импорты приложения: `#/…`. shadcn: `@/components/ui/…`, `@/lib/utils`.
 
-```tsx
-<Link to="/about">About</Link>
+Подробные правила для ИИ и людей: [`AGENTS.md`](AGENTS.md) и [`.cursor/rules/`](.cursor/rules/).
+
+### Новая фича
+
+1. Создай `src/features/<name>/{ui,lib,index.ts}`.
+2. Добавь тонкий route в `src/routes/`, который рендерит фичу.
+3. Таблицы — в `src/server/db/<entity>/`, затем `bun run db:generate` и `bun run db:migrate`.
+4. Queries/mutators — в `src/server/zero/`, schema обнови через `bun run zero:generate` (если типы стали `unknown`, верни примитивы `string`/`number` в `customType`).
+5. UI — через shadcn:
+
+```bash
+bunx shadcn@latest add button
 ```
 
-This will create a link that will navigate to the `/about` route.
+### Полезные команды
 
-More information on the `Link` component can be found in the [Link documentation](https://tanstack.com/router/v1/docs/framework/react/api/router/linkComponent).
+| Задача | Команда |
+|--------|---------|
+| Dev-сервер | `bun run dev` |
+| Lint / format | `bun run check` |
+| Сборка | `bun run build` |
+| Prod-старт (после build) | `bun run start` |
+| Миграции | `bun run db:migrate` |
+| Drizzle Studio | `bun run db:studio` |
+| Zero schema | `bun run zero:generate` |
+| Тесты | `bun run test` |
 
-### Using A Layout
+### Auth и данные
 
-In the File Based Routing setup the layout is located in `src/routes/__root.tsx`. Anything you add to the root route will appear in all the routes. The route content will appear in the JSX where you render `{children}` in the `shellComponent`.
+- Клиент: `#/shared/auth-client` (Better Auth).
+- Сервер: `src/server/auth/`.
+- Синхрон UI ↔ БД: Zero (`useQuery` / `zero.mutate`) через cache; app отдаёт `/api/query` и `/api/mutate`.
 
-Here is an example layout that includes a header:
+## Production (кратко)
 
-```tsx
-import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
-
-export const Route = createRootRoute({
-  head: () => ({
-    meta: [
-      { charSet: 'utf-8' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { title: 'My App' },
-    ],
-  }),
-  shellComponent: ({ children }) => (
-    <html lang="en">
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        <header>
-          <nav>
-            <Link to="/">Home</Link>
-            <Link to="/about">About</Link>
-          </nav>
-        </header>
-        {children}
-        <Scripts />
-      </body>
-    </html>
-  ),
-})
+```bash
+bun run build
+bun run start
 ```
 
-More information on layouts can be found in the [Layouts documentation](https://tanstack.com/router/latest/docs/framework/react/guide/routing-concepts#layouts).
-
-## Server Functions
-
-TanStack Start provides server functions that allow you to write server-side code that seamlessly integrates with your client components.
-
-```tsx
-import { createServerFn } from '@tanstack/react-start'
-
-const getServerTime = createServerFn({
-  method: 'GET',
-}).handler(async () => {
-  return new Date().toISOString()
-})
-
-// Use in a component
-function MyComponent() {
-  const [time, setTime] = useState('')
-  
-  useEffect(() => {
-    getServerTime().then(setTime)
-  }, [])
-  
-  return <div>Server time: {time}</div>
-}
-```
-
-## API Routes
-
-You can create API routes by using the `server` property in your route definitions:
-
-```tsx
-import { createFileRoute } from '@tanstack/react-router'
-import { json } from '@tanstack/react-start'
-
-export const Route = createFileRoute('/api/hello')({
-  server: {
-    handlers: {
-      GET: () => json({ message: 'Hello, World!' }),
-    },
-  },
-})
-```
-
-## Data Fetching
-
-There are multiple ways to fetch data in your application. You can use TanStack Query to fetch data from a server. But you can also use the `loader` functionality built into TanStack Router to load the data for a route before it's rendered.
-
-For example:
-
-```tsx
-import { createFileRoute } from '@tanstack/react-router'
-
-export const Route = createFileRoute('/people')({
-  loader: async () => {
-    const response = await fetch('https://swapi.dev/api/people')
-    return response.json()
-  },
-  component: PeopleComponent,
-})
-
-function PeopleComponent() {
-  const data = Route.useLoaderData()
-  return (
-    <ul>
-      {data.results.map((person) => (
-        <li key={person.name}>{person.name}</li>
-      ))}
-    </ul>
-  )
-}
-```
-
-Loaders simplify your data fetching logic dramatically. Check out more information in the [Loader documentation](https://tanstack.com/router/latest/docs/framework/react/guide/data-loading#loader-parameters).
-
-# Demo files
-
-Files prefixed with `demo` can be safely deleted. They are there to provide a starting point for you to play around with the features you've installed.
-
-# Learn More
-
-You can learn more about all of the offerings from TanStack in the [TanStack documentation](https://tanstack.com).
-
-For TanStack Start specific documentation, visit [TanStack Start](https://tanstack.com/start).
+Полный стек в Docker — корневой [`docker-compose.yml`](docker-compose.yml) и [`Dockerfile`](Dockerfile).

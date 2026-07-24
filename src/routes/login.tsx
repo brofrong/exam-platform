@@ -1,7 +1,7 @@
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { getCurrentUser } from "#/server/auth/get-current-user";
-import { authClient } from "#/utils/auth-client";
+import { authClient } from "#/shared/auth-client";
 
 export const Route = createFileRoute("/login")({
 	beforeLoad: async () => {

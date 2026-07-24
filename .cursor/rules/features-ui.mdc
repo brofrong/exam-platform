@@ -1,0 +1,38 @@
+---
+description: Feature UI and shadcn patterns
+globs: src/features/**/*.{ts,tsx},src/components/**/*.{ts,tsx},src/routes/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# Features & UI
+
+## Routes stay thin
+
+```tsx
+// ✅ GOOD
+export const Route = createFileRoute("/_authenticated/")({
+  component: Page,
+});
+function Page() {
+  const { user } = Route.useRouteContext();
+  return <ChatApp user={user} />;
+}
+
+// ❌ BAD — large UI / Zero logic inside the route file
+```
+
+## Feature structure
+
+```
+features/chat/
+  ui/          # React components
+  lib/         # pure helpers, types, pagination
+  index.ts     # public exports only
+```
+
+- Pass data and callbacks as props; avoid deep imports across features.
+- Prefer shadcn primitives (`Button`, `Input`, `Textarea`, `ScrollArea`, …) over custom one-off controls.
+- Import UI: `import { Button } from "@/components/ui/button"`.
+- Import app code: `import { ChatApp } from "#/features/chat"`.
+- Do not edit generated `routeTree.gen.ts`.
+- Theme tokens live in `src/styles.css`; map new shadcn vars to existing brand tokens instead of inventing a second palette.

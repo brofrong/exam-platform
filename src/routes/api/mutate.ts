@@ -3,7 +3,7 @@ import { handleMutateRequest } from "@rocicorp/zero/server";
 import { createFileRoute } from "@tanstack/react-router";
 import { authenticateRequest } from "#/server/auth/authenticate-request";
 import { dbProvider } from "#/server/db/db";
-import { mutators } from "#/zero/mutators";
+import { mutators } from "#/server/zero/mutators";
 
 export const Route = createFileRoute("/api/mutate")({
 	server: {

@@ -1,4 +1,4 @@
-import { env } from "#/utils/env";
+import { env } from "#/shared/env";
 
 const HOP_BY_HOP_HEADERS = new Set([
 	"connection",
