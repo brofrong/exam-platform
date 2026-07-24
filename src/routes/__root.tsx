@@ -34,20 +34,20 @@ export const Route = createRootRoute({
 
 function RootPending() {
 	return (
-		<main className="page-wrap flex min-h-[calc(100vh-8rem)] items-center justify-center px-4 py-10">
-			<p className="text-sm text-text-muted">Загрузка...</p>
+		<main className="mx-auto flex min-h-[calc(100vh-8rem)] w-full max-w-7xl items-center justify-center px-4 py-10">
+			<p className="text-sm text-muted-foreground">Загрузка...</p>
 		</main>
 	);
 }
 
 function RootError({ error }: { error: Error }) {
 	return (
-		<main className="page-wrap flex min-h-[calc(100vh-8rem)] items-center justify-center px-4 py-10">
+		<main className="mx-auto flex min-h-[calc(100vh-8rem)] w-full max-w-7xl items-center justify-center px-4 py-10">
 			<div className="max-w-md space-y-2 text-center">
-				<h1 className="text-lg font-semibold text-text-heading">
+				<h1 className="text-lg font-semibold text-foreground">
 					Что-то пошло не так
 				</h1>
-				<p className="text-sm text-text-muted">
+				<p className="text-sm text-muted-foreground">
 					{error.message || "Неизвестная ошибка"}
 				</p>
 			</div>
@@ -63,7 +63,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 				<script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
 				<HeadContent />
 			</head>
-			<body className="font-sans antialiased [overflow-wrap:anywhere] selection:bg-[var(--selection-background)]">
+			<body className="font-sans antialiased [overflow-wrap:anywhere] selection:bg-primary/20">
 				<Header />
 				{children}
 				<TanStackDevtools

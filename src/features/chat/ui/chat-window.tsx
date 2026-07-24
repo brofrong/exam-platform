@@ -168,7 +168,7 @@ export function ChatWindow({
 	return (
 		<>
 			<div className="border-b border-border px-6 py-4">
-				<h1 className="text-lg font-semibold text-text-heading">
+				<h1 className="text-lg font-semibold text-foreground">
 					{chat?.title ?? "Чат"}
 				</h1>
 			</div>

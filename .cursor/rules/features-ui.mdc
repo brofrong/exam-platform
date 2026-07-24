@@ -35,4 +35,4 @@ features/chat/
 - Import UI: `import { Button } from "@/components/ui/button"`.
 - Import app code: `import { ChatApp } from "#/features/chat"`.
 - Do not edit generated `routeTree.gen.ts`.
-- Theme tokens live in `src/styles.css`; map new shadcn vars to existing brand tokens instead of inventing a second palette.
+- Theme tokens are standard shadcn CSS variables in `src/styles.css` (`background`, `foreground`, `primary`, `muted`, `border`, `sidebar`, …). Prefer those utilities in features; do not invent a parallel palette.

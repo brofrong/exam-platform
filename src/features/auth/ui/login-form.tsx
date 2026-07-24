@@ -43,12 +43,12 @@ export function LoginForm() {
 		(mode === "signin" || name.trim().length > 0);
 
 	return (
-		<main className="page-wrap flex min-h-[calc(100vh-8rem)] items-center justify-center px-4 py-10">
-			<div className="w-full max-w-md rounded-2xl border border-border bg-bg-surface p-8 shadow-lg">
-				<h1 className="text-2xl font-bold text-text-heading">
+		<main className="mx-auto flex min-h-[calc(100vh-8rem)] w-full max-w-7xl items-center justify-center px-4 py-10">
+			<div className="w-full max-w-md rounded-2xl border border-border bg-card p-8 text-card-foreground shadow-lg">
+				<h1 className="text-2xl font-bold text-foreground">
 					{mode === "signin" ? "Вход в чат" : "Регистрация"}
 				</h1>
-				<p className="mt-2 text-sm text-text-muted">
+				<p className="mt-2 text-sm text-muted-foreground">
 					{mode === "signin"
 						? "Войдите с email и паролем."
 						: "Создайте аккаунт с именем, email и паролем."}
@@ -86,7 +86,7 @@ export function LoginForm() {
 						<div className="space-y-1.5">
 							<label
 								htmlFor="name"
-								className="block text-sm font-medium text-text-heading"
+								className="block text-sm font-medium text-foreground"
 							>
 								Имя
 							</label>
@@ -105,7 +105,7 @@ export function LoginForm() {
 					<div className="space-y-1.5">
 						<label
 							htmlFor="email"
-							className="block text-sm font-medium text-text-heading"
+							className="block text-sm font-medium text-foreground"
 						>
 							Email
 						</label>
@@ -124,7 +124,7 @@ export function LoginForm() {
 					<div className="space-y-1.5">
 						<label
 							htmlFor="password"
-							className="block text-sm font-medium text-text-heading"
+							className="block text-sm font-medium text-foreground"
 						>
 							Пароль
 						</label>
@@ -141,7 +141,7 @@ export function LoginForm() {
 						/>
 					</div>
 
-					{error && <p className="text-sm text-error">{error}</p>}
+					{error && <p className="text-sm text-destructive">{error}</p>}
 
 					<Button
 						type="submit"

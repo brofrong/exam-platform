@@ -22,7 +22,7 @@ export function MessageBubble({
 					"max-w-[75%] rounded-2xl px-4 py-2 text-sm shadow-sm",
 					isOwn
 						? "bg-primary text-primary-foreground"
-						: "bg-bg-elevated text-text-body",
+						: "bg-muted text-foreground",
 				)}
 			>
 				{!isOwn && (

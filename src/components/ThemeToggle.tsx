@@ -151,7 +151,7 @@ export default function ThemeToggle() {
 		<button
 			type="button"
 			onClick={cycleTheme}
-			className="rounded-xl border border-border-subtle bg-bg-elevated p-2 text-text-muted transition hover:bg-bg-sunken hover:text-text-heading"
+			className="rounded-xl border border-border bg-card p-2 text-muted-foreground transition hover:bg-muted hover:text-foreground"
 			aria-label={`${MODE_LABELS[mode]}. Click to change.`}
 			title={MODE_LABELS[mode]}
 		>
