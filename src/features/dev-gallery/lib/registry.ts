@@ -33,6 +33,14 @@ import {
 	TooltipDemo,
 } from "#/features/dev-gallery/ui/demos";
 import {
+	FileUploadAnswerDemo,
+	FormInviteCreateDemo,
+	FormLoginPatternDemo,
+	MultipleChoiceAnswerDemo,
+	ShortTextAnswerDemo,
+	SingleChoiceAnswerDemo,
+} from "#/features/dev-gallery/ui/form-demos";
+import {
 	ConfirmActionDialogDemo,
 	ContinueLearningCardDemo,
 	EmptyStateDemo,
@@ -137,6 +145,56 @@ export const galleryRegistry: GalleryEntry[] = [
 		description: "Exclusive option set.",
 		category: "Forms",
 		component: RadioGroupDemo,
+	},
+	{
+		slug: "form-login-pattern",
+		title: "Login Form Pattern",
+		description: "Email/password layout with client-side validation states.",
+		category: "Forms",
+		component: FormLoginPatternDemo,
+		note: "Presentational demo — not wired to Better Auth.",
+	},
+	{
+		slug: "form-invite-create",
+		title: "Invite Create Form",
+		description: "Title, email, and multi-select of programs.",
+		category: "Forms",
+		component: FormInviteCreateDemo,
+		note: "Uses Checkbox list for program multi-select.",
+	},
+	{
+		slug: "short-text-answer",
+		title: "Short Text Answer",
+		description: "Practice short-text widget with error and disabled states.",
+		category: "Forms",
+		component: ShortTextAnswerDemo,
+		note: "import { ShortTextAnswer } from '@/components/answer-widgets'",
+	},
+	{
+		slug: "single-choice-answer",
+		title: "Single Choice Answer",
+		description:
+			"Practice single-choice widget with error and disabled states.",
+		category: "Forms",
+		component: SingleChoiceAnswerDemo,
+		note: "import { SingleChoiceAnswer } from '@/components/answer-widgets'",
+	},
+	{
+		slug: "multiple-choice-answer",
+		title: "Multiple Choice Answer",
+		description: "Practice multi-choice widget with error and disabled states.",
+		category: "Forms",
+		component: MultipleChoiceAnswerDemo,
+		note: "import { MultipleChoiceAnswer } from '@/components/answer-widgets'",
+	},
+	{
+		slug: "file-upload-answer",
+		title: "File Upload Answer",
+		description:
+			"Practice file upload widget wrapping FileDropzone (error/disabled).",
+		category: "Forms",
+		component: FileUploadAnswerDemo,
+		note: "import { FileUploadAnswer } from '@/components/answer-widgets'",
 	},
 	{
 		slug: "alert",
