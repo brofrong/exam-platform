@@ -17,7 +17,7 @@ cd my-app
 
 ### 2. Установить зависимости
 
-Нужен [Bun](https://bun.sh/) ≥ 1.4 и Docker (для Postgres + Zero cache).
+Нужен [Bun](https://bun.sh/) (canary / свежий релиз) и Docker (для Postgres + Zero cache).
 
 ```bash
 bun install
