@@ -1,6 +1,6 @@
 import { defineMutator, defineMutators } from "@rocicorp/zero";
 import { z } from "zod";
-import { requireCapability } from "#/server/zero/authz";
+import { requireCapability, requireUser } from "#/server/zero/authz";
 import {
 	ACTIVITY_TYPES,
 	EMPTY_TIPTAP_DOC,
@@ -301,6 +301,24 @@ export const mutators = defineMutators({
 				}
 				await tx.mutate.activity.update({ id, position });
 			}
+		},
+	),
+
+	// ── Student progress (stub until Task 25) ─────────────────────────────
+
+	/** TODO(Task 25): persist activity_progress / lesson_progress. */
+	markActivityStudied: defineMutator(
+		z.object({
+			activityId: z.string(),
+		}),
+		async ({ ctx, args }) => {
+			requireUser(ctx);
+			console.info(
+				"[progress stub] markActivityStudied",
+				args.activityId,
+				"user",
+				ctx.id,
+			);
 		},
 	),
 });

@@ -5,7 +5,7 @@ import { zql } from "#/server/zero/schema";
 
 /**
  * Domain queries — admin catalog reads require capabilities.
- * Student-scoped filters land in later tasks.
+ * Student reads require auth and published status (enrollment in Task 23).
  */
 export const queries = defineQueries({
 	me: defineQuery(({ ctx }) => {
@@ -83,4 +83,51 @@ export const queries = defineQueries({
 		requireCapability(ctx, "lesson:write");
 		return zql.activity.where("id", args.id).one();
 	}),
+
+	// ── Student (auth + published; enrollment filter in Task 23) ─────────
+
+	/** TODO(Task 23): gate by enrollment, not only published status. */
+	publishedPrograms: defineQuery(({ ctx }) => {
+		requireUser(ctx);
+		return zql.program
+			.where("status", "published")
+			.orderBy("createdAt", "desc");
+	}),
+
+	/** TODO(Task 23): gate by enrollment, not only published status. */
+	publishedProgramById: defineQuery(
+		z.object({ id: z.string() }),
+		({ ctx, args }) => {
+			requireUser(ctx);
+			return zql.program
+				.where("id", args.id)
+				.where("status", "published")
+				.one()
+				.related("topics", (q) =>
+					q
+						.where("status", "published")
+						.orderBy("position", "asc")
+						.related("topicLessons", (tl) =>
+							tl
+								.orderBy("position", "asc")
+								.related("lesson", (lesson) =>
+									lesson.where("status", "published"),
+								),
+						),
+				);
+		},
+	),
+
+	/** TODO(Task 23): gate by enrollment / program membership. */
+	publishedLessonById: defineQuery(
+		z.object({ id: z.string() }),
+		({ ctx, args }) => {
+			requireUser(ctx);
+			return zql.lesson
+				.where("id", args.id)
+				.where("status", "published")
+				.one()
+				.related("activities", (q) => q.orderBy("position", "asc"));
+		},
+	),
 });
