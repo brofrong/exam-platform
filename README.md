@@ -1,12 +1,54 @@
 # Exam Platform
 
-Платформа для подготовки учеников к **ЕГЭ** и **ОГЭ**.
+LMS для подготовки к **ЕГЭ** и **ОГЭ**: админ наполняет программы и уроки, ученик проходит выданные программы, сдаёт практику, смотрит прогресс и пишет в поддержку.
 
-Стек: [TanStack Start](https://tanstack.com/start), [Rocicorp Zero](https://zerosync.dev/), [Drizzle](https://orm.drizzle.team/), [Better Auth](https://www.better-auth.com/), Tailwind CSS v4, shadcn/ui и [Bun](https://bun.sh/).
+Стек: [TanStack Start](https://tanstack.com/start), [Rocicorp Zero](https://zerosync.dev/), [Drizzle](https://orm.drizzle.team/), [Better Auth](https://www.better-auth.com/), TipTap, MinIO (S3), Tailwind CSS v4, shadcn/ui, [Bun](https://bun.sh/), Playwright.
 
-В репозитории — вертикальные feature-slices, правила для Cursor/агентов и Playwright E2E. Продуктовый LMS в разработке.
+В репозитории — вертикальные feature-slices, правила для Cursor/агентов и E2E. Дизайн и план реализации: [`docs/plans/`](docs/plans/).
 
 Лицензия: [MIT](LICENSE).
+
+## Продукт (MVP)
+
+| Роль | Что доступно |
+|------|----------------|
+| **Student** | `/app` — программы по enrollment, уроки (теория + практика), прогресс, `/app/support` |
+| **Admin** | `/admin` — программы/темы, каталог уроков, инвайты, очередь ревью, аналитика, inbox поддержки |
+
+Публичное: `/` (лендинг-заглушка), `/login`, `/invite/:token`.
+
+Контент: программа → темы → уроки (M2M) → activities (`theory` \| `practice`). Публикация `draft` \| `published`. Файлы в S3 (`editor/…`, `submissions/…`).
+
+### Инвайты
+
+1. Админ создаёт одноразовую ссылку в `/admin/invites` (несколько программ, опционально email и срок).
+2. Ученик открывает `/invite/:token` (нужна сессия), активирует — получает enrollment.
+3. После активации токен одноразовый; дальше программы видны в `/app`.
+
+### Роли и capabilities
+
+Новые пользователи — `student`. Админ вручную:
+
+```sql
+UPDATE "user" SET role = 'admin' WHERE email = 'you@example.com';
+```
+
+Права в UI и Zero mutators — через `can(role, capability)` из `#/shared/authz`, не через `role === 'admin'`.
+
+| Capability | Кто |
+|------------|-----|
+| `program:write`, `lesson:write`, `invite:create` | admin |
+| `submission:review`, `analytics:read`, `support:reply` | admin |
+| *(пусто)* | student — доступ к своим enrollment / submissions / support-треду |
+
+Роль `teacher` в MVP нет; карта capabilities готова к расширению.
+
+### UI-галерея `/dev`
+
+Каталог shadcn + LMS-композитов (как docs у shadcn).
+
+- В **DEV** (`bun run dev`) открыта без ограничений.
+- В **production** — только пользователи с `program:write` (иначе редирект на `/app` / `/login`).
 
 ## Быстрый старт
 
@@ -22,26 +64,18 @@ bun run db:migrate
 bun run dev
 ```
 
-Откройте [http://localhost:3000](http://localhost:3000) и зарегистрируйтесь.
+Откройте [http://localhost:3000](http://localhost:3000), зарегистрируйтесь, при необходимости повысьте роль до admin (SQL выше).
 
-Object storage (MinIO) поднимается вместе с Postgres/Zero:
+### MinIO / S3
+
+Object storage поднимается вместе с Postgres/Zero:
 
 | Сервис | Порт | URL |
 |--------|------|-----|
 | S3 API | `9000` | `http://localhost:9000` |
 | MinIO Console | `9001` | [http://localhost:9001](http://localhost:9001) |
 
-Логин консоли по умолчанию: `minioadmin` / `minioadmin`. Bucket `exam-platform-uploads` создаётся init-контейнером (`minio-init`). Проверка: `bun run smoke:s3`.
-
-Префиксы ключей (MVP, один bucket): `editor/…`, `submissions/…`.
-
-Новые пользователи получают роль `student`. Чтобы сделать админа:
-
-```sql
-UPDATE "user" SET role = 'admin' WHERE email = 'you@example.com';
-```
-
-Права в UI и mutators проверяйте через `can(role, capability)` из `#/shared/authz`, а не через `role === 'admin'`.
+Логин консоли по умолчанию: `minioadmin` / `minioadmin`. Bucket `exam-platform-uploads` создаётся init-контейнером (`minio-init`). Переменные: `S3_*` в `.env` (см. `.env.example`, типизация в `src/shared/env.ts`). Проверка: `bun run smoke:s3`.
 
 ## Структура проекта
 
@@ -50,10 +84,10 @@ src/
   routes/           # тонкие страницы + API-обработчики
   features/<name>/  # ui/, lib/, index.ts
   components/ui/    # примитивы shadcn
-  components/       # оболочка приложения
+  components/       # оболочка + LMS-композиты
   server/auth|db/   # только Node
   server/zero/      # изоморфная схема / queries / mutators Zero
-  shared/           # env, auth-клиент, общие хелперы
+  shared/           # env, authz, auth-клиент
 ```
 
 Импорты приложения: `#/…`. shadcn: `@/components/ui/…` и `@/lib/utils`.
@@ -66,7 +100,7 @@ src/
 2. Тонкий роут в `src/routes/`, который рендерит фичу
 3. Таблицы в `src/server/db/<entity>/` → `bun run db:generate` → `bun run db:migrate`
 4. Queries / mutators в `src/server/zero/` → `bun run zero:generate`
-5. UI через shadcn: `bunx shadcn@latest add <component>`
+5. UI через shadcn: `bunx shadcn@latest add <component>`; демо в `/dev` при необходимости
 
 ## Команды
 
@@ -94,7 +128,9 @@ bunx playwright install chromium
 bun run test:e2e
 ```
 
-CI запускает проверки качества и Playwright параллельно (см. `.github/workflows/ci.yml`).
+`test:e2e` поднимает e2e compose, мигрирует БД и гоняет Playwright (критические LMS-потоки в `e2e/lms-critical-paths.spec.ts`). В CI то же параллельно с quality checks (см. `.github/workflows/ci.yml`).
+
+Используйте уникальные email/titles в тестах; интерактивным контролам — `data-testid`.
 
 ## Продакшен
 
@@ -117,3 +153,4 @@ Docker-образ по умолчанию: `brofrong/exam-platform`.
 | MinIO / upload | Dev: API `9000`, console `9001`; `S3_*` в `.env`; `bun run smoke:s3` |
 | Браузеры Playwright | `bunx playwright install chromium` |
 | Типы Zero — `unknown` | Перезапустите `bun run zero:generate` |
+| Нет программ у ученика | Enrollment через инвайт `/invite/:token`; программы должны быть `published` |
