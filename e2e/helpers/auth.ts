@@ -90,7 +90,8 @@ export async function login(page: Page, user: TestUser) {
 }
 
 export async function logout(page: Page) {
-	await page.getByTestId("home-logout").click();
+	await page.getByTestId("nav-user-menu").click();
+	await page.getByTestId("nav-logout").click();
 	await page.waitForURL((url) => url.pathname.includes("/login"));
 	await expect(page.getByTestId("auth-submit")).toBeVisible();
 }
