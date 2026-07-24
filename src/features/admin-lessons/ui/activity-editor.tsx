@@ -8,6 +8,13 @@ import {
 import { useEffect, useState } from "react";
 import { z } from "zod";
 import {
+	emptyTheoryDoc,
+	normalizeTheoryDoc,
+	type TheoryDoc,
+	TheoryEditor,
+	toActivityContent,
+} from "#/features/lesson-editor";
+import {
 	ACTIVITY_TYPES,
 	type ActivityType,
 	EMPTY_TIPTAP_DOC,
@@ -78,23 +85,35 @@ function parseContentJson(
 	}
 }
 
+function asActivityType(type: string): ActivityType {
+	return ACTIVITY_TYPES.includes(type as ActivityType)
+		? (type as ActivityType)
+		: "theory";
+}
+
 export function ActivityEditor({ lessonId, activities }: ActivityEditorProps) {
 	const zero = useZero();
 	const [createOpen, setCreateOpen] = useState(false);
 	const [createType, setCreateType] = useState<ActivityType>("theory");
 	const [editingId, setEditingId] = useState<string | null>(null);
-	const [contentDraft, setContentDraft] = useState("");
+	const [theoryDraft, setTheoryDraft] = useState<TheoryDoc>(emptyTheoryDoc);
+	const [jsonDraft, setJsonDraft] = useState("");
 	const [contentError, setContentError] = useState<string | null>(null);
 	const [isSaving, setIsSaving] = useState(false);
 
 	const sorted = [...activities].sort((a, b) => a.position - b.position);
 	const editing = sorted.find((activity) => activity.id === editingId) ?? null;
+	const editingType = editing ? asActivityType(editing.type) : null;
 
 	useEffect(() => {
 		if (!editing) {
 			return;
 		}
-		setContentDraft(formatContentJson(editing.content));
+		if (asActivityType(editing.type) === "theory") {
+			setTheoryDraft(normalizeTheoryDoc(editing.content));
+		} else {
+			setJsonDraft(formatContentJson(editing.content));
+		}
 		setContentError(null);
 		setIsSaving(false);
 	}, [editing]);
@@ -132,21 +151,36 @@ export function ActivityEditor({ lessonId, activities }: ActivityEditorProps) {
 
 	const handleSaveContent = async (event: React.FormEvent) => {
 		event.preventDefault();
-		if (!editing || isSaving) {
+		if (!editing || isSaving || !editingType) {
 			return;
 		}
-		const parsed = parseContentJson(contentDraft);
-		if (!parsed.ok) {
-			setContentError(parsed.error);
-			return;
+
+		let content: ActivityContent;
+		if (editingType === "theory") {
+			const parsed = activityContentSchema.safeParse(
+				toActivityContent(theoryDraft),
+			);
+			if (!parsed.success) {
+				setContentError("Контент редактора невалиден");
+				return;
+			}
+			content = parsed.data;
+		} else {
+			const parsed = parseContentJson(jsonDraft);
+			if (!parsed.ok) {
+				setContentError(parsed.error);
+				return;
+			}
+			content = parsed.value;
 		}
+
 		setIsSaving(true);
 		setContentError(null);
 		try {
 			await zero.mutate(
 				mutators.updateActivity({
 					id: editing.id,
-					content: parsed.value,
+					content,
 				}),
 			);
 			setEditingId(null);
@@ -175,7 +209,7 @@ export function ActivityEditor({ lessonId, activities }: ActivityEditorProps) {
 				<EmptyState
 					icon={<FileJsonIcon />}
 					title="Activities пока нет"
-					description="Добавьте теорию или практику. Контент TipTap пока редактируется как JSON (полный редактор — Task 15)."
+					description="Добавьте теорию или практику. Теория редактируется в TipTap; практика пока через JSON."
 					action={
 						<Button
 							data-testid="activity-create-empty"
@@ -189,11 +223,7 @@ export function ActivityEditor({ lessonId, activities }: ActivityEditorProps) {
 			) : (
 				<ul className="flex flex-col gap-2" data-testid="activities-list">
 					{sorted.map((activity, index) => {
-						const type = (
-							ACTIVITY_TYPES.includes(activity.type as ActivityType)
-								? activity.type
-								: "theory"
-						) as ActivityType;
+						const type = asActivityType(activity.type);
 						return (
 							<li key={activity.id}>
 								<EntityRow
@@ -236,7 +266,7 @@ export function ActivityEditor({ lessonId, activities }: ActivityEditorProps) {
 												data-testid={`activity-edit-open-${activity.id}`}
 												onClick={() => setEditingId(activity.id)}
 											>
-												JSON
+												{type === "theory" ? "Редактор" : "JSON"}
 											</Button>
 										</div>
 									}
@@ -306,29 +336,42 @@ export function ActivityEditor({ lessonId, activities }: ActivityEditorProps) {
 				}}
 			>
 				<DialogContent
-					className="sm:max-w-xl"
+					className={editingType === "theory" ? "sm:max-w-3xl" : "sm:max-w-xl"}
 					data-testid="activity-content-dialog"
 				>
 					<form onSubmit={handleSaveContent} className="grid gap-4">
 						<DialogHeader>
-							<DialogTitle>Контент TipTap (JSON)</DialogTitle>
+							<DialogTitle>
+								{editingType === "theory"
+									? "Редактор теории"
+									: "Контент TipTap (JSON)"}
+							</DialogTitle>
 							<DialogDescription>
-								Временный редактор до полного TipTap (Task 15). Сохраняется в
-								activity.content.
+								{editingType === "theory"
+									? "WYSIWYG TipTap. Сохраняется в activity.content."
+									: "Практика пока редактируется как JSON (полный редактор — Task 19)."}
 							</DialogDescription>
 						</DialogHeader>
-						<div className="space-y-1.5">
-							<Label htmlFor="activity-content-json">JSON</Label>
-							<Textarea
-								id="activity-content-json"
-								data-testid="activity-content-json"
-								value={contentDraft}
-								onChange={(event) => setContentDraft(event.target.value)}
-								rows={16}
-								className="font-mono text-xs"
-								spellCheck={false}
+						{editingType === "theory" && editing ? (
+							<TheoryEditor
+								key={editing.id}
+								content={theoryDraft}
+								onChange={setTheoryDraft}
 							/>
-						</div>
+						) : (
+							<div className="space-y-1.5">
+								<Label htmlFor="activity-content-json">JSON</Label>
+								<Textarea
+									id="activity-content-json"
+									data-testid="activity-content-json"
+									value={jsonDraft}
+									onChange={(event) => setJsonDraft(event.target.value)}
+									rows={16}
+									className="font-mono text-xs"
+									spellCheck={false}
+								/>
+							</div>
+						)}
 						{contentError ? (
 							<p className="text-sm text-destructive">{contentError}</p>
 						) : null}

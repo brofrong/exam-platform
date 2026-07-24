@@ -509,7 +509,3 @@ export function PlaceholderDemo({ label }: { label: string }) {
 		</div>
 	);
 }
-
-export function EditorPlaceholder() {
-	return <PlaceholderDemo label="Editor" />;
-}

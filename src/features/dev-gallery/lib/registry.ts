@@ -16,7 +16,6 @@ import {
 	CollapsibleDemo,
 	DialogDemo,
 	DropdownMenuDemo,
-	EditorPlaceholder,
 	InputDemo,
 	PopoverDemo,
 	ProgressDemo,
@@ -32,6 +31,7 @@ import {
 	ToastDemo,
 	TooltipDemo,
 } from "#/features/dev-gallery/ui/demos";
+import { TheoryEditorDemo } from "#/features/dev-gallery/ui/editor-demos";
 import {
 	FileUploadAnswerDemo,
 	FormInviteCreateDemo,
@@ -410,12 +410,13 @@ export const galleryRegistry: GalleryEntry[] = [
 		note: "import { ConfirmActionDialog } from '@/components/lms'",
 	},
 	{
-		slug: "editor",
-		title: "Editor",
-		description: "TipTap theory/practice editor demos.",
+		slug: "theory-editor",
+		title: "Theory Editor",
+		description:
+			"TipTap StarterKit editor + read-only renderer for theory JSON.",
 		category: "Editor",
-		component: EditorPlaceholder,
-		note: "Registered with TipTap work later.",
+		component: TheoryEditorDemo,
+		note: "import { TheoryEditor, TheoryRenderer } from '#/features/lesson-editor'",
 	},
 ];
 
