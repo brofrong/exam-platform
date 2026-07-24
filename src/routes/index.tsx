@@ -1,10 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { LandingStub } from "#/features/landing";
+import { LandingPage } from "#/features/landing";
 
 export const Route = createFileRoute("/")({
-	component: LandingPage,
+	component: HomePage,
 });
 
-function LandingPage() {
-	return <LandingStub />;
+function HomePage() {
+	return <LandingPage />;
 }

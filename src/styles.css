@@ -2,6 +2,8 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/geist";
+@import "@fontsource-variable/literata";
+@import "@fontsource-variable/manrope";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -77,6 +79,9 @@
 @theme inline {
 	--font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
 	--font-heading: var(--font-sans);
+	--font-landing-sans: "Manrope Variable", "Geist Variable", ui-sans-serif,
+		system-ui, sans-serif;
+	--font-landing-display: "Literata Variable", "Times New Roman", serif;
 	--color-background: var(--background);
 	--color-foreground: var(--foreground);
 	--color-card: var(--card);
@@ -112,6 +117,39 @@
 	--radius-md: calc(var(--radius) - 2px);
 	--radius-lg: var(--radius);
 	--radius-xl: calc(var(--radius) + 4px);
+	--animate-marquee: marquee var(--duration) infinite linear;
+	--animate-marquee-vertical: marquee-vertical var(--duration) linear infinite;
+	--animate-shine: shine var(--duration) infinite linear;
+
+	@keyframes marquee {
+		from {
+			transform: translateX(0);
+		}
+		to {
+			transform: translateX(calc(-100% - var(--gap)));
+		}
+	}
+
+	@keyframes marquee-vertical {
+		from {
+			transform: translateY(0);
+		}
+		to {
+			transform: translateY(calc(-100% - var(--gap)));
+		}
+	}
+
+	@keyframes shine {
+		0% {
+			background-position: 0% 0%;
+		}
+		50% {
+			background-position: 100% 100%;
+		}
+		to {
+			background-position: 0% 0%;
+		}
+	}
 }
 
 @layer base {
@@ -135,5 +173,80 @@
 
 	html {
 		@apply font-sans;
+	}
+}
+
+/* PHYS&MATH landing — navy + amber brand surface */
+.landing {
+	--pm-navy: #0b1c33;
+	--pm-ink: #071525;
+	--pm-amber: #e8a54b;
+	--pm-amber-bright: #f0b85f;
+	--pm-amber-deep: #c4842e;
+	--pm-cream: #f3efe6;
+	font-family: var(--font-landing-sans);
+	background: var(--pm-navy);
+	color: white;
+}
+
+.landing .font-display {
+	font-family: var(--font-landing-display);
+}
+
+/* Body uses overflow-wrap:anywhere — keep display titles as whole words */
+.landing :is(h1, h2, h3, h4),
+.landing .font-display {
+	overflow-wrap: normal;
+	word-break: normal;
+}
+
+.landing-hero-image {
+	animation: landing-kenburns 28s ease-out forwards;
+	transform-origin: center 30%;
+}
+
+.landing-fade {
+	animation: landing-fade-up 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.landing-fade-delay-1 {
+	animation-delay: 0.12s;
+}
+
+.landing-fade-delay-2 {
+	animation-delay: 0.24s;
+}
+
+.landing-fade-delay-3 {
+	animation-delay: 0.36s;
+}
+
+@keyframes landing-kenburns {
+	from {
+		transform: scale(1.08);
+	}
+	to {
+		transform: scale(1);
+	}
+}
+
+@keyframes landing-fade-up {
+	from {
+		opacity: 0;
+		transform: translateY(1.25rem);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.landing-hero-image,
+	.landing-fade,
+	.landing-fade-delay-1,
+	.landing-fade-delay-2,
+	.landing-fade-delay-3 {
+		animation: none;
 	}
 }

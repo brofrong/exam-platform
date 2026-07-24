@@ -1,1 +1,1 @@
-export { LandingStub } from "#/features/landing/ui/landing-stub";
+export { LandingPage } from "#/features/landing/ui/landing-page";
