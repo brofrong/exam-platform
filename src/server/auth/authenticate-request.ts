@@ -1,5 +1,10 @@
 import { auth } from "#/server/auth/auth";
 import type { AuthUser } from "#/server/auth/types";
+import type { Role } from "#/shared/authz";
+
+function toRole(value: unknown): Role {
+	return value === "admin" ? "admin" : "student";
+}
 
 export async function authenticateRequest(
 	request: Request,
@@ -13,5 +18,6 @@ export async function authenticateRequest(
 		id: session.user.id,
 		name: session.user.name,
 		email: session.user.email,
+		role: toRole(session.user.role),
 	};
 }

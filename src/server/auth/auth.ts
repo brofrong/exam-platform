@@ -21,5 +21,15 @@ export const auth = betterAuth({
 	emailAndPassword: {
 		enabled: true,
 	},
+	user: {
+		additionalFields: {
+			role: {
+				type: ["admin", "student"],
+				required: false,
+				defaultValue: "student",
+				input: false,
+			},
+		},
+	},
 	plugins: [tanstackStartCookies()],
 });

@@ -24,6 +24,14 @@ bun run dev
 
 Откройте [http://localhost:3000](http://localhost:3000) и зарегистрируйтесь.
 
+Новые пользователи получают роль `student`. Чтобы сделать админа:
+
+```sql
+UPDATE "user" SET role = 'admin' WHERE email = 'you@example.com';
+```
+
+Права в UI и mutators проверяйте через `can(role, capability)` из `#/shared/authz`, а не через `role === 'admin'`.
+
 ## Структура проекта
 
 ```text
@@ -54,6 +62,7 @@ src/
 | Задача | Команда |
 |------|---------|
 | Dev | `bun run dev` |
+| Юнит-тесты | `bun test` |
 | Линт / формат | `bun run check` |
 | Typecheck | `bun run typecheck` |
 | Сборка | `bun run build` |

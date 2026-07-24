@@ -3,6 +3,7 @@ import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { getCurrentUser } from "#/server/auth/get-current-user";
 import { mutators } from "#/server/zero/mutators";
 import { schema } from "#/server/zero/schema";
+import { can } from "#/shared/authz";
 import { getZeroCacheURL } from "#/shared/zero-cache-url";
 
 export const Route = createFileRoute("/admin")({
@@ -10,6 +11,9 @@ export const Route = createFileRoute("/admin")({
 		const user = await getCurrentUser();
 		if (!user) {
 			throw redirect({ to: "/login" });
+		}
+		if (!can(user.role, "program:write")) {
+			throw redirect({ to: "/app" });
 		}
 		return { user };
 	},

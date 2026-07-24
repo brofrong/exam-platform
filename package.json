@@ -18,6 +18,7 @@
 		"start": "bun run server.ts",
 		"preview": "vite preview",
 		"typecheck": "tsc --noEmit",
+		"test": "bun test src",
 		"test:e2e:infra": "docker compose -f docker/docker-compose.e2e.yml up -d --wait",
 		"test:e2e:infra:down": "docker compose -f docker/docker-compose.e2e.yml down -v",
 		"test:e2e:prepare": "bun --env-file=.env.e2e run db:migrate",
