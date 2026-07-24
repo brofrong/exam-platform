@@ -1,6 +1,6 @@
 import { useQuery } from "@rocicorp/zero/react";
 import { Link } from "@tanstack/react-router";
-import { PracticeActivityPlaceholder } from "#/features/lesson-player/ui/practice-activity-placeholder";
+import { PracticeActivityView } from "#/features/lesson-player/ui/practice-activity-view";
 import { TheoryActivityView } from "#/features/lesson-player/ui/theory-activity-view";
 import { queries } from "#/server/zero/queries";
 import { EmptyState, PageHeader } from "@/components/lms";
@@ -104,7 +104,10 @@ export function LessonPlayerPage({
 									content={activity.content}
 								/>
 							) : (
-								<PracticeActivityPlaceholder />
+								<PracticeActivityView
+									activityId={activity.id}
+									content={activity.content}
+								/>
 							)}
 						</li>
 					))}

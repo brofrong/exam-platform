@@ -12,9 +12,25 @@ export {
 	type VideoProvider,
 } from "#/features/lesson-editor/lib/parse-video-url";
 export {
+	createPracticeExtensions,
+	emptyPracticeDoc,
+	normalizePracticeDoc,
+	type PracticeDoc,
+	toPracticeActivityContent,
+} from "#/features/lesson-editor/lib/practice-schema";
+export { sanitizePracticeDoc } from "#/features/lesson-editor/lib/sanitize-practice-doc";
+export {
 	LiveReactBlock,
 	type LiveReactBlockProps,
 } from "#/features/lesson-editor/ui/live-react-block";
+export {
+	PracticeEditor,
+	type PracticeEditorProps,
+} from "#/features/lesson-editor/ui/practice-editor";
+export {
+	PracticeRenderer,
+	type PracticeRendererProps,
+} from "#/features/lesson-editor/ui/practice-renderer";
 export {
 	TheoryEditor,
 	type TheoryEditorProps,

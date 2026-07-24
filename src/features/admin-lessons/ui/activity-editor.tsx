@@ -8,17 +8,18 @@ import {
 import { useEffect, useState } from "react";
 import { z } from "zod";
 import {
+	emptyPracticeDoc,
 	emptyTheoryDoc,
+	normalizePracticeDoc,
 	normalizeTheoryDoc,
+	type PracticeDoc,
+	PracticeEditor,
 	type TheoryDoc,
 	TheoryEditor,
 	toActivityContent,
+	toPracticeActivityContent,
 } from "#/features/lesson-editor";
-import {
-	ACTIVITY_TYPES,
-	type ActivityType,
-	EMPTY_TIPTAP_DOC,
-} from "#/server/zero/constants";
+import { ACTIVITY_TYPES, type ActivityType } from "#/server/zero/constants";
 import { mutators } from "#/server/zero/mutators";
 import { EmptyState, EntityRow } from "@/components/lms";
 import { Badge } from "@/components/ui/badge";
@@ -39,7 +40,6 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 
 type ActivityRow = {
 	id: string;
@@ -62,29 +62,6 @@ const ACTIVITY_TYPE_LABELS: Record<ActivityType, string> = {
 const activityContentSchema = z.record(z.string(), z.json());
 type ActivityContent = z.infer<typeof activityContentSchema>;
 
-function formatContentJson(content: unknown): string {
-	try {
-		return JSON.stringify(content ?? EMPTY_TIPTAP_DOC, null, 2);
-	} catch {
-		return JSON.stringify(EMPTY_TIPTAP_DOC, null, 2);
-	}
-}
-
-function parseContentJson(
-	raw: string,
-): { ok: true; value: ActivityContent } | { ok: false; error: string } {
-	try {
-		const parsed: unknown = JSON.parse(raw);
-		const result = activityContentSchema.safeParse(parsed);
-		if (!result.success) {
-			return { ok: false, error: "Контент должен быть JSON-объектом TipTap" };
-		}
-		return { ok: true, value: result.data };
-	} catch {
-		return { ok: false, error: "Невалидный JSON" };
-	}
-}
-
 function asActivityType(type: string): ActivityType {
 	return ACTIVITY_TYPES.includes(type as ActivityType)
 		? (type as ActivityType)
@@ -97,7 +74,8 @@ export function ActivityEditor({ lessonId, activities }: ActivityEditorProps) {
 	const [createType, setCreateType] = useState<ActivityType>("theory");
 	const [editingId, setEditingId] = useState<string | null>(null);
 	const [theoryDraft, setTheoryDraft] = useState<TheoryDoc>(emptyTheoryDoc);
-	const [jsonDraft, setJsonDraft] = useState("");
+	const [practiceDraft, setPracticeDraft] =
+		useState<PracticeDoc>(emptyPracticeDoc);
 	const [contentError, setContentError] = useState<string | null>(null);
 	const [isSaving, setIsSaving] = useState(false);
 
@@ -112,7 +90,7 @@ export function ActivityEditor({ lessonId, activities }: ActivityEditorProps) {
 		if (asActivityType(editing.type) === "theory") {
 			setTheoryDraft(normalizeTheoryDoc(editing.content));
 		} else {
-			setJsonDraft(formatContentJson(editing.content));
+			setPracticeDraft(normalizePracticeDoc(editing.content));
 		}
 		setContentError(null);
 		setIsSaving(false);
@@ -155,24 +133,16 @@ export function ActivityEditor({ lessonId, activities }: ActivityEditorProps) {
 			return;
 		}
 
-		let content: ActivityContent;
-		if (editingType === "theory") {
-			const parsed = activityContentSchema.safeParse(
-				toActivityContent(theoryDraft),
-			);
-			if (!parsed.success) {
-				setContentError("Контент редактора невалиден");
-				return;
-			}
-			content = parsed.data;
-		} else {
-			const parsed = parseContentJson(jsonDraft);
-			if (!parsed.ok) {
-				setContentError(parsed.error);
-				return;
-			}
-			content = parsed.value;
+		const payload =
+			editingType === "theory"
+				? toActivityContent(theoryDraft)
+				: toPracticeActivityContent(practiceDraft);
+		const parsed = activityContentSchema.safeParse(payload);
+		if (!parsed.success) {
+			setContentError("Контент редактора невалиден");
+			return;
 		}
+		const content: ActivityContent = parsed.data;
 
 		setIsSaving(true);
 		setContentError(null);
@@ -209,7 +179,7 @@ export function ActivityEditor({ lessonId, activities }: ActivityEditorProps) {
 				<EmptyState
 					icon={<FileJsonIcon />}
 					title="Activities пока нет"
-					description="Добавьте теорию или практику. Теория редактируется в TipTap; практика пока через JSON."
+					description="Добавьте теорию или практику. Оба типа редактируются в TipTap."
 					action={
 						<Button
 							data-testid="activity-create-empty"
@@ -266,7 +236,7 @@ export function ActivityEditor({ lessonId, activities }: ActivityEditorProps) {
 												data-testid={`activity-edit-open-${activity.id}`}
 												onClick={() => setEditingId(activity.id)}
 											>
-												{type === "theory" ? "Редактор" : "JSON"}
+												Редактор
 											</Button>
 										</div>
 									}
@@ -336,7 +306,7 @@ export function ActivityEditor({ lessonId, activities }: ActivityEditorProps) {
 				}}
 			>
 				<DialogContent
-					className={editingType === "theory" ? "sm:max-w-3xl" : "sm:max-w-xl"}
+					className="sm:max-w-3xl"
 					data-testid="activity-content-dialog"
 				>
 					<form onSubmit={handleSaveContent} className="grid gap-4">
@@ -344,12 +314,12 @@ export function ActivityEditor({ lessonId, activities }: ActivityEditorProps) {
 							<DialogTitle>
 								{editingType === "theory"
 									? "Редактор теории"
-									: "Контент TipTap (JSON)"}
+									: "Редактор практики"}
 							</DialogTitle>
 							<DialogDescription>
 								{editingType === "theory"
 									? "WYSIWYG TipTap. Сохраняется в activity.content."
-									: "Практика пока редактируется как JSON (полный редактор — Task 19)."}
+									: "TipTap с вопросами (короткий ответ, выбор, файл). Эталоны ответов видны только админу."}
 							</DialogDescription>
 						</DialogHeader>
 						{editingType === "theory" && editing ? (
@@ -358,20 +328,14 @@ export function ActivityEditor({ lessonId, activities }: ActivityEditorProps) {
 								content={theoryDraft}
 								onChange={setTheoryDraft}
 							/>
-						) : (
-							<div className="space-y-1.5">
-								<Label htmlFor="activity-content-json">JSON</Label>
-								<Textarea
-									id="activity-content-json"
-									data-testid="activity-content-json"
-									value={jsonDraft}
-									onChange={(event) => setJsonDraft(event.target.value)}
-									rows={16}
-									className="font-mono text-xs"
-									spellCheck={false}
-								/>
-							</div>
-						)}
+						) : null}
+						{editingType === "practice" && editing ? (
+							<PracticeEditor
+								key={editing.id}
+								content={practiceDraft}
+								onChange={setPracticeDraft}
+							/>
+						) : null}
 						{contentError ? (
 							<p className="text-sm text-destructive">{contentError}</p>
 						) : null}
