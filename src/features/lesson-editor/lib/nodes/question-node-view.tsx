@@ -6,6 +6,7 @@ import {
 	parseOptions,
 	type QuestionGrading,
 } from "#/features/lesson-editor/lib/nodes/question-attrs";
+import { usePracticeAnswerContext } from "#/features/lesson-editor/lib/practice-answer-context";
 import {
 	FileUploadAnswer,
 	MultipleChoiceAnswer,
@@ -13,6 +14,7 @@ import {
 	SingleChoiceAnswer,
 } from "@/components/answer-widgets";
 import type { AnswerOption } from "@/components/answer-widgets/types";
+import { StatusBadge } from "@/components/lms";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -62,6 +64,149 @@ function removeOption(
 		return options;
 	}
 	return options.filter((option) => option.id !== optionId);
+}
+
+function StudentAnswerWidgets({
+	kind,
+	questionId,
+	options,
+}: {
+	kind: QuestionKind;
+	questionId: string;
+	options: AnswerOption[];
+}) {
+	const answering = usePracticeAnswerContext();
+	const mode = answering?.mode ?? "preview";
+	const interactive = mode === "answer" || mode === "readonly";
+	const disabled =
+		mode !== "answer" || answering?.disabled === true || !questionId;
+	const answer = answering?.answers[questionId];
+	const result = answering?.results?.[questionId];
+
+	const answerBlock = (() => {
+		if (kind === "shortText") {
+			const value = answer?.type === "short_text" ? answer.value : "";
+			return (
+				<ShortTextAnswer
+					value={value}
+					onChange={(next) => {
+						answering?.setAnswer(questionId, {
+							type: "short_text",
+							value: next,
+						});
+					}}
+					disabled={disabled}
+					label="Ваш ответ"
+				/>
+			);
+		}
+		if (kind === "singleChoice") {
+			const value = answer?.type === "single_choice" ? answer.optionId : null;
+			return (
+				<SingleChoiceAnswer
+					options={options}
+					value={value}
+					onChange={(next) => {
+						if (next) {
+							answering?.setAnswer(questionId, {
+								type: "single_choice",
+								optionId: next,
+							});
+						} else {
+							answering?.setAnswer(questionId, null);
+						}
+					}}
+					disabled={disabled}
+					label="Выберите один вариант"
+				/>
+			);
+		}
+		if (kind === "multipleChoice") {
+			const value = answer?.type === "multiple_choice" ? answer.optionIds : [];
+			return (
+				<MultipleChoiceAnswer
+					options={options}
+					value={value}
+					onChange={(next) => {
+						answering?.setAnswer(questionId, {
+							type: "multiple_choice",
+							optionIds: next,
+						});
+					}}
+					disabled={disabled}
+					label="Выберите один или несколько вариантов"
+				/>
+			);
+		}
+		if (mode === "readonly" && answer?.type === "file_upload") {
+			return (
+				<p
+					className="rounded-md border border-border bg-muted/30 px-3 py-2 text-sm"
+					data-testid={`practice-answer-file-${questionId}`}
+				>
+					{answer.filename}
+					<span className="ml-2 text-xs text-muted-foreground">
+						({Math.max(1, Math.round(answer.size / 1024))} КБ)
+					</span>
+				</p>
+			);
+		}
+		return (
+			<FileUploadAnswer
+				onChange={(files) => {
+					if (files.length === 0) {
+						answering?.setAnswer(questionId, null);
+					}
+				}}
+				onUpload={
+					answering?.uploadFile
+						? async (file, ctx) => {
+								const uploadedFile = await answering.uploadFile?.(file, ctx);
+								if (uploadedFile) {
+									answering.setAnswer(questionId, {
+										type: "file_upload",
+										storageKey: uploadedFile.storageKey,
+										filename: uploadedFile.filename,
+										mime: uploadedFile.mime,
+										size: uploadedFile.size,
+									});
+								}
+								return uploadedFile;
+							}
+						: undefined
+				}
+				disabled={disabled}
+				label="Файл ответа"
+				multiple={false}
+			/>
+		);
+	})();
+
+	return (
+		<div className="rounded-lg border border-dashed border-border bg-background p-3">
+			<div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+				<p className="text-xs text-muted-foreground">
+					{interactive
+						? mode === "readonly"
+							? "Ваш ответ"
+							: "Ответ"
+						: "Превью ответа ученика"}
+				</p>
+				{result && result !== "pending" ? (
+					<StatusBadge
+						status={result}
+						data-testid={`practice-answer-result-${questionId}`}
+					/>
+				) : result === "pending" ? (
+					<StatusBadge
+						status="pending"
+						data-testid={`practice-answer-result-${questionId}`}
+					/>
+				) : null}
+			</div>
+			{answerBlock}
+		</div>
+	);
 }
 
 export function QuestionNodeView({
@@ -324,45 +469,53 @@ export function QuestionNodeView({
 				</div>
 			) : null}
 
-			<div className="rounded-lg border border-dashed border-border bg-background p-3">
-				<p className="mb-2 text-xs text-muted-foreground">
-					{editable ? "Превью ответа ученика" : "Ответ (скоро)"}
-				</p>
-				{kind === "shortText" ? (
-					<ShortTextAnswer
-						value=""
-						onChange={() => undefined}
-						disabled
-						label="Ваш ответ"
-					/>
-				) : null}
-				{kind === "singleChoice" ? (
-					<SingleChoiceAnswer
-						options={options}
-						value={null}
-						onChange={() => undefined}
-						disabled
-						label="Выберите один вариант"
-					/>
-				) : null}
-				{kind === "multipleChoice" ? (
-					<MultipleChoiceAnswer
-						options={options}
-						value={[]}
-						onChange={() => undefined}
-						disabled
-						label="Выберите один или несколько вариантов"
-					/>
-				) : null}
-				{kind === "fileUpload" ? (
-					<FileUploadAnswer
-						onChange={() => undefined}
-						disabled
-						label="Файл ответа"
-						multiple={false}
-					/>
-				) : null}
-			</div>
+			{editable ? (
+				<div className="rounded-lg border border-dashed border-border bg-background p-3">
+					<p className="mb-2 text-xs text-muted-foreground">
+						Превью ответа ученика
+					</p>
+					{kind === "shortText" ? (
+						<ShortTextAnswer
+							value=""
+							onChange={() => undefined}
+							disabled
+							label="Ваш ответ"
+						/>
+					) : null}
+					{kind === "singleChoice" ? (
+						<SingleChoiceAnswer
+							options={options}
+							value={null}
+							onChange={() => undefined}
+							disabled
+							label="Выберите один вариант"
+						/>
+					) : null}
+					{kind === "multipleChoice" ? (
+						<MultipleChoiceAnswer
+							options={options}
+							value={[]}
+							onChange={() => undefined}
+							disabled
+							label="Выберите один или несколько вариантов"
+						/>
+					) : null}
+					{kind === "fileUpload" ? (
+						<FileUploadAnswer
+							onChange={() => undefined}
+							disabled
+							label="Файл ответа"
+							multiple={false}
+						/>
+					) : null}
+				</div>
+			) : (
+				<StudentAnswerWidgets
+					kind={kind}
+					questionId={questionId}
+					options={options}
+				/>
+			)}
 		</NodeViewWrapper>
 	);
 }

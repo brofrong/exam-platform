@@ -24,12 +24,14 @@ import { Route as ApiZeroRouteImport } from './routes/api/zero'
 import { Route as ApiUploadRouteImport } from './routes/api/upload'
 import { Route as ApiQueryRouteImport } from './routes/api/query'
 import { Route as ApiMutateRouteImport } from './routes/api/mutate'
+import { Route as AdminReviewsIndexRouteImport } from './routes/admin/reviews/index'
 import { Route as AdminProgramsIndexRouteImport } from './routes/admin/programs/index'
 import { Route as AdminLessonsIndexRouteImport } from './routes/admin/lessons/index'
 import { Route as AppProgramsProgramIdRouteImport } from './routes/app/programs/$programId'
 import { Route as ApiZeroSplatRouteImport } from './routes/api/zero/$'
 import { Route as ApiFilesSplatRouteImport } from './routes/api/files/$'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as AdminReviewsSubmissionIdRouteImport } from './routes/admin/reviews/$submissionId'
 import { Route as AdminProgramsProgramIdRouteImport } from './routes/admin/programs/$programId'
 import { Route as AdminLessonsLessonIdRouteImport } from './routes/admin/lessons/$lessonId'
 import { Route as AppProgramsProgramIdLessonsLessonIdRouteImport } from './routes/app/programs/$programId/lessons/$lessonId'
@@ -109,6 +111,11 @@ const ApiMutateRoute = ApiMutateRouteImport.update({
   path: '/api/mutate',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminReviewsIndexRoute = AdminReviewsIndexRouteImport.update({
+  id: '/reviews/',
+  path: '/reviews/',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminProgramsIndexRoute = AdminProgramsIndexRouteImport.update({
   id: '/programs/',
   path: '/programs/',
@@ -139,6 +146,12 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminReviewsSubmissionIdRoute =
+  AdminReviewsSubmissionIdRouteImport.update({
+    id: '/reviews/$submissionId',
+    path: '/reviews/$submissionId',
+    getParentRoute: () => AdminRoute,
+  } as any)
 const AdminProgramsProgramIdRoute = AdminProgramsProgramIdRouteImport.update({
   id: '/programs/$programId',
   path: '/programs/$programId',
@@ -174,12 +187,14 @@ export interface FileRoutesByFullPath {
   '/dev/': typeof DevIndexRoute
   '/admin/lessons/$lessonId': typeof AdminLessonsLessonIdRoute
   '/admin/programs/$programId': typeof AdminProgramsProgramIdRoute
+  '/admin/reviews/$submissionId': typeof AdminReviewsSubmissionIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/files/$': typeof ApiFilesSplatRoute
   '/api/zero/$': typeof ApiZeroSplatRoute
   '/app/programs/$programId': typeof AppProgramsProgramIdRouteWithChildren
   '/admin/lessons/': typeof AdminLessonsIndexRoute
   '/admin/programs/': typeof AdminProgramsIndexRoute
+  '/admin/reviews/': typeof AdminReviewsIndexRoute
   '/app/programs/$programId/lessons/$lessonId': typeof AppProgramsProgramIdLessonsLessonIdRoute
 }
 export interface FileRoutesByTo {
@@ -197,12 +212,14 @@ export interface FileRoutesByTo {
   '/dev': typeof DevIndexRoute
   '/admin/lessons/$lessonId': typeof AdminLessonsLessonIdRoute
   '/admin/programs/$programId': typeof AdminProgramsProgramIdRoute
+  '/admin/reviews/$submissionId': typeof AdminReviewsSubmissionIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/files/$': typeof ApiFilesSplatRoute
   '/api/zero/$': typeof ApiZeroSplatRoute
   '/app/programs/$programId': typeof AppProgramsProgramIdRouteWithChildren
   '/admin/lessons': typeof AdminLessonsIndexRoute
   '/admin/programs': typeof AdminProgramsIndexRoute
+  '/admin/reviews': typeof AdminReviewsIndexRoute
   '/app/programs/$programId/lessons/$lessonId': typeof AppProgramsProgramIdLessonsLessonIdRoute
 }
 export interface FileRoutesById {
@@ -224,12 +241,14 @@ export interface FileRoutesById {
   '/dev/': typeof DevIndexRoute
   '/admin/lessons/$lessonId': typeof AdminLessonsLessonIdRoute
   '/admin/programs/$programId': typeof AdminProgramsProgramIdRoute
+  '/admin/reviews/$submissionId': typeof AdminReviewsSubmissionIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/files/$': typeof ApiFilesSplatRoute
   '/api/zero/$': typeof ApiZeroSplatRoute
   '/app/programs/$programId': typeof AppProgramsProgramIdRouteWithChildren
   '/admin/lessons/': typeof AdminLessonsIndexRoute
   '/admin/programs/': typeof AdminProgramsIndexRoute
+  '/admin/reviews/': typeof AdminReviewsIndexRoute
   '/app/programs/$programId/lessons/$lessonId': typeof AppProgramsProgramIdLessonsLessonIdRoute
 }
 export interface FileRouteTypes {
@@ -252,12 +271,14 @@ export interface FileRouteTypes {
     | '/dev/'
     | '/admin/lessons/$lessonId'
     | '/admin/programs/$programId'
+    | '/admin/reviews/$submissionId'
     | '/api/auth/$'
     | '/api/files/$'
     | '/api/zero/$'
     | '/app/programs/$programId'
     | '/admin/lessons/'
     | '/admin/programs/'
+    | '/admin/reviews/'
     | '/app/programs/$programId/lessons/$lessonId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -275,12 +296,14 @@ export interface FileRouteTypes {
     | '/dev'
     | '/admin/lessons/$lessonId'
     | '/admin/programs/$programId'
+    | '/admin/reviews/$submissionId'
     | '/api/auth/$'
     | '/api/files/$'
     | '/api/zero/$'
     | '/app/programs/$programId'
     | '/admin/lessons'
     | '/admin/programs'
+    | '/admin/reviews'
     | '/app/programs/$programId/lessons/$lessonId'
   id:
     | '__root__'
@@ -301,12 +324,14 @@ export interface FileRouteTypes {
     | '/dev/'
     | '/admin/lessons/$lessonId'
     | '/admin/programs/$programId'
+    | '/admin/reviews/$submissionId'
     | '/api/auth/$'
     | '/api/files/$'
     | '/api/zero/$'
     | '/app/programs/$programId'
     | '/admin/lessons/'
     | '/admin/programs/'
+    | '/admin/reviews/'
     | '/app/programs/$programId/lessons/$lessonId'
   fileRoutesById: FileRoutesById
 }
@@ -432,6 +457,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiMutateRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/reviews/': {
+      id: '/admin/reviews/'
+      path: '/reviews'
+      fullPath: '/admin/reviews/'
+      preLoaderRoute: typeof AdminReviewsIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/programs/': {
       id: '/admin/programs/'
       path: '/programs'
@@ -474,6 +506,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/reviews/$submissionId': {
+      id: '/admin/reviews/$submissionId'
+      path: '/reviews/$submissionId'
+      fullPath: '/admin/reviews/$submissionId'
+      preLoaderRoute: typeof AdminReviewsSubmissionIdRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/programs/$programId': {
       id: '/admin/programs/$programId'
       path: '/programs/$programId'
@@ -502,16 +541,20 @@ interface AdminRouteChildren {
   AdminIndexRoute: typeof AdminIndexRoute
   AdminLessonsLessonIdRoute: typeof AdminLessonsLessonIdRoute
   AdminProgramsProgramIdRoute: typeof AdminProgramsProgramIdRoute
+  AdminReviewsSubmissionIdRoute: typeof AdminReviewsSubmissionIdRoute
   AdminLessonsIndexRoute: typeof AdminLessonsIndexRoute
   AdminProgramsIndexRoute: typeof AdminProgramsIndexRoute
+  AdminReviewsIndexRoute: typeof AdminReviewsIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminIndexRoute: AdminIndexRoute,
   AdminLessonsLessonIdRoute: AdminLessonsLessonIdRoute,
   AdminProgramsProgramIdRoute: AdminProgramsProgramIdRoute,
+  AdminReviewsSubmissionIdRoute: AdminReviewsSubmissionIdRoute,
   AdminLessonsIndexRoute: AdminLessonsIndexRoute,
   AdminProgramsIndexRoute: AdminProgramsIndexRoute,
+  AdminReviewsIndexRoute: AdminReviewsIndexRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)

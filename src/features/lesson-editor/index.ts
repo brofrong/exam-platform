@@ -5,6 +5,10 @@ export {
 	type TheoryDoc,
 	toActivityContent,
 } from "#/features/lesson-editor/lib/editor-schema";
+export {
+	type ExtractedPracticeQuestion,
+	extractPracticeQuestions,
+} from "#/features/lesson-editor/lib/extract-practice-questions";
 export { SINE_PLOT_LIVE_REACT_CODE } from "#/features/lesson-editor/lib/live-react-sample";
 export {
 	type ParsedVideoUrl,
@@ -28,6 +32,7 @@ export {
 	type PracticeEditorProps,
 } from "#/features/lesson-editor/ui/practice-editor";
 export {
+	type PracticeAnsweringProps,
 	PracticeRenderer,
 	type PracticeRendererProps,
 } from "#/features/lesson-editor/ui/practice-renderer";

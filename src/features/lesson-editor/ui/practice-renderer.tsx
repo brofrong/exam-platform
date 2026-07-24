@@ -1,11 +1,20 @@
 import { EditorContent, useEditor } from "@tiptap/react";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
+import {
+	type PracticeAnswerContextValue,
+	PracticeAnswerProvider,
+} from "#/features/lesson-editor/lib/practice-answer-context";
 import {
 	createPracticeExtensions,
 	emptyPracticeDoc,
 	normalizePracticeDoc,
 } from "#/features/lesson-editor/lib/practice-schema";
 import { sanitizePracticeDoc } from "#/features/lesson-editor/lib/sanitize-practice-doc";
+import type {
+	QuestionResult,
+	StudentAnswer,
+	StudentAnswers,
+} from "#/server/grading/grade-submission";
 import { cn } from "@/lib/utils";
 
 const proseClassName = cn(
@@ -22,18 +31,30 @@ const proseClassName = cn(
 	"[&_a]:text-primary [&_a]:underline [&_a]:underline-offset-2",
 );
 
+export type PracticeAnsweringProps = {
+	mode: "answer" | "readonly";
+	answers: StudentAnswers;
+	onAnswerChange?: (questionId: string, answer: StudentAnswer | null) => void;
+	uploadFile?: PracticeAnswerContextValue["uploadFile"];
+	results?: Record<string, QuestionResult>;
+	disabled?: boolean;
+};
+
 export type PracticeRendererProps = {
 	content?: unknown;
 	/** When true (default), strip `correctAnswer` before render. */
 	sanitize?: boolean;
 	className?: string;
+	/** When set, question nodes become interactive / show submitted answers. */
+	answering?: PracticeAnsweringProps;
 };
 
-/** Read-only TipTap render of practice JSON (student answering in Task 21). */
+/** Read-only TipTap render of practice JSON; optional interactive answering. */
 export function PracticeRenderer({
 	content,
 	sanitize = true,
 	className,
+	answering,
 }: PracticeRendererProps) {
 	const raw = normalizePracticeDoc(content ?? emptyPracticeDoc);
 	const doc = sanitize ? sanitizePracticeDoc(raw) : raw;
@@ -60,12 +81,38 @@ export function PracticeRenderer({
 		editor.commands.setContent(next, { emitUpdate: false });
 	}, [content, editor, sanitize]);
 
-	return (
+	const answerContext = useMemo((): PracticeAnswerContextValue | null => {
+		if (!answering) {
+			return null;
+		}
+		return {
+			mode: answering.mode,
+			answers: answering.answers,
+			results: answering.results,
+			disabled: answering.disabled,
+			setAnswer: (questionId, answer) => {
+				answering.onAnswerChange?.(questionId, answer);
+			},
+			uploadFile: answering.uploadFile,
+		};
+	}, [answering]);
+
+	const contentNode = (
 		<div
 			className={cn("practice-renderer", className)}
 			data-testid="practice-renderer"
 		>
 			<EditorContent editor={editor} />
 		</div>
+	);
+
+	if (!answerContext) {
+		return contentNode;
+	}
+
+	return (
+		<PracticeAnswerProvider value={answerContext}>
+			{contentNode}
+		</PracticeAnswerProvider>
 	);
 }
