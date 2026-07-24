@@ -88,13 +88,27 @@ export const queries = defineQueries({
 
 	// ── Student (auth + enrollment + published) ──────────────────────────
 
-	/** Published programs the current user is enrolled in. */
+	/** Published programs the current user is enrolled in (with outline). */
 	publishedPrograms: defineQuery(({ ctx }) => {
 		const user = requireUser(ctx);
 		return zql.program
 			.where("status", "published")
 			.whereExists("enrollments", (q) => q.where("userId", user.id))
-			.orderBy("createdAt", "desc");
+			.orderBy("createdAt", "desc")
+			.related("topics", (q) =>
+				q
+					.where("status", "published")
+					.orderBy("position", "asc")
+					.related("topicLessons", (tl) =>
+						tl
+							.orderBy("position", "asc")
+							.related("lesson", (lesson) =>
+								lesson
+									.where("status", "published")
+									.related("activities", (a) => a.orderBy("position", "asc")),
+							),
+					),
+			);
 	}),
 
 	/** One enrolled + published program with published topics/lessons. */
@@ -176,6 +190,35 @@ export const queries = defineQueries({
 				.orderBy("createdAt", "desc");
 		},
 	),
+
+	/** Student's own submissions awaiting review (home «На проверке»). */
+	myPendingSubmissions: defineQuery(({ ctx }) => {
+		const user = requireUser(ctx);
+		return zql.submission
+			.where("userId", user.id)
+			.where("status", "pending")
+			.orderBy("createdAt", "desc")
+			.related("activity")
+			.related("program");
+	}),
+
+	/** Student's lesson progress rows (may be empty until Task 25 writers). */
+	myLessonProgress: defineQuery(({ ctx }) => {
+		const user = requireUser(ctx);
+		return zql.lessonProgress
+			.where("userId", user.id)
+			.related("lesson")
+			.related("program");
+	}),
+
+	/** Student's activity progress rows (may be empty until Task 25 writers). */
+	myActivityProgress: defineQuery(({ ctx }) => {
+		const user = requireUser(ctx);
+		return zql.activityProgress
+			.where("userId", user.id)
+			.related("activity")
+			.related("program");
+	}),
 
 	/** Admin pending review queue. */
 	pendingSubmissions: defineQuery(({ ctx }) => {

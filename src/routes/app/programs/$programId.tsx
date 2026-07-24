@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ProgramOutlinePage } from "#/features/lesson-player";
+import { ProgramPage } from "#/features/programs";
 
 export const Route = createFileRoute("/app/programs/$programId")({
 	component: StudentProgramPage,
@@ -7,5 +7,5 @@ export const Route = createFileRoute("/app/programs/$programId")({
 
 function StudentProgramPage() {
 	const { programId } = Route.useParams();
-	return <ProgramOutlinePage programId={programId} />;
+	return <ProgramPage programId={programId} />;
 }
