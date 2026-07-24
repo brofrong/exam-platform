@@ -1,153 +1,97 @@
-# Starter: TanStack Start + Zero
+# TanStack Start + Zero Starter
 
-Стартер для своих проектов ([MIT](LICENSE)). Клонируй репозиторий, переименуй под задачу и развивай приложение на готовом стеке.
+A **very opinionated** starter for apps built with [TanStack Start](https://tanstack.com/start), [Rocicorp Zero](https://zerosync.dev/), [Drizzle](https://orm.drizzle.team/), [Better Auth](https://www.better-auth.com/), Tailwind CSS v4, shadcn/ui, and [Bun](https://bun.sh/).
 
-В комплекте: **TanStack Start**, **Drizzle**, **Rocicorp Zero**, **Better Auth**, **Tailwind CSS v4**, **shadcn/ui**, **Bun**. Демо-фича — синхронный чат (`features/chat`).
+It ships with a realtime multi-user chat demo (`features/chat`), Vertical Feature Slice layout, Cursor/agent rules, and Playwright E2E. Clone it, rename it, delete what you don’t need.
 
-## Быстрый старт
+License: [MIT](LICENSE).
 
-### 1. Клонировать и переименовать
+## Quick start
+
+Requires Bun and Docker.
 
 ```bash
-git clone <url-этого-репо> my-app
+git clone <repo-url> my-app
 cd my-app
-```
-
-В [`package.json`](package.json) поменяй `"name"` на имя проекта. При желании обнови title в [`src/routes/__root.tsx`](src/routes/__root.tsx).
-
-### 2. Установить зависимости
-
-Нужен [Bun](https://bun.sh/) **≥ 1.3** (в `packageManager` зафиксирован `1.3.14`) и Docker (для Postgres + Zero cache).
-
-```bash
 bun install
-```
-
-### 3. Окружение
-
-```bash
 cp .env.example .env
-```
-
-При необходимости поправь значения. Переменные приложения типизированы в `src/shared/env.ts`.  
-`ZERO_QUERY_URL` / `ZERO_MUTATE_URL` нужны контейнеру Zero (см. compose), не читаются app-кодом.
-
-Опционально задай `BETTER_AUTH_SECRET` (≥ 32 символов) для prod / нескольких инстансов. Если не задан, секрет один раз генерируется и сохраняется в `app_setting`.
-
-### 4. Инфраструктура (Postgres + Zero)
-
-```bash
 docker compose -f docker/docker-compose.dev.yml up -d
-```
-
-Порты: Postgres **5432**, Zero cache **4848**. Compose добавляет `extra_hosts` для Linux (`host.docker.internal`).
-
-### 5. Миграции и dev-сервер
-
-```bash
 bun run db:migrate
 bun run dev
 ```
 
-Приложение: [http://localhost:3000](http://localhost:3000). Зарегистрируйся / войди — откроется демо-чат.
+Open [http://localhost:3000](http://localhost:3000), sign up, and try the chat.
 
-> **Authz демо:** любой залогиненный пользователь видит все чаты и может писать в любой `chatId`. Это упрощение для sync-демо. Перед продом замени на membership/ownership — примеры в [`src/server/zero/authz.demo.ts`](src/server/zero/authz.demo.ts).
+Update `"name"` in `package.json` (and the document title in `src/routes/__root.tsx` if you want).
 
-## Разработка
+> **Demo authz:** any signed-in user can see every chat and post to any `chatId`. That is intentional for the sync demo — replace it before production. See [`src/server/zero/authz.demo.ts`](src/server/zero/authz.demo.ts).
 
-### Структура
-
-Код организован как **Vertical Feature Slices**:
+## Project layout
 
 ```text
 src/
-  routes/              # тонкие страницы и API
-  features/<name>/     # фича: ui/, lib/, index.ts
-  components/ui/       # shadcn
-  components/          # shell (Header, ThemeToggle, …)
-  server/auth|db/      # сервер (Node-only)
-  server/zero/         # Zero schema / queries / mutators (изоморфно)
-  shared/              # env, auth-client, общие хелперы
+  routes/           # thin pages + API handlers
+  features/<name>/  # ui/, lib/, index.ts
+  components/ui/    # shadcn primitives
+  components/       # app shell
+  server/auth|db/   # Node-only
+  server/zero/      # isomorphic Zero schema / queries / mutators
+  shared/           # env, auth client, helpers
 ```
 
-Импорты приложения: `#/…`. shadcn: `@/components/ui/…`, `@/lib/utils`.
+App imports use `#/…`. shadcn uses `@/components/ui/…` and `@/lib/utils`.
 
-Подробные правила для ИИ и людей: [`AGENTS.md`](AGENTS.md) и [`.cursor/rules/`](.cursor/rules/).
+Conventions for humans and agents: [`AGENTS.md`](AGENTS.md), [`.cursor/rules/`](.cursor/rules/).
 
-### Новая фича
+### Adding a feature
 
-1. Создай `src/features/<name>/{ui,lib,index.ts}`.
-2. Добавь тонкий route в `src/routes/`, который рендерит фичу.
-3. Таблицы — в `src/server/db/<entity>/`, затем `bun run db:generate` и `bun run db:migrate`.
-4. Queries/mutators — в `src/server/zero/`, schema обнови через `bun run zero:generate` (скрипт сам чинит `customType` до примитивов).
-5. UI — через shadcn:
+1. `src/features/<name>/{ui,lib,index.ts}`
+2. Thin route under `src/routes/` that renders the feature
+3. Tables in `src/server/db/<entity>/` → `bun run db:generate` → `bun run db:migrate`
+4. Queries / mutators in `src/server/zero/` → `bun run zero:generate`
+5. UI via shadcn: `bunx shadcn@latest add <component>`
 
-```bash
-bunx shadcn@latest add button
-```
+## Commands
 
-### Полезные команды
-
-| Задача | Команда |
-|--------|---------|
-| Dev-сервер | `bun run dev` |
+| Task | Command |
+|------|---------|
+| Dev | `bun run dev` |
 | Lint / format | `bun run check` |
 | Typecheck | `bun run typecheck` |
-| Сборка | `bun run build` |
-| Prod-старт (после build) | `bun run start` |
-| Миграции | `bun run db:migrate` |
+| Build | `bun run build` |
+| Start (after build) | `bun run start` |
+| Migrate | `bun run db:migrate` |
 | Drizzle Studio | `bun run db:studio` |
-| Zero schema | `bun run zero:generate` |
+| Generate Zero schema | `bun run zero:generate` |
 | E2E | `bun run test:e2e` |
 
-Миграции: `bun run db:migrate` — основной путь локально. При старте приложения (`db.ts`) миграции также применяются автоматически (удобно для Docker / `bun start`); путь ищется в `src/server/db/migrations`.
+## E2E
 
-### E2E (Playwright)
-
-Отдельный стек на портах **5433** (Postgres), **4849** (Zero) и app на **3100**, чтобы не мешать dev (`3000` / `5432` / `4848`).
+Uses a separate stack (Postgres `5433`, Zero `4849`, app `3100`) so it does not clash with local dev.
 
 ```bash
-cp .env.e2e.example .env.e2e   # если ещё нет
+cp .env.e2e.example .env.e2e
 bunx playwright install chromium
 bun run test:e2e
 ```
 
-`test:e2e` сам поднимает `docker/docker-compose.e2e.yml`, гоняет миграции и стартует app через Playwright `webServer`. Данные в тестах уникальные (email/чат на каждый прогон) — БД между тестами не чистится.
+CI runs quality checks and Playwright in parallel (see `.github/workflows/ci.yml`).
 
-В CI (`.github/workflows/ci.yml`) параллельно идут `quality` (`check` + `typecheck` + `build`) и Playwright. После успеха обоих на `main` собирается и пушится Docker-образ (`vars.DOCKERHUB_IMAGE`, по умолчанию `brofrong/zero-test`).
-
-Остановить infra локально: `bun run test:e2e:infra:down` (с `-v` снесёт volume).
-
-### Auth и данные
-
-- Клиент: `#/shared/auth-client` (Better Auth), UI — `features/auth`.
-- Сервер: `src/server/auth/`.
-- Синхрон UI ↔ БД: Zero (`useQuery` / `zero.mutate`) через cache; app отдаёт `/api/query` и `/api/mutate`.
-
-## Production (кратко)
+## Production
 
 ```bash
 bun run build
 bun run start
 ```
 
-Полный стек в Docker — [`docker/docker-compose.yml`](docker/docker-compose.yml) и [`Dockerfile`](Dockerfile).
-
-Образ и тег можно переопределить:
-
-```bash
-DOCKER_IMAGE=myuser/my-app DOCKER_TAG=latest docker compose -f docker/docker-compose.yml up -d
-```
-
-Задай сильные `POSTGRES_PASSWORD`, `ZERO_ADMIN_PASSWORD` и `BETTER_AUTH_SECRET` перед деплоем.
+Or the full stack: [`docker/docker-compose.yml`](docker/docker-compose.yml) + [`Dockerfile`](Dockerfile). Set strong `POSTGRES_PASSWORD`, `ZERO_ADMIN_PASSWORD`, and `BETTER_AUTH_SECRET` before deploying.
 
 ## Troubleshooting
 
-| Проблема | Что проверить |
-|----------|----------------|
-| Zero не синкается | `docker compose -f docker/docker-compose.dev.yml ps` — порт **4848** должен быть published; `ZERO_CACHE_UPSTREAM_URL=http://localhost:4848` |
-| Zero не достучится до app на Linux | В compose уже есть `extra_hosts: host.docker.internal:host-gateway`; app должен слушать `0.0.0.0:3000` (`bun run dev`) |
-| Postgres / logical replication | В compose задан `wal_level=logical` — без этого Zero cache не поднимется |
-| Playwright не находит браузер | `bunx playwright install chromium` |
-| `bun start` не находит migrations | Должна существовать `src/server/db/migrations` относительно cwd (после clone / в Docker она копируется в образ) |
-| Типы Zero стали `unknown` | Перегони `bun run zero:generate` — post-скрипт чинит `customType` |
+| Issue | Check |
+|-------|--------|
+| Zero not syncing | Dev compose publishes `4848`; `ZERO_CACHE_UPSTREAM_URL` points at it |
+| Zero → app on Linux | Compose includes `host.docker.internal:host-gateway`; app listens on `0.0.0.0:3000` |
+| Postgres / Zero | `wal_level=logical` is required |
+| Playwright browsers | `bunx playwright install chromium` |
+| Zero types are `unknown` | Re-run `bun run zero:generate` |
