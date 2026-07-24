@@ -1,5 +1,6 @@
 import { mergeAttributes, Node } from "@tiptap/core";
 import { ReactNodeViewRenderer } from "@tiptap/react";
+import { gripOnlyStopEvent } from "#/features/lesson-editor/lib/grip-only-stop-event";
 import { SINE_PLOT_LIVE_REACT_CODE } from "#/features/lesson-editor/lib/live-react-sample";
 import { LiveReactNodeView } from "#/features/lesson-editor/ui/live-react-block";
 
@@ -61,19 +62,7 @@ export const LiveReact = Node.create({
 
 	addNodeView() {
 		return ReactNodeViewRenderer(LiveReactNodeView, {
-			// Default TipTap stopEvent lets ProseMirror handle mousedown on
-			// selectable nodes, which steals pan/drag from Mafs. Stop all
-			// events inside the node except the explicit drag handle.
-			stopEvent: ({ event }) => {
-				const target = event.target;
-				if (!(target instanceof Element)) {
-					return true;
-				}
-				if (target.closest("[data-drag-handle]")) {
-					return false;
-				}
-				return true;
-			},
+			stopEvent: gripOnlyStopEvent,
 		});
 	},
 });

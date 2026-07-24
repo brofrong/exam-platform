@@ -3,6 +3,7 @@ import * as React from "react";
 import { useEffect, useId, useState } from "react";
 import { LiveError, LivePreview, LiveProvider } from "react-live";
 import { prepareLiveReactCode } from "#/features/lesson-editor/lib/prepare-live-react-code";
+import { NodeDragHandle } from "#/features/lesson-editor/ui/node-drag-handle";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
@@ -167,17 +168,10 @@ export function LiveReactBlock({
 			{editable ? (
 				<div className="flex select-none items-center justify-between gap-3 border-b border-border px-3 py-2">
 					<div className="flex min-w-0 items-center gap-2">
-						<button
-							type="button"
-							className="inline-flex shrink-0 cursor-grab touch-none items-center rounded px-1 py-0.5 text-xs text-muted-foreground active:cursor-grabbing"
-							contentEditable={false}
-							data-drag-handle
+						<NodeDragHandle
+							label="Переместить блок LiveReact"
 							data-testid="theory-live-react-drag-handle"
-							aria-label="Переместить блок LiveReact"
-							title="Переместить"
-						>
-							⋮⋮
-						</button>
+						/>
 						<p className="truncate text-xs text-muted-foreground">
 							LiveReact · {mode === "edit" ? "Редактор" : "Превью"} · scope:
 							React, Mafs, Coordinates, Plot, Theme, …
@@ -221,16 +215,7 @@ export function LiveReactBlock({
 						</Label>
 					</div>
 				</div>
-			) : (
-				// TipTap falls back to whole-node drag when no handle exists;
-				// keep a non-interactive handle so Mafs keeps pointer events.
-				<span
-					aria-hidden
-					className="pointer-events-none sr-only"
-					contentEditable={false}
-					data-drag-handle
-				/>
-			)}
+			) : null}
 
 			{showEditor ? (
 				<div className="p-2" data-testid="theory-live-react-edit-pane">

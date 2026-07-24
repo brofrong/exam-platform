@@ -7,6 +7,7 @@ import {
 	type QuestionGrading,
 } from "#/features/lesson-editor/lib/nodes/question-attrs";
 import { usePracticeAnswerContext } from "#/features/lesson-editor/lib/practice-answer-context";
+import { NodeDragHandle } from "#/features/lesson-editor/ui/node-drag-handle";
 import {
 	FileUploadAnswer,
 	MultipleChoiceAnswer,
@@ -237,15 +238,22 @@ export function QuestionNodeView({
 				"my-3 rounded-xl border border-border bg-muted/20 p-3",
 				selected && "ring-2 ring-ring/40",
 			)}
-			data-drag-handle
 			data-testid={`practice-question-${kind}`}
 			data-question-id={questionId || undefined}
 			data-grading={grading}
 		>
 			<div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-				<p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-					{KIND_LABELS[kind]}
-				</p>
+				<div className="flex min-w-0 items-center gap-2">
+					{editable ? (
+						<NodeDragHandle
+							label={`Переместить вопрос: ${KIND_LABELS[kind]}`}
+							data-testid={`practice-question-drag-handle-${kind}`}
+						/>
+					) : null}
+					<p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+						{KIND_LABELS[kind]}
+					</p>
+				</div>
 				{editable && kind !== "fileUpload" ? (
 					<div className="flex items-center gap-2">
 						<Label

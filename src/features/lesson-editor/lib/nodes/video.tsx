@@ -4,7 +4,9 @@ import {
 	type ReactNodeViewProps,
 	ReactNodeViewRenderer,
 } from "@tiptap/react";
+import { gripOnlyStopEvent } from "#/features/lesson-editor/lib/grip-only-stop-event";
 import type { ParsedVideoUrl } from "#/features/lesson-editor/lib/parse-video-url";
+import { NodeDragHandle } from "#/features/lesson-editor/ui/node-drag-handle";
 import { VideoEmbedFrame } from "@/components/lms";
 
 export type VideoNodeAttrs = {
@@ -22,7 +24,7 @@ declare module "@tiptap/core" {
 	}
 }
 
-function VideoNodeView({ node }: ReactNodeViewProps) {
+function VideoNodeView({ node, editor }: ReactNodeViewProps) {
 	const embedUrl = String(node.attrs.embedUrl ?? "");
 	const originalUrl = String(node.attrs.originalUrl ?? "");
 	const title =
@@ -31,6 +33,7 @@ function VideoNodeView({ node }: ReactNodeViewProps) {
 			: node.attrs.provider === "vk"
 				? "VK Video"
 				: "Видео";
+	const showHandle = editor.isEditable;
 
 	if (!embedUrl) {
 		return (
@@ -39,6 +42,14 @@ function VideoNodeView({ node }: ReactNodeViewProps) {
 				className="my-3 rounded-xl border border-dashed border-border px-3 py-6 text-center text-sm text-muted-foreground"
 				data-testid="theory-video-node-empty"
 			>
+				{showHandle ? (
+					<div className="mb-2 flex justify-start">
+						<NodeDragHandle
+							label="Переместить видео"
+							data-testid="theory-video-drag-handle"
+						/>
+					</div>
+				) : null}
 				Видео без URL
 			</NodeViewWrapper>
 		);
@@ -48,11 +59,19 @@ function VideoNodeView({ node }: ReactNodeViewProps) {
 		<NodeViewWrapper
 			as="div"
 			className="my-3"
-			data-drag-handle
 			data-testid="theory-video-node"
 			data-provider={node.attrs.provider ?? undefined}
 			data-original-url={originalUrl || undefined}
 		>
+			{showHandle ? (
+				<div className="mb-1 flex select-none items-center gap-2">
+					<NodeDragHandle
+						label="Переместить видео"
+						data-testid="theory-video-drag-handle"
+					/>
+					<span className="text-xs text-muted-foreground">{title}</span>
+				</div>
+			) : null}
 			<VideoEmbedFrame embedUrl={embedUrl} title={title} />
 		</NodeViewWrapper>
 	);
@@ -104,6 +123,8 @@ export const Video = Node.create({
 	},
 
 	addNodeView() {
-		return ReactNodeViewRenderer(VideoNodeView);
+		return ReactNodeViewRenderer(VideoNodeView, {
+			stopEvent: gripOnlyStopEvent,
+		});
 	},
 });

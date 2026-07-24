@@ -1,5 +1,6 @@
 import { mergeAttributes, Node } from "@tiptap/core";
 import { type ReactNodeViewProps, ReactNodeViewRenderer } from "@tiptap/react";
+import { gripOnlyStopEvent } from "#/features/lesson-editor/lib/grip-only-stop-event";
 import {
 	defaultFileUploadAttrs,
 	defaultMultipleChoiceAttrs,
@@ -115,7 +116,9 @@ export const ShortTextQuestion = Node.create({
 	},
 
 	addNodeView() {
-		return ReactNodeViewRenderer(createQuestionNodeView("shortText"));
+		return ReactNodeViewRenderer(createQuestionNodeView("shortText"), {
+			stopEvent: gripOnlyStopEvent,
+		});
 	},
 });
 
@@ -179,7 +182,9 @@ export const SingleChoiceQuestion = Node.create({
 	},
 
 	addNodeView() {
-		return ReactNodeViewRenderer(createQuestionNodeView("singleChoice"));
+		return ReactNodeViewRenderer(createQuestionNodeView("singleChoice"), {
+			stopEvent: gripOnlyStopEvent,
+		});
 	},
 });
 
@@ -245,7 +250,9 @@ export const MultipleChoiceQuestion = Node.create({
 	},
 
 	addNodeView() {
-		return ReactNodeViewRenderer(createQuestionNodeView("multipleChoice"));
+		return ReactNodeViewRenderer(createQuestionNodeView("multipleChoice"), {
+			stopEvent: gripOnlyStopEvent,
+		});
 	},
 });
 
@@ -302,6 +309,8 @@ export const FileUploadQuestion = Node.create({
 	},
 
 	addNodeView() {
-		return ReactNodeViewRenderer(createQuestionNodeView("fileUpload"));
+		return ReactNodeViewRenderer(createQuestionNodeView("fileUpload"), {
+			stopEvent: gripOnlyStopEvent,
+		});
 	},
 });
