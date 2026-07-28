@@ -82,7 +82,9 @@ test.describe("lms critical paths", () => {
 			lessonTitle,
 		});
 
-		const topicPane = page.getByTestId("topic-pane");
+		const topicPane = page
+			.getByTestId("admin-programs-workspace")
+			.getByTestId("topic-pane");
 		const topicPublishId = await topicPane
 			.locator("[data-testid^='topic-publish-']")
 			.getAttribute("data-testid");
@@ -93,13 +95,13 @@ test.describe("lms critical paths", () => {
 		).toBeVisible();
 
 		await page.getByTestId(`tree-folder-program:${programId}`).click();
-		await expect(page.getByTestId("admin-program-detail")).toBeVisible();
+		const programDetail = page
+			.getByTestId("admin-programs-workspace")
+			.getByTestId("admin-program-detail");
+		await expect(programDetail).toBeVisible();
 		await page.getByTestId(`program-detail-publish-${programId}`).click();
 		await expect(
-			page
-				.getByTestId("admin-program-detail")
-				.locator('[data-status="published"]')
-				.first(),
+			programDetail.locator('[data-status="published"]').first(),
 		).toBeVisible();
 
 		// ── 2. Invite ─────────────────────────────────────────────────────

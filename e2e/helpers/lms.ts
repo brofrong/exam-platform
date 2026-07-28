@@ -50,8 +50,9 @@ export async function createProgram(
 	opts: { title: string; subject: string; description?: string },
 ) {
 	await page.goto("/admin/programs");
-	await expect(page.getByTestId("admin-programs-workspace")).toBeVisible();
-	await page.getByTestId("program-create-open").click();
+	const workspace = page.getByTestId("admin-programs-workspace");
+	await expect(workspace).toBeVisible();
+	await workspace.getByTestId("program-create-open").click();
 	await expect(page.getByTestId("program-form-dialog")).toBeVisible();
 	await page.getByTestId("program-title-input").fill(opts.title);
 	if (opts.description) {
@@ -60,14 +61,15 @@ export async function createProgram(
 	await page.getByTestId("program-subject-input").fill(opts.subject);
 	await page.getByTestId("program-form-submit").click();
 	const programId = await waitForPath(page, /\/admin\/programs\/([^/?#]+)/);
-	await expect(page.getByTestId("admin-program-detail")).toBeVisible();
+	await expect(workspace.getByTestId("admin-program-detail")).toBeVisible();
 	await expect(page.getByRole("heading", { name: opts.title })).toBeVisible();
 	await reloadUntilVisible(page, "admin-program-detail", opts.title);
 	return programId;
 }
 
 export async function createTopic(page: Page, title: string) {
-	await page.getByTestId("topic-create-open").click();
+	const workspace = page.getByTestId("admin-programs-workspace");
+	await workspace.getByTestId("topic-create-open").click();
 	await expect(page.getByTestId("topic-create-dialog")).toBeVisible();
 	await page.getByTestId("topic-title-input").fill(title);
 	await page.getByTestId("topic-create-submit").click();
@@ -140,15 +142,14 @@ export async function linkLessonToTopic(
 	page: Page,
 	opts: { topicTitle: string; lessonTitle: string },
 ) {
-	await page
+	const workspace = page.getByTestId("admin-programs-workspace");
+	await workspace
 		.getByTestId("admin-program-detail")
 		.getByRole("button", { name: opts.topicTitle, exact: true })
 		.click();
-	await expect(page.getByTestId("topic-pane")).toBeVisible();
-	await page
-		.getByTestId("topic-pane")
-		.getByRole("button", { name: /Урок/ })
-		.click();
+	const topicPane = workspace.getByTestId("topic-pane");
+	await expect(topicPane).toBeVisible();
+	await topicPane.getByRole("button", { name: /Урок/ }).click();
 	await expect(page.getByTestId("add-lesson-dialog")).toBeVisible();
 	await page.getByTestId("add-lesson-pick-existing").click();
 	await selectRadixOption(page, "add-lesson-filter", "Все уроки");
@@ -156,7 +157,7 @@ export async function linkLessonToTopic(
 	await page.getByTestId("add-lesson-link-submit").click();
 	await expect(page.getByTestId("add-lesson-dialog")).toBeHidden();
 	await expect(
-		page.getByTestId("topic-pane").getByText(opts.lessonTitle, { exact: true }),
+		topicPane.getByText(opts.lessonTitle, { exact: true }),
 	).toBeVisible();
 }
 

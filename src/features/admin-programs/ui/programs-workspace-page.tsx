@@ -1,7 +1,7 @@
 import { useQuery, useZero } from "@rocicorp/zero/react";
 import { useNavigate } from "@tanstack/react-router";
 import { PlusIcon } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
 import { AddLessonDialog } from "#/features/admin-lessons/ui/add-lesson-dialog";
 import { LessonDetailPage } from "#/features/admin-lessons/ui/lesson-detail-page";
 import { ProgramDetailPage } from "#/features/admin-programs/ui/program-detail-page";
@@ -28,6 +28,32 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
+
+const MD_UP_QUERY = "(min-width: 768px)";
+
+function subscribeMdUp(onStoreChange: () => void) {
+	const media = window.matchMedia(MD_UP_QUERY);
+	media.addEventListener("change", onStoreChange);
+	return () => media.removeEventListener("change", onStoreChange);
+}
+
+function getMdUpSnapshot() {
+	return window.matchMedia(MD_UP_QUERY).matches;
+}
+
+/** Desktop-first on SSR so e2e / hydration match CI Desktop Chrome. */
+function getMdUpServerSnapshot() {
+	return true;
+}
+
+function useIsMdUp() {
+	return useSyncExternalStore(
+		subscribeMdUp,
+		getMdUpSnapshot,
+		getMdUpServerSnapshot,
+	);
+}
+
 import { File, Folder, Tree } from "@/components/ui/file-tree";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -78,19 +104,25 @@ export function ProgramsWorkspacePage({
 	programId?: string;
 	search: ProgramsSearch;
 }) {
-	return (
-		<>
-			<div className="hidden md:block" data-testid="programs-workspace-desktop">
+	// Mount only one layout — CSS-hidden duplicates still match Playwright testids.
+	const isDesktop = useIsMdUp();
+
+	if (isDesktop) {
+		return (
+			<div data-testid="programs-workspace-desktop">
 				<ProgramsDesktopWorkspace programId={programId} search={search} />
 			</div>
-			<div className="md:hidden" data-testid="programs-workspace-mobile">
-				{programId ? (
-					<ProgramDetailPage programId={programId} />
-				) : (
-					<ProgramsListPage />
-				)}
-			</div>
-		</>
+		);
+	}
+
+	return (
+		<div data-testid="programs-workspace-mobile">
+			{programId ? (
+				<ProgramDetailPage programId={programId} />
+			) : (
+				<ProgramsListPage />
+			)}
+		</div>
 	);
 }
 
