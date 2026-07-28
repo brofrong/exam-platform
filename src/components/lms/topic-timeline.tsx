@@ -40,18 +40,16 @@ function TopicProgressRing({
 		: "text-muted-foreground";
 
 	return (
-		<span
-			className="relative inline-flex size-10 shrink-0 items-center justify-center"
-			aria-hidden
-		>
+		<span className="relative inline-flex size-10 shrink-0 items-center justify-center">
 			<svg
 				width={size}
 				height={size}
 				className="-rotate-90"
 				viewBox={`0 0 ${size} ${size}`}
-				role="presentation"
+				role="img"
+				aria-label={`${percent}%`}
 			>
-				<title>Progress</title>
+				<title>{`${percent}%`}</title>
 				<circle
 					cx={size / 2}
 					cy={size / 2}
@@ -76,6 +74,7 @@ function TopicProgressRing({
 				/>
 			</svg>
 			<span
+				aria-hidden
 				className={cn(
 					"absolute inline-flex items-center justify-center text-[10px] font-semibold tabular-nums",
 					label,
@@ -106,7 +105,7 @@ function TopicTimeline({ items, className }: TopicTimelineProps) {
 				return (
 					<li
 						key={item.id}
-						data-testid={`topic-timeline-item-${item.id}`}
+						data-testid={`student-topic-${item.id}`}
 						data-complete={complete ? "true" : "false"}
 						className="relative flex gap-4"
 					>

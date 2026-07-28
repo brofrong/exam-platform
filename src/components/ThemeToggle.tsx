@@ -1,17 +1,18 @@
 import { useEffect, useState } from "react";
+import { cn } from "@/lib/utils";
 
-type ThemeMode = "light" | "dark" | "auto";
+export type ThemeMode = "light" | "dark" | "auto";
 
 const THEME_STORAGE_KEY = "theme";
 const MODES: ThemeMode[] = ["auto", "light", "dark"];
 
-const MODE_LABELS: Record<ThemeMode, string> = {
-	auto: "Системная тема",
-	light: "Светлая тема",
-	dark: "Тёмная тема",
+export const THEME_MODE_LABELS: Record<ThemeMode, string> = {
+	auto: "Системная",
+	light: "Светлая",
+	dark: "Тёмная",
 };
 
-function getStoredTheme(): ThemeMode {
+export function getStoredTheme(): ThemeMode {
 	if (typeof window === "undefined") {
 		return "auto";
 	}
@@ -34,7 +35,7 @@ function resolveTheme(mode: ThemeMode): "light" | "dark" {
 	return mode;
 }
 
-function applyTheme(mode: ThemeMode) {
+export function applyTheme(mode: ThemeMode) {
 	const root = document.documentElement;
 	const resolved = resolveTheme(mode);
 
@@ -48,6 +49,11 @@ function applyTheme(mode: ThemeMode) {
 	}
 
 	root.style.colorScheme = resolved;
+}
+
+export function setStoredTheme(mode: ThemeMode) {
+	window.localStorage.setItem(THEME_STORAGE_KEY, mode);
+	applyTheme(mode);
 }
 
 function ThemeIcon({ mode }: { mode: ThemeMode }) {
@@ -121,6 +127,58 @@ function ThemeIcon({ mode }: { mode: ThemeMode }) {
 	);
 }
 
+export function ThemeModePicker({ className }: { className?: string }) {
+	const [mode, setMode] = useState<ThemeMode>("auto");
+
+	useEffect(() => {
+		const current = getStoredTheme();
+		setMode(current);
+		applyTheme(current);
+
+		const media = window.matchMedia("(prefers-color-scheme: dark)");
+		const onSystemChange = () => {
+			if (getStoredTheme() === "auto") {
+				applyTheme("auto");
+			}
+		};
+
+		media.addEventListener("change", onSystemChange);
+		return () => media.removeEventListener("change", onSystemChange);
+	}, []);
+
+	return (
+		<div
+			className={cn("grid gap-2 sm:grid-cols-3", className)}
+			data-testid="theme-mode-picker"
+		>
+			{MODES.map((option) => {
+				const selected = mode === option;
+				return (
+					<button
+						key={option}
+						type="button"
+						aria-pressed={selected}
+						data-testid={`theme-mode-${option}`}
+						className={cn(
+							"flex items-center gap-2 rounded-xl border px-3 py-2.5 text-sm transition",
+							selected
+								? "border-primary bg-primary/5 text-foreground"
+								: "border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground",
+						)}
+						onClick={() => {
+							setStoredTheme(option);
+							setMode(option);
+						}}
+					>
+						<ThemeIcon mode={option} />
+						<span>{THEME_MODE_LABELS[option]}</span>
+					</button>
+				);
+			})}
+		</div>
+	);
+}
+
 export default function ThemeToggle() {
 	const [mode, setMode] = useState<ThemeMode>("auto");
 
@@ -142,8 +200,7 @@ export default function ThemeToggle() {
 
 	function cycleTheme() {
 		const next = MODES[(MODES.indexOf(mode) + 1) % MODES.length];
-		window.localStorage.setItem(THEME_STORAGE_KEY, next);
-		applyTheme(next);
+		setStoredTheme(next);
 		setMode(next);
 	}
 
@@ -152,8 +209,8 @@ export default function ThemeToggle() {
 			type="button"
 			onClick={cycleTheme}
 			className="rounded-xl border border-border bg-card p-2 text-muted-foreground transition hover:bg-muted hover:text-foreground"
-			aria-label={`${MODE_LABELS[mode]}. Нажмите, чтобы сменить.`}
-			title={MODE_LABELS[mode]}
+			aria-label={`${THEME_MODE_LABELS[mode]}. Нажмите, чтобы сменить.`}
+			title={THEME_MODE_LABELS[mode]}
 		>
 			<ThemeIcon mode={mode} />
 		</button>

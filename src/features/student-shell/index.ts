@@ -1,4 +1,1 @@
-export {
-	StudentAccountControls,
-	StudentShell,
-} from "#/features/student-shell/ui/student-shell";
+export { StudentShell } from "#/features/student-shell/ui/student-shell";

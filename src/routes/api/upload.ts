@@ -4,6 +4,7 @@ import {
 	buildObjectKey,
 	isAllowedContentType,
 	isUploadPurpose,
+	MAX_AVATAR_BYTES,
 	MAX_UPLOAD_BYTES,
 	putObject,
 } from "#/server/storage";
@@ -34,7 +35,7 @@ export const Route = createFileRoute("/api/upload")({
 				if (!isUploadPurpose(purpose)) {
 					return Response.json(
 						{
-							error: `Invalid purpose. Expected one of: editor, submissions`,
+							error: `Invalid purpose. Expected one of: editor, submissions, avatar`,
 						},
 						{ status: 400 },
 					);
@@ -56,9 +57,11 @@ export const Route = createFileRoute("/api/upload")({
 					return Response.json({ error: "Empty file" }, { status: 400 });
 				}
 
-				if (fileEntry.size > MAX_UPLOAD_BYTES) {
+				const maxBytes =
+					purpose === "avatar" ? MAX_AVATAR_BYTES : MAX_UPLOAD_BYTES;
+				if (fileEntry.size > maxBytes) {
 					return Response.json(
-						{ error: `File too large (max ${MAX_UPLOAD_BYTES} bytes)` },
+						{ error: `File too large (max ${maxBytes} bytes)` },
 						{ status: 413 },
 					);
 				}
@@ -67,7 +70,7 @@ export const Route = createFileRoute("/api/upload")({
 					fileEntry.type && fileEntry.type.length > 0
 						? fileEntry.type
 						: "application/octet-stream";
-				if (!isAllowedContentType(contentType)) {
+				if (!isAllowedContentType(contentType, purpose)) {
 					return Response.json(
 						{ error: `Unsupported content type: ${contentType}` },
 						{ status: 415 },

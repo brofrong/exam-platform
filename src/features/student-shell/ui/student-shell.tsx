@@ -1,16 +1,18 @@
-import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { BookOpenIcon, UserRoundIcon } from "lucide-react";
-import ThemeToggle from "#/components/ThemeToggle";
-import { authClient } from "#/shared/auth-client";
-import { Button } from "@/components/ui/button";
+import { Link, useRouterState } from "@tanstack/react-router";
+import { BookOpenIcon, SettingsIcon, UserRoundIcon } from "lucide-react";
+import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 function isProgramsPath(pathname: string): boolean {
 	return pathname === "/app/programs" || pathname.startsWith("/app/programs/");
 }
 
+function isSettingsPath(pathname: string): boolean {
+	return pathname === "/app/settings" || pathname.startsWith("/app/settings/");
+}
+
 function isProfilePath(pathname: string): boolean {
-	if (isProgramsPath(pathname)) {
+	if (isProgramsPath(pathname) || isSettingsPath(pathname)) {
 		return false;
 	}
 	return (
@@ -27,13 +29,15 @@ function NavLink({
 	label,
 	testId,
 	variant,
+	className,
 }: {
-	to: "/app" | "/app/programs";
+	to: "/app" | "/app/programs" | "/app/settings";
 	active: boolean;
-	icon: React.ReactNode;
+	icon: ReactNode;
 	label: string;
 	testId: string;
 	variant: "sidebar" | "tab";
+	className?: string;
 }) {
 	if (variant === "tab") {
 		return (
@@ -46,6 +50,7 @@ function NavLink({
 					active
 						? "text-foreground"
 						: "text-muted-foreground hover:text-foreground",
+					className,
 				)}
 			>
 				<span
@@ -71,6 +76,7 @@ function NavLink({
 				active
 					? "bg-sidebar-accent text-sidebar-accent-foreground"
 					: "text-sidebar-foreground/80 hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground",
+				className,
 			)}
 		>
 			<span className="inline-flex size-5 items-center justify-center">
@@ -81,62 +87,13 @@ function NavLink({
 	);
 }
 
-export function StudentAccountControls({
-	className,
-	compact = false,
-}: {
-	className?: string;
-	compact?: boolean;
-}) {
-	const navigate = useNavigate();
-
-	const handleLogout = async () => {
-		await authClient.signOut();
-		await navigate({ to: "/login" });
-	};
-
-	return (
-		<div
-			className={cn(
-				"flex items-center gap-2",
-				compact ? "justify-between" : "flex-col items-stretch",
-				className,
-			)}
-			data-testid="student-account-controls"
-		>
-			<div
-				className={cn(
-					"flex items-center",
-					compact ? "gap-2" : "justify-between",
-				)}
-			>
-				{!compact ? (
-					<span className="text-xs text-muted-foreground">Тема</span>
-				) : null}
-				<ThemeToggle />
-			</div>
-			<Button
-				type="button"
-				variant={compact ? "outline" : "ghost"}
-				size="sm"
-				className={cn(!compact && "justify-start")}
-				data-testid="nav-logout"
-				onClick={() => {
-					void handleLogout();
-				}}
-			>
-				Выйти
-			</Button>
-		</div>
-	);
-}
-
-export function StudentShell({ children }: { children: React.ReactNode }) {
+export function StudentShell({ children }: { children: ReactNode }) {
 	const pathname = useRouterState({
 		select: (state) => state.location.pathname,
 	});
 	const programsActive = isProgramsPath(pathname);
 	const profileActive = isProfilePath(pathname);
+	const settingsActive = isSettingsPath(pathname);
 
 	return (
 		<div className="flex min-h-svh bg-background" data-testid="student-shell">
@@ -161,7 +118,7 @@ export function StudentShell({ children }: { children: React.ReactNode }) {
 						active={programsActive}
 						icon={<BookOpenIcon className="size-4" />}
 						label="Программы"
-						testId="student-nav-programs"
+						testId="student-sidebar-programs"
 						variant="sidebar"
 					/>
 					<NavLink
@@ -169,14 +126,18 @@ export function StudentShell({ children }: { children: React.ReactNode }) {
 						active={profileActive}
 						icon={<UserRoundIcon className="size-4" />}
 						label="Мой профиль"
-						testId="student-nav-profile"
+						testId="student-sidebar-profile"
+						variant="sidebar"
+					/>
+					<NavLink
+						to="/app/settings"
+						active={settingsActive}
+						icon={<SettingsIcon className="size-4" />}
+						label="Настройки"
+						testId="student-sidebar-settings"
 						variant="sidebar"
 					/>
 				</nav>
-
-				<div className="border-t border-sidebar-border p-3">
-					<StudentAccountControls />
-				</div>
 			</aside>
 
 			<div className="flex min-w-0 flex-1 flex-col pb-[4.75rem] md:pb-0">
@@ -189,7 +150,6 @@ export function StudentShell({ children }: { children: React.ReactNode }) {
 				aria-label="Главное меню"
 			>
 				<div className="mx-auto flex max-w-lg">
-					{/* Mobile uses same test ids as sidebar — only one visible at a time */}
 					<NavLink
 						to="/app/programs"
 						active={programsActive}
@@ -200,7 +160,7 @@ export function StudentShell({ children }: { children: React.ReactNode }) {
 					/>
 					<NavLink
 						to="/app"
-						active={profileActive}
+						active={profileActive || settingsActive}
 						icon={<UserRoundIcon className="size-4" />}
 						label="Мой профиль"
 						testId="student-nav-profile"

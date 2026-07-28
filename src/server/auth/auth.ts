@@ -1,5 +1,6 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { username } from "better-auth/plugins";
 import { tanstackStartCookies } from "better-auth/tanstack-start";
 import { account, session, verification } from "#/server/db/auth/auth.schema";
 import { betterAuthSecret, db } from "#/server/db/db";
@@ -22,6 +23,10 @@ export const auth = betterAuth({
 		enabled: true,
 	},
 	user: {
+		changeEmail: {
+			enabled: true,
+			updateEmailWithoutVerification: true,
+		},
 		additionalFields: {
 			role: {
 				type: ["admin", "student"],
@@ -29,7 +34,19 @@ export const auth = betterAuth({
 				defaultValue: "student",
 				input: false,
 			},
+			notifySupportReply: {
+				type: "boolean",
+				required: false,
+				defaultValue: true,
+				input: true,
+			},
+			notifyReviewGraded: {
+				type: "boolean",
+				required: false,
+				defaultValue: true,
+				input: true,
+			},
 		},
 	},
-	plugins: [tanstackStartCookies()],
+	plugins: [username(), tanstackStartCookies()],
 });

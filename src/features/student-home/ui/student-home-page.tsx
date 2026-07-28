@@ -1,20 +1,19 @@
 import { useQuery } from "@rocicorp/zero/react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { BookOpenIcon, MessageCircleIcon } from "lucide-react";
+import { MessageCircleIcon } from "lucide-react";
 import {
 	averageEnrolledProgress,
 	countCompletedLessons,
 	findContinueTarget,
 	formatLastActivity,
-	programProgressPercent,
 } from "#/features/student-home/lib/home-stats";
 import { queries } from "#/server/zero/queries";
+import { can, type Role } from "#/shared/authz";
 import {
 	ContinueLearningCard,
 	EmptyState,
 	PageHeader,
 	PendingReviewList,
-	ProgramCard,
 	StatCard,
 } from "@/components/lms";
 import { Button } from "@/components/ui/button";
@@ -28,6 +27,7 @@ import {
 
 type StudentHomePageProps = {
 	userName: string;
+	role: Role;
 };
 
 function formatSubmittedAt(ms: number): string {
@@ -78,8 +78,9 @@ function SupportPreviewCard() {
 	);
 }
 
-export function StudentHomePage({ userName }: StudentHomePageProps) {
+export function StudentHomePage({ userName, role }: StudentHomePageProps) {
 	const navigate = useNavigate();
+	const showAdminPrograms = can(role, "program:write");
 	const [programs] = useQuery(queries.publishedPrograms());
 	const [lessonProgress] = useQuery(queries.myLessonProgress());
 	const [activityProgress] = useQuery(queries.myActivityProgress());
@@ -125,9 +126,52 @@ export function StudentHomePage({ userName }: StudentHomePageProps) {
 			data-testid="home-shell"
 		>
 			<PageHeader
-				title="Кабинет"
+				title="Мой профиль"
 				description={`Здравствуйте, ${userName}. Прогресс, продолжение обучения и работы на проверке.`}
+				actions={
+					<div className="flex flex-wrap items-center gap-2">
+						{showAdminPrograms ? (
+							<Button
+								asChild
+								variant="default"
+								data-testid="profile-open-admin-programs"
+							>
+								<Link to="/admin/programs">Создание программ</Link>
+							</Button>
+						) : null}
+						<Button
+							asChild
+							variant="outline"
+							data-testid="profile-open-settings"
+						>
+							<Link to="/app/settings">Настройки</Link>
+						</Button>
+					</div>
+				}
 			/>
+
+			<section
+				className="flex flex-col gap-2 md:hidden"
+				data-testid="student-mobile-account"
+			>
+				{showAdminPrograms ? (
+					<Button
+						asChild
+						className="w-full"
+						data-testid="mobile-open-admin-programs"
+					>
+						<Link to="/admin/programs">Создание программ</Link>
+					</Button>
+				) : null}
+				<Button
+					asChild
+					variant="outline"
+					className="w-full"
+					data-testid="mobile-open-settings"
+				>
+					<Link to="/app/settings">Настройки</Link>
+				</Button>
+			</section>
 
 			{loading ? (
 				<p className="text-sm text-muted-foreground">Загрузка кабинета…</p>
@@ -202,47 +246,6 @@ export function StudentHomePage({ userName }: StudentHomePageProps) {
 					<section className="space-y-3" data-testid="home-support-preview">
 						<h2 className="font-heading text-lg font-medium">Поддержка</h2>
 						<SupportPreviewCard />
-					</section>
-
-					<section className="space-y-3" data-testid="home-programs">
-						<h2 className="font-heading text-lg font-medium">Мои программы</h2>
-						{programsList.length === 0 ? (
-							<EmptyState
-								icon={<BookOpenIcon />}
-								title="Пока нет программ"
-								description="Активируйте приглашение, чтобы получить доступ к опубликованным программам."
-							/>
-						) : (
-							<ul
-								className="grid grid-cols-1 gap-3 sm:grid-cols-2"
-								data-testid="student-programs-list"
-							>
-								{programsList.map((program) => {
-									const progress = programProgressPercent(program, lessonRows);
-									return (
-										<li
-											key={program.id}
-											data-testid={`student-open-program-${program.id}`}
-										>
-											<ProgramCard
-												className="max-w-none"
-												title={program.title}
-												description={program.description ?? undefined}
-												examType={program.examType ?? undefined}
-												subject={program.subject ?? undefined}
-												progress={progress}
-												onOpen={() => {
-													void navigate({
-														to: "/app/programs/$programId",
-														params: { programId: program.id },
-													});
-												}}
-											/>
-										</li>
-									);
-								})}
-							</ul>
-						)}
 					</section>
 				</>
 			)}
