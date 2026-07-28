@@ -49,8 +49,9 @@ function TopicProgressRing({
 				height={size}
 				className="-rotate-90"
 				viewBox={`0 0 ${size} ${size}`}
-				aria-hidden
+				role="presentation"
 			>
+				<title>Progress</title>
 				<circle
 					cx={size / 2}
 					cy={size / 2}
