@@ -137,11 +137,15 @@ export async function login(page: Page, user: TestUser) {
 }
 
 export async function logout(page: Page) {
+	const adminLogout = page.getByTestId("admin-nav-logout");
 	const userMenu = page.getByTestId("nav-user-menu");
-	if (await userMenu.isVisible()) {
+	if (await adminLogout.isVisible().catch(() => false)) {
+		await adminLogout.click();
+	} else if (await userMenu.isVisible().catch(() => false)) {
 		await userMenu.click();
 		await page.getByTestId("nav-logout").click();
 	} else {
+		// StudentShell has no header UserMenu — logout from settings.
 		await page.goto("/app/settings", { waitUntil: "domcontentloaded" });
 		await expect(page.getByTestId("student-settings-page")).toBeVisible({
 			timeout: 60_000,

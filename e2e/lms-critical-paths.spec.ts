@@ -49,9 +49,8 @@ test.describe("lms critical paths", () => {
 		await logout(page);
 		await login(page, admin);
 
-		await page.getByTestId("nav-user-menu").click();
-		await expect(page.getByTestId("nav-admin")).toBeVisible();
-		await page.getByTestId("nav-admin").click();
+		// StudentShell hides AppHeader / UserMenu on /app — go to admin by URL.
+		await page.goto("/admin", { waitUntil: "domcontentloaded" });
 		await expect(page.getByTestId("admin-shell")).toBeVisible();
 
 		// ── Lesson + theory + practice ───────────────────────────────────
