@@ -258,7 +258,7 @@ export function LandingPage() {
 					<div className="relative">
 						<div className="absolute -inset-3 rounded-[2rem] bg-[color:var(--pm-amber)]/15 blur-2xl" />
 						<img
-							src="/landing/victoria-desk.jpg"
+							src="/landing/victoria-desk.webp"
 							alt="Виктория — преподаватель PHYS&MATH"
 							className="relative aspect-[4/5] w-full rounded-[1.5rem] object-cover shadow-2xl shadow-black/40 sm:aspect-[5/6]"
 						/>
