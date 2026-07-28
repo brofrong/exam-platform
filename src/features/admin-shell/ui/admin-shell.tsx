@@ -2,6 +2,7 @@ import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { BookOpenIcon, ClipboardCheckIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import ThemeToggle from "#/components/ThemeToggle";
+import { SeedDemoCatalogButton } from "#/features/admin-seed";
 import { AdminMoreMenu } from "#/features/admin-shell/ui/admin-more-menu";
 import { authClient } from "#/shared/auth-client";
 import type { Role } from "#/shared/authz";
@@ -110,6 +111,7 @@ function AdminAccountControls() {
 				<span className="text-xs text-muted-foreground">Тема</span>
 				<ThemeToggle />
 			</div>
+			<SeedDemoCatalogButton variant="sidebar" />
 			<Button
 				type="button"
 				variant="outline"

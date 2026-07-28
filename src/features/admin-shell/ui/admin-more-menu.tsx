@@ -6,6 +6,7 @@ import {
 	MoreHorizontalIcon,
 } from "lucide-react";
 import { useState } from "react";
+import { SeedDemoCatalogButton } from "#/features/admin-seed";
 import { can, type Role } from "#/shared/authz";
 import { Button } from "@/components/ui/button";
 import {
@@ -162,6 +163,10 @@ export function AdminMoreMenu({
 							</Link>
 						</Button>
 					))}
+					<SeedDemoCatalogButton
+						variant="sheet"
+						onDone={() => setSheetOpen(false)}
+					/>
 				</nav>
 			</SheetContent>
 		</Sheet>
