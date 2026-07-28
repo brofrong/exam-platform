@@ -6,6 +6,7 @@ import {
 	EntityRow,
 	PageHeader,
 	ProgressStat,
+	TopicTimeline,
 } from "@/components/lms";
 import { Button } from "@/components/ui/button";
 
@@ -36,7 +37,7 @@ export function ProgramPage({ programId }: ProgramPageProps) {
 					description="Программа не опубликована или у вас пока нет доступа."
 					action={
 						<Button asChild data-testid="student-program-back-home">
-							<Link to="/app">На главную</Link>
+							<Link to="/app/programs">К программам</Link>
 						</Button>
 					}
 				/>
@@ -73,6 +74,71 @@ export function ProgramPage({ programId }: ProgramPageProps) {
 					) / lessons.length,
 				);
 
+	const timelineItems = topics.map((topic) => {
+		const links = [...(topic.topicLessons ?? [])]
+			.sort((a, b) => a.position - b.position)
+			.filter((link) => link.lesson != null);
+		const topicLessons = links
+			.map((link) => link.lesson)
+			.filter((lesson): lesson is NonNullable<typeof lesson> => lesson != null);
+		const completedInTopic = topicLessons.filter(
+			(lesson) => progressByLesson.get(lesson.id)?.status === "completed",
+		).length;
+		const percent =
+			topicLessons.length === 0
+				? 0
+				: Math.round((completedInTopic / topicLessons.length) * 100);
+
+		return {
+			id: topic.id,
+			title: topic.title,
+			percent,
+			children:
+				links.length === 0 ? (
+					<p className="text-sm text-muted-foreground">
+						В теме пока нет опубликованных уроков.
+					</p>
+				) : (
+					<ul className="flex flex-col gap-2">
+						{links.map((link) => {
+							const lesson = link.lesson;
+							if (!lesson) {
+								return null;
+							}
+							const row = progressByLesson.get(lesson.id);
+							const lessonPercent = row?.percent ?? 0;
+							return (
+								<li key={`${link.topicId}-${link.lessonId}`}>
+									<EntityRow
+										title={lesson.title}
+										subtitle={`${Math.round(lessonPercent)}%`}
+										actions={
+											<Button
+												variant="outline"
+												size="sm"
+												asChild
+												data-testid={`student-open-lesson-${lesson.id}`}
+											>
+												<Link
+													to="/app/programs/$programId/lessons/$lessonId"
+													params={{
+														programId,
+														lessonId: lesson.id,
+													}}
+												>
+													Открыть
+												</Link>
+											</Button>
+										}
+									/>
+								</li>
+							);
+						})}
+					</ul>
+				),
+		};
+	});
+
 	return (
 		<main
 			className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 py-10"
@@ -87,11 +153,11 @@ export function ProgramPage({ programId }: ProgramPageProps) {
 				breadcrumbs={
 					<nav className="text-sm">
 						<Link
-							to="/app"
+							to="/app/programs"
 							className="hover:text-foreground"
 							data-testid="student-program-home-link"
 						>
-							Кабинет
+							Программы
 						</Link>
 						<span className="mx-1.5">/</span>
 						<span className="text-foreground">{program.title}</span>
@@ -119,67 +185,9 @@ export function ProgramPage({ programId }: ProgramPageProps) {
 					description="Опубликованные темы появятся здесь."
 				/>
 			) : (
-				<ul className="flex flex-col gap-6" data-testid="student-topics">
-					{topics.map((topic) => {
-						const links = [...(topic.topicLessons ?? [])]
-							.sort((a, b) => a.position - b.position)
-							.filter((link) => link.lesson != null);
-
-						return (
-							<li
-								key={topic.id}
-								className="space-y-2"
-								data-testid={`student-topic-${topic.id}`}
-							>
-								<h2 className="font-heading text-lg font-medium">
-									{topic.title}
-								</h2>
-								{links.length === 0 ? (
-									<p className="text-sm text-muted-foreground">
-										В теме пока нет опубликованных уроков.
-									</p>
-								) : (
-									<ul className="flex flex-col gap-2">
-										{links.map((link) => {
-											const lesson = link.lesson;
-											if (!lesson) {
-												return null;
-											}
-											const row = progressByLesson.get(lesson.id);
-											const lessonPercent = row?.percent ?? 0;
-											return (
-												<li key={`${link.topicId}-${link.lessonId}`}>
-													<EntityRow
-														title={lesson.title}
-														subtitle={`${Math.round(lessonPercent)}%`}
-														actions={
-															<Button
-																variant="outline"
-																size="sm"
-																asChild
-																data-testid={`student-open-lesson-${lesson.id}`}
-															>
-																<Link
-																	to="/app/programs/$programId/lessons/$lessonId"
-																	params={{
-																		programId,
-																		lessonId: lesson.id,
-																	}}
-																>
-																	Открыть
-																</Link>
-															</Button>
-														}
-													/>
-												</li>
-											);
-										})}
-									</ul>
-								)}
-							</li>
-						);
-					})}
-				</ul>
+				<section data-testid="student-topics">
+					<TopicTimeline items={timelineItems} />
+				</section>
 			)}
 		</main>
 	);

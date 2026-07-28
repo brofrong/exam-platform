@@ -142,16 +142,11 @@ export async function logout(page: Page) {
 		await userMenu.click();
 		await page.getByTestId("nav-logout").click();
 	} else {
-		const sidebarLogout = page.getByTestId("student-sidebar-logout");
-		if (await sidebarLogout.isVisible()) {
-			await sidebarLogout.click();
-		} else {
-			await page.goto("/app", { waitUntil: "domcontentloaded" });
-			await expect(page.getByTestId("home-shell")).toBeVisible({
-				timeout: 60_000,
-			});
-			await page.getByTestId("nav-logout").click();
-		}
+		await page.goto("/app/settings", { waitUntil: "domcontentloaded" });
+		await expect(page.getByTestId("student-settings-page")).toBeVisible({
+			timeout: 60_000,
+		});
+		await page.getByTestId("nav-logout").click();
 	}
 	await page.waitForURL((url) => url.pathname.includes("/login"));
 	await expect(page.getByTestId("auth-submit")).toBeVisible();

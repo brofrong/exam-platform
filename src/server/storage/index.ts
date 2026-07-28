@@ -11,6 +11,7 @@ export {
 	buildObjectKey,
 	isAllowedContentType,
 	isUploadPurpose,
+	MAX_AVATAR_BYTES,
 	MAX_UPLOAD_BYTES,
 	sanitizeFilename,
 	UPLOAD_PURPOSES,

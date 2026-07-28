@@ -16,6 +16,7 @@ import {
 	StatCard,
 	StatusBadge,
 	SupportMessageBubble,
+	TopicTimeline,
 	VideoEmbedFrame,
 } from "@/components/lms";
 import { Button } from "@/components/ui/button";
@@ -73,6 +74,41 @@ export function ProgressStatDemo() {
 				description="14 из 21 урока"
 			/>
 			<ProgressStat label="Текущий урок" value={35} />
+		</div>
+	);
+}
+
+export function TopicTimelineDemo() {
+	return (
+		<div className="w-full max-w-md">
+			<TopicTimeline
+				items={[
+					{
+						id: "t1",
+						title: "Квадратные уравнения",
+						percent: 100,
+						children: (
+							<p className="text-sm text-muted-foreground">2 из 2 уроков</p>
+						),
+					},
+					{
+						id: "t2",
+						title: "Тригонометрия",
+						percent: 50,
+						children: (
+							<p className="text-sm text-muted-foreground">1 из 2 уроков</p>
+						),
+					},
+					{
+						id: "t3",
+						title: "Стереометрия",
+						percent: 0,
+						children: (
+							<p className="text-sm text-muted-foreground">0 из 3 уроков</p>
+						),
+					},
+				]}
+			/>
 		</div>
 	);
 }

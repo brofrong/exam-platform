@@ -54,6 +54,7 @@ import {
 	StatCardDemo,
 	StatusBadgeDemo,
 	SupportMessageBubbleDemo,
+	TopicTimelineDemo,
 	VideoEmbedFrameDemo,
 } from "#/features/dev-gallery/ui/lms-demos";
 
@@ -328,6 +329,14 @@ export const galleryRegistry: GalleryEntry[] = [
 		category: "LMS composites",
 		component: ProgressStatDemo,
 		note: "import { ProgressStat } from '@/components/lms'",
+	},
+	{
+		slug: "topic-timeline",
+		title: "Topic Timeline",
+		description: "Vertical topic progress rings connected by a line.",
+		category: "LMS composites",
+		component: TopicTimelineDemo,
+		note: "import { TopicTimeline } from '@/components/lms'",
 	},
 	{
 		slug: "status-badge",

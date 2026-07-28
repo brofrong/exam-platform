@@ -1,13 +1,18 @@
 export const MAX_UPLOAD_BYTES = 20 * 1024 * 1024;
+export const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
 
-export const UPLOAD_PURPOSES = ["editor", "submissions"] as const;
+export const UPLOAD_PURPOSES = ["editor", "submissions", "avatar"] as const;
 export type UploadPurpose = (typeof UPLOAD_PURPOSES)[number];
 
-const ALLOWED_CONTENT_TYPES = new Set([
+const IMAGE_CONTENT_TYPES = new Set([
 	"image/jpeg",
 	"image/png",
 	"image/gif",
 	"image/webp",
+]);
+
+const ALLOWED_CONTENT_TYPES = new Set([
+	...IMAGE_CONTENT_TYPES,
 	"image/svg+xml",
 	"application/pdf",
 	"text/plain",
@@ -22,8 +27,14 @@ export function isUploadPurpose(value: unknown): value is UploadPurpose {
 	);
 }
 
-export function isAllowedContentType(contentType: string): boolean {
+export function isAllowedContentType(
+	contentType: string,
+	purpose?: UploadPurpose,
+): boolean {
 	const base = contentType.split(";")[0]?.trim().toLowerCase() ?? "";
+	if (purpose === "avatar") {
+		return IMAGE_CONTENT_TYPES.has(base);
+	}
 	return ALLOWED_CONTENT_TYPES.has(base);
 }
 

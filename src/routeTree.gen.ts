@@ -22,6 +22,7 @@ import { Route as ZeroSplatRouteImport } from './routes/zero/$'
 import { Route as InviteTokenRouteImport } from './routes/invite/$token'
 import { Route as DevSlugRouteImport } from './routes/dev/$slug'
 import { Route as AppSupportRouteImport } from './routes/app/support'
+import { Route as AppSettingsRouteImport } from './routes/app/settings'
 import { Route as ApiZeroRouteImport } from './routes/api/zero'
 import { Route as ApiUploadRouteImport } from './routes/api/upload'
 import { Route as ApiQueryRouteImport } from './routes/api/query'
@@ -108,6 +109,11 @@ const DevSlugRoute = DevSlugRouteImport.update({
 const AppSupportRoute = AppSupportRouteImport.update({
   id: '/support',
   path: '/support',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => AppRoute,
 } as any)
 const ApiZeroRoute = ApiZeroRouteImport.update({
@@ -235,6 +241,7 @@ export interface FileRoutesByFullPath {
   '/api/query': typeof ApiQueryRoute
   '/api/upload': typeof ApiUploadRoute
   '/api/zero': typeof ApiZeroRouteWithChildren
+  '/app/settings': typeof AppSettingsRoute
   '/app/support': typeof AppSupportRoute
   '/dev/$slug': typeof DevSlugRoute
   '/invite/$token': typeof InviteTokenRoute
@@ -269,6 +276,7 @@ export interface FileRoutesByTo {
   '/api/query': typeof ApiQueryRoute
   '/api/upload': typeof ApiUploadRoute
   '/api/zero': typeof ApiZeroRouteWithChildren
+  '/app/settings': typeof AppSettingsRoute
   '/app/support': typeof AppSupportRoute
   '/dev/$slug': typeof DevSlugRoute
   '/invite/$token': typeof InviteTokenRoute
@@ -307,6 +315,7 @@ export interface FileRoutesById {
   '/api/query': typeof ApiQueryRoute
   '/api/upload': typeof ApiUploadRoute
   '/api/zero': typeof ApiZeroRouteWithChildren
+  '/app/settings': typeof AppSettingsRoute
   '/app/support': typeof AppSupportRoute
   '/dev/$slug': typeof DevSlugRoute
   '/invite/$token': typeof InviteTokenRoute
@@ -346,6 +355,7 @@ export interface FileRouteTypes {
     | '/api/query'
     | '/api/upload'
     | '/api/zero'
+    | '/app/settings'
     | '/app/support'
     | '/dev/$slug'
     | '/invite/$token'
@@ -380,6 +390,7 @@ export interface FileRouteTypes {
     | '/api/query'
     | '/api/upload'
     | '/api/zero'
+    | '/app/settings'
     | '/app/support'
     | '/dev/$slug'
     | '/invite/$token'
@@ -417,6 +428,7 @@ export interface FileRouteTypes {
     | '/api/query'
     | '/api/upload'
     | '/api/zero'
+    | '/app/settings'
     | '/app/support'
     | '/dev/$slug'
     | '/invite/$token'
@@ -552,6 +564,13 @@ declare module '@tanstack/react-router' {
       path: '/support'
       fullPath: '/app/support'
       preLoaderRoute: typeof AppSupportRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/settings': {
+      id: '/app/settings'
+      path: '/settings'
+      fullPath: '/app/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
       parentRoute: typeof AppRoute
     }
     '/api/zero': {
@@ -744,6 +763,7 @@ const AdminRouteChildren: AdminRouteChildren = {
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 interface AppRouteChildren {
+  AppSettingsRoute: typeof AppSettingsRoute
   AppSupportRoute: typeof AppSupportRoute
   AppIndexRoute: typeof AppIndexRoute
   AppProgramsProgramIdRoute: typeof AppProgramsProgramIdRoute
@@ -752,6 +772,7 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppSettingsRoute: AppSettingsRoute,
   AppSupportRoute: AppSupportRoute,
   AppIndexRoute: AppIndexRoute,
   AppProgramsProgramIdRoute: AppProgramsProgramIdRoute,

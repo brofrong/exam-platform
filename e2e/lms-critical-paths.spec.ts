@@ -123,7 +123,10 @@ test.describe("lms critical paths", () => {
 		await expect(page.getByTestId("home-shell")).toBeVisible({
 			timeout: 60_000,
 		});
-		await expect(page.getByTestId("student-programs-list")).toBeVisible();
+		await page.goto("/app/programs", { waitUntil: "domcontentloaded" });
+		await expect(page.getByTestId("student-programs-list")).toBeVisible({
+			timeout: 60_000,
+		});
 		await expect(
 			page.getByTestId("student-programs-list").getByText(programTitle),
 		).toBeVisible();
