@@ -4,6 +4,9 @@
 @import "@fontsource-variable/geist";
 @import "@fontsource-variable/literata";
 @import "@fontsource-variable/manrope";
+@import "@fontsource/caveat/400.css";
+@import "@fontsource/caveat/600.css";
+@import "@fontsource/caveat/700.css";
 
 @custom-variant dark (
 	&:where(.dark, .dark *):not(:where(.light, .light *))
@@ -265,12 +268,185 @@
 	}
 }
 
+/* Orbit scoreboard — subtle grid */
+.landing-score-grid {
+	background-image:
+		linear-gradient(rgba(184, 240, 0, 0.06) 1px, transparent 1px),
+		linear-gradient(90deg, rgba(184, 240, 0, 0.06) 1px, transparent 1px);
+	background-size: 48px 48px;
+	mask-image: radial-gradient(ellipse at center, black 20%, transparent 75%);
+}
+
+.landing-score-card {
+	transition:
+		transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+		border-color 0.35s ease;
+}
+
+@media (hover: hover) {
+	.landing-score-card:hover {
+		transform: translateY(-4px);
+		border-color: #b8f000;
+	}
+}
+
+/* Story — horizontal quotes */
+.landing-story-scroll {
+	scrollbar-width: thin;
+	scroll-snap-type: x mandatory;
+}
+
+.landing-story-scroll > * {
+	scroll-snap-align: start;
+}
+
+/* Diplom masonry helper */
+.landing-diplom-masonry img {
+	transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (hover: hover) {
+	.landing-diplom-masonry img:hover {
+		transform: scale(1.02);
+	}
+}
+
+/* Spark — SPEAKY-inspired scrapbook */
+.landing-spark {
+	--pm-navy: #1a1a1a;
+	--pm-ink: #121212;
+	--pm-amber: #d26939;
+	--pm-amber-bright: #e07a4a;
+	--pm-amber-deep: #b5542a;
+	--pm-cream: #f5efe6;
+	--font-landing-display: "Manrope Variable", ui-sans-serif, system-ui, sans-serif;
+	background: #f5efe6;
+	color: #1a1a1a;
+}
+
+.landing-spark-paper {
+	background-color: #f5efe6;
+	background-image:
+		radial-gradient(rgba(26, 26, 26, 0.03) 0.6px, transparent 0.6px),
+		radial-gradient(rgba(210, 105, 57, 0.04) 0.8px, transparent 0.8px);
+	background-size:
+		4px 4px,
+		7px 7px;
+}
+
+.landing-spark-script {
+	font-family: "Caveat", cursive;
+	font-weight: 600;
+}
+
+.landing-spark-bw {
+	filter: grayscale(1) contrast(1.05);
+}
+
+.landing-spark-torn {
+	clip-path: polygon(
+		0% 0%,
+		100% 0%,
+		98% 8%,
+		100% 16%,
+		97% 24%,
+		100% 32%,
+		98% 40%,
+		100% 48%,
+		97% 56%,
+		100% 64%,
+		98% 72%,
+		100% 80%,
+		97% 88%,
+		100% 100%,
+		0% 100%
+	);
+}
+
+.landing-spark-polaroid {
+	transform: rotate(var(--spark-rot, -8deg));
+	animation: landing-spark-wiggle 5s ease-in-out infinite;
+}
+
+.landing-spark-float {
+	animation: landing-spark-bob 3.2s ease-in-out infinite;
+}
+
+.landing-spark-scroll {
+	scrollbar-width: thin;
+	scroll-snap-type: x mandatory;
+}
+
+.landing-spark-scroll > * {
+	scroll-snap-align: start;
+}
+
+@keyframes landing-spark-wiggle {
+	0%,
+	100% {
+		transform: rotate(var(--spark-rot, -8deg)) translateY(0);
+	}
+	50% {
+		transform: rotate(calc(var(--spark-rot, -8deg) + 1.5deg)) translateY(-3px);
+	}
+}
+
+@keyframes landing-spark-bob {
+	0%,
+	100% {
+		transform: translateY(0);
+	}
+	50% {
+		transform: translateY(-6px);
+	}
+}
+
+/* Chalk — stroke draw */
+.landing-chalk-stroke {
+	stroke-dasharray: 1400;
+	stroke-dashoffset: 1400;
+	animation: landing-chalk-draw 2.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.landing-chalk-stroke-delay {
+	animation-delay: 0.35s;
+}
+
+.landing-chalk-focus {
+	opacity: 0;
+	animation: landing-fade-up 0.8s ease 1.4s forwards;
+}
+
+@keyframes landing-chalk-draw {
+	to {
+		stroke-dashoffset: 0;
+	}
+}
+
+/* Story — scroll reveal */
+.landing-reveal {
+	animation: landing-fade-up 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+	animation-timeline: view();
+	animation-range: entry 5% cover 30%;
+}
+
 @media (prefers-reduced-motion: reduce) {
 	.landing-hero-image,
 	.landing-fade,
 	.landing-fade-delay-1,
 	.landing-fade-delay-2,
-	.landing-fade-delay-3 {
+	.landing-fade-delay-3,
+	.landing-chalk-stroke,
+	.landing-chalk-stroke-delay,
+	.landing-chalk-focus,
+	.landing-reveal,
+	.landing-score-card,
+	.landing-spark-polaroid,
+	.landing-spark-float {
 		animation: none;
+		opacity: 1;
+		transform: none;
+		stroke-dashoffset: 0;
+		transition: none;
 	}
 }
