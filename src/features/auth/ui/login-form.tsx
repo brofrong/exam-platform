@@ -8,11 +8,17 @@ type LoginFormProps = {
 	returnUrl?: string;
 };
 
+function looksLikeEmail(value: string) {
+	return value.includes("@");
+}
+
 export function LoginForm({ returnUrl = "/app" }: LoginFormProps) {
 	const navigate = useNavigate();
 	const [mode, setMode] = useState<"signin" | "signup">("signin");
 	const [name, setName] = useState("");
+	const [username, setUsername] = useState("");
 	const [email, setEmail] = useState("");
+	const [identifier, setIdentifier] = useState("");
 	const [password, setPassword] = useState("");
 	const [error, setError] = useState<string | null>(null);
 	const [isSubmitting, setIsSubmitting] = useState(false);
@@ -25,8 +31,21 @@ export function LoginForm({ returnUrl = "/app" }: LoginFormProps) {
 		try {
 			const result =
 				mode === "signup"
-					? await authClient.signUp.email({ email, password, name })
-					: await authClient.signIn.email({ email, password });
+					? await authClient.signUp.email({
+							email,
+							password,
+							name,
+							username,
+						})
+					: looksLikeEmail(identifier.trim())
+						? await authClient.signIn.email({
+								email: identifier.trim(),
+								password,
+							})
+						: await authClient.signIn.username({
+								username: identifier.trim(),
+								password,
+							});
 
 			if (result.error) {
 				setError(result.error.message ?? "Не удалось войти");
@@ -42,9 +61,12 @@ export function LoginForm({ returnUrl = "/app" }: LoginFormProps) {
 	};
 
 	const canSubmit =
-		email.trim().length > 0 &&
 		password.length > 0 &&
-		(mode === "signin" || name.trim().length > 0);
+		(mode === "signin"
+			? identifier.trim().length > 0
+			: name.trim().length > 0 &&
+				username.trim().length >= 3 &&
+				email.trim().length > 0);
 
 	return (
 		<main className="mx-auto flex min-h-[calc(100vh-8rem)] w-full max-w-7xl items-center justify-center px-4 py-10">
@@ -54,8 +76,8 @@ export function LoginForm({ returnUrl = "/app" }: LoginFormProps) {
 				</h1>
 				<p className="mt-2 text-sm text-muted-foreground">
 					{mode === "signin"
-						? "Войдите с помощью email и пароля."
-						: "Создайте аккаунт: укажите имя, email и пароль."}
+						? "Войдите с помощью логина или email и пароля."
+						: "Создайте аккаунт: укажите имя, логин, email и пароль."}
 				</p>
 
 				<div className="mt-4 flex rounded-xl border border-border p-1">
@@ -87,43 +109,89 @@ export function LoginForm({ returnUrl = "/app" }: LoginFormProps) {
 
 				<form onSubmit={handleSubmit} className="mt-6 space-y-4">
 					{mode === "signup" && (
+						<>
+							<div className="space-y-1.5">
+								<label
+									htmlFor="name"
+									className="block text-sm font-medium text-foreground"
+								>
+									Имя
+								</label>
+								<Input
+									id="name"
+									data-testid="auth-name"
+									value={name}
+									onChange={(event) => setName(event.target.value)}
+									placeholder="например, Анна"
+									className="h-10 rounded-xl px-4"
+									required
+								/>
+							</div>
+
+							<div className="space-y-1.5">
+								<label
+									htmlFor="username"
+									className="block text-sm font-medium text-foreground"
+								>
+									Логин
+								</label>
+								<Input
+									id="username"
+									data-testid="auth-username"
+									value={username}
+									onChange={(event) => setUsername(event.target.value)}
+									placeholder="anna.ivanova"
+									className="h-10 rounded-xl px-4"
+									required
+									minLength={3}
+									maxLength={30}
+									autoComplete="username"
+								/>
+							</div>
+
+							<div className="space-y-1.5">
+								<label
+									htmlFor="email"
+									className="block text-sm font-medium text-foreground"
+								>
+									Email
+								</label>
+								<Input
+									id="email"
+									data-testid="auth-email"
+									type="email"
+									value={email}
+									onChange={(event) => setEmail(event.target.value)}
+									placeholder="you@example.com"
+									className="h-10 rounded-xl px-4"
+									required
+									autoComplete="email"
+								/>
+							</div>
+						</>
+					)}
+
+					{mode === "signin" && (
 						<div className="space-y-1.5">
 							<label
-								htmlFor="name"
+								htmlFor="identifier"
 								className="block text-sm font-medium text-foreground"
 							>
-								Имя
+								Логин или email
 							</label>
 							<Input
-								id="name"
-								data-testid="auth-name"
-								value={name}
-								onChange={(event) => setName(event.target.value)}
-								placeholder="например, Анна"
+								id="identifier"
+								data-testid="auth-email"
+								type="text"
+								value={identifier}
+								onChange={(event) => setIdentifier(event.target.value)}
+								placeholder="anna.ivanova или you@example.com"
 								className="h-10 rounded-xl px-4"
 								required
+								autoComplete="username"
 							/>
 						</div>
 					)}
-
-					<div className="space-y-1.5">
-						<label
-							htmlFor="email"
-							className="block text-sm font-medium text-foreground"
-						>
-							Email
-						</label>
-						<Input
-							id="email"
-							data-testid="auth-email"
-							type="email"
-							value={email}
-							onChange={(event) => setEmail(event.target.value)}
-							placeholder="you@example.com"
-							className="h-10 rounded-xl px-4"
-							required
-						/>
-					</div>
 
 					<div className="space-y-1.5">
 						<label
@@ -142,6 +210,9 @@ export function LoginForm({ returnUrl = "/app" }: LoginFormProps) {
 							className="h-10 rounded-xl px-4"
 							required
 							minLength={8}
+							autoComplete={
+								mode === "signin" ? "current-password" : "new-password"
+							}
 						/>
 					</div>
 

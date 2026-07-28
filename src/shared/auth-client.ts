@@ -1,8 +1,12 @@
-import { inferAdditionalFields } from "better-auth/client/plugins";
+import {
+	inferAdditionalFields,
+	usernameClient,
+} from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react";
 
 export const authClient = createAuthClient({
 	plugins: [
+		usernameClient(),
 		inferAdditionalFields({
 			user: {
 				role: {
@@ -10,6 +14,18 @@ export const authClient = createAuthClient({
 					required: false,
 					defaultValue: "student",
 					input: false,
+				},
+				notifySupportReply: {
+					type: "boolean",
+					required: false,
+					defaultValue: true,
+					input: true,
+				},
+				notifyReviewGraded: {
+					type: "boolean",
+					required: false,
+					defaultValue: true,
+					input: true,
 				},
 			},
 		}),

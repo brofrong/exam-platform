@@ -3,14 +3,20 @@ import { expect } from "@playwright/test";
 
 export type TestUser = {
 	name: string;
+	username: string;
 	email: string;
 	password: string;
 };
 
 export function uniqueUser(label: string): TestUser {
 	const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+	const slug = label
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, "")
+		.slice(0, 12);
 	return {
 		name: label,
+		username: `${slug || "user"}.${id.slice(-8)}`,
 		email: `${label.toLowerCase()}-${id}@example.com`,
 		password: "password123",
 	};
@@ -55,8 +61,11 @@ async function fillAuthFields(
 		if (mode === "signup") {
 			await expect(page.getByTestId("auth-name")).toBeVisible();
 			await fillField(page, "auth-name", user.name);
+			await fillField(page, "auth-username", user.username);
+			await fillField(page, "auth-email", user.email);
+		} else {
+			await fillField(page, "auth-email", user.email);
 		}
-		await fillField(page, "auth-email", user.email);
 		await fillField(page, "auth-password", user.password);
 		await expect(page.getByTestId("auth-submit")).toBeEnabled({
 			timeout: 1_500,
@@ -128,8 +137,22 @@ export async function login(page: Page, user: TestUser) {
 }
 
 export async function logout(page: Page) {
-	await page.getByTestId("nav-user-menu").click();
-	await page.getByTestId("nav-logout").click();
+	const userMenu = page.getByTestId("nav-user-menu");
+	if (await userMenu.isVisible()) {
+		await userMenu.click();
+		await page.getByTestId("nav-logout").click();
+	} else {
+		const sidebarLogout = page.getByTestId("student-sidebar-logout");
+		if (await sidebarLogout.isVisible()) {
+			await sidebarLogout.click();
+		} else {
+			await page.goto("/app", { waitUntil: "domcontentloaded" });
+			await expect(page.getByTestId("home-shell")).toBeVisible({
+				timeout: 60_000,
+			});
+			await page.getByTestId("nav-logout").click();
+		}
+	}
 	await page.waitForURL((url) => url.pathname.includes("/login"));
 	await expect(page.getByTestId("auth-submit")).toBeVisible();
 }
