@@ -19,6 +19,7 @@ import { Route as DevIndexRouteImport } from './routes/dev/index'
 import { Route as AppIndexRouteImport } from './routes/app/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as ZeroSplatRouteImport } from './routes/zero/$'
+import { Route as VSlugRouteImport } from './routes/v.$slug'
 import { Route as InviteTokenRouteImport } from './routes/invite/$token'
 import { Route as DevSlugRouteImport } from './routes/dev/$slug'
 import { Route as AppSupportRouteImport } from './routes/app/support'
@@ -96,6 +97,11 @@ const ZeroSplatRoute = ZeroSplatRouteImport.update({
   id: '/$',
   path: '/$',
   getParentRoute: () => ZeroRoute,
+} as any)
+const VSlugRoute = VSlugRouteImport.update({
+  id: '/v/$slug',
+  path: '/v/$slug',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const InviteTokenRoute = InviteTokenRouteImport.update({
   id: '/invite/$token',
@@ -251,6 +257,7 @@ export interface FileRoutesByFullPath {
   '/app/support': typeof AppSupportRoute
   '/dev/$slug': typeof DevSlugRoute
   '/invite/$token': typeof InviteTokenRoute
+  '/v/$slug': typeof VSlugRoute
   '/zero/$': typeof ZeroSplatRoute
   '/admin/': typeof AdminIndexRoute
   '/app/': typeof AppIndexRoute
@@ -287,6 +294,7 @@ export interface FileRoutesByTo {
   '/app/support': typeof AppSupportRoute
   '/dev/$slug': typeof DevSlugRoute
   '/invite/$token': typeof InviteTokenRoute
+  '/v/$slug': typeof VSlugRoute
   '/zero/$': typeof ZeroSplatRoute
   '/admin': typeof AdminIndexRoute
   '/app': typeof AppIndexRoute
@@ -327,6 +335,7 @@ export interface FileRoutesById {
   '/app/support': typeof AppSupportRoute
   '/dev/$slug': typeof DevSlugRoute
   '/invite/$token': typeof InviteTokenRoute
+  '/v/$slug': typeof VSlugRoute
   '/zero/$': typeof ZeroSplatRoute
   '/admin/': typeof AdminIndexRoute
   '/app/': typeof AppIndexRoute
@@ -368,6 +377,7 @@ export interface FileRouteTypes {
     | '/app/support'
     | '/dev/$slug'
     | '/invite/$token'
+    | '/v/$slug'
     | '/zero/$'
     | '/admin/'
     | '/app/'
@@ -404,6 +414,7 @@ export interface FileRouteTypes {
     | '/app/support'
     | '/dev/$slug'
     | '/invite/$token'
+    | '/v/$slug'
     | '/zero/$'
     | '/admin'
     | '/app'
@@ -443,6 +454,7 @@ export interface FileRouteTypes {
     | '/app/support'
     | '/dev/$slug'
     | '/invite/$token'
+    | '/v/$slug'
     | '/zero/$'
     | '/admin/'
     | '/app/'
@@ -480,6 +492,7 @@ export interface RootRouteChildren {
   ApiUploadRoute: typeof ApiUploadRoute
   ApiZeroRoute: typeof ApiZeroRouteWithChildren
   InviteTokenRoute: typeof InviteTokenRoute
+  VSlugRoute: typeof VSlugRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiFilesSplatRoute: typeof ApiFilesSplatRoute
   ApiInviteActivateRoute: typeof ApiInviteActivateRoute
@@ -556,6 +569,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/zero/$'
       preLoaderRoute: typeof ZeroSplatRouteImport
       parentRoute: typeof ZeroRoute
+    }
+    '/v/$slug': {
+      id: '/v/$slug'
+      path: '/v/$slug'
+      fullPath: '/v/$slug'
+      preLoaderRoute: typeof VSlugRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/invite/$token': {
       id: '/invite/$token'
@@ -849,6 +869,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiUploadRoute: ApiUploadRoute,
   ApiZeroRoute: ApiZeroRouteWithChildren,
   InviteTokenRoute: InviteTokenRoute,
+  VSlugRoute: VSlugRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiFilesSplatRoute: ApiFilesSplatRoute,
   ApiInviteActivateRoute: ApiInviteActivateRoute,
