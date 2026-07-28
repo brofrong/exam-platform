@@ -9,15 +9,17 @@ export type TestUser = {
 };
 
 export function uniqueUser(label: string): TestUser {
-	const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+	// Better Auth default usernameValidator: /^[a-zA-Z0-9_.]+$/ (no hyphens).
+	const id = `${Date.now()}${Math.random().toString(36).slice(2, 8)}`;
 	const slug = label
 		.toLowerCase()
 		.replace(/[^a-z0-9]+/g, "")
 		.slice(0, 12);
+	const username = `${slug || "user"}_${id}`.slice(0, 30);
 	return {
 		name: label,
-		username: `${slug || "user"}.${id.slice(-8)}`,
-		email: `${label.toLowerCase()}-${id}@example.com`,
+		username,
+		email: `${slug || "user"}-${id}@example.com`,
 		password: "password123",
 	};
 }
