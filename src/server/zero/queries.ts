@@ -85,13 +85,15 @@ export const queries = defineQueries({
 	/** Full admin outline for programs file-tree. */
 	programsOutline: defineQuery(({ ctx }) => {
 		requireCapability(ctx, "program:write");
-		return zql.program.orderBy("createdAt", "desc").related("topics", (q) =>
-			q
-				.orderBy("position", "asc")
-				.related("topicLessons", (tl) =>
-					tl.orderBy("position", "asc").related("lesson"),
-				),
-		);
+		return zql.program
+			.orderBy("createdAt", "desc")
+			.related("topics", (q) =>
+				q
+					.orderBy("position", "asc")
+					.related("topicLessons", (tl) =>
+						tl.orderBy("position", "asc").related("lesson"),
+					),
+			);
 	}),
 
 	lessonById: defineQuery(z.object({ id: z.string() }), ({ ctx, args }) => {
