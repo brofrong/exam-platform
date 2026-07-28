@@ -1,5 +1,6 @@
 import { ZeroProvider } from "@rocicorp/zero/react";
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { StudentShell } from "#/features/student-shell";
 import { getCurrentUser } from "#/server/auth/get-current-user";
 import { mutators } from "#/server/zero/mutators";
 import { schema } from "#/server/zero/schema";
@@ -27,7 +28,9 @@ function AppLayout() {
 			userID={user.id}
 			context={{ id: user.id, name: user.name, role: user.role }}
 		>
-			<Outlet />
+			<StudentShell>
+				<Outlet />
+			</StudentShell>
 		</ZeroProvider>
 	);
 }

@@ -6,10 +6,12 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
 		select: (state) => state.location.pathname,
 	});
 	const isLanding = pathname === "/";
+	const isStudentApp =
+		pathname === "/app" || pathname.startsWith("/app/");
 
 	return (
 		<>
-			{isLanding ? null : <AppHeader />}
+			{isLanding || isStudentApp ? null : <AppHeader />}
 			{children}
 		</>
 	);
