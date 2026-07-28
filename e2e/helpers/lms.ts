@@ -50,9 +50,8 @@ export async function createProgram(
 	opts: { title: string; subject: string; description?: string },
 ) {
 	await page.goto("/admin/programs");
-	const workspace = page.getByTestId("admin-programs-workspace");
-	await expect(workspace).toBeVisible();
-	await workspace.getByTestId("program-create-open").click();
+	await expect(page.getByTestId("admin-programs-workspace")).toBeVisible();
+	await page.getByTestId("program-create-open").click();
 	await expect(page.getByTestId("program-form-dialog")).toBeVisible();
 	await page.getByTestId("program-title-input").fill(opts.title);
 	if (opts.description) {
@@ -61,15 +60,14 @@ export async function createProgram(
 	await page.getByTestId("program-subject-input").fill(opts.subject);
 	await page.getByTestId("program-form-submit").click();
 	const programId = await waitForPath(page, /\/admin\/programs\/([^/?#]+)/);
-	await expect(workspace.getByTestId("admin-program-detail")).toBeVisible();
+	await expect(page.getByTestId("admin-program-detail")).toBeVisible();
 	await expect(page.getByRole("heading", { name: opts.title })).toBeVisible();
 	await reloadUntilVisible(page, "admin-program-detail", opts.title);
 	return programId;
 }
 
 export async function createTopic(page: Page, title: string) {
-	const workspace = page.getByTestId("admin-programs-workspace");
-	await workspace.getByTestId("topic-create-open").click();
+	await page.getByTestId("topic-create-open").click();
 	await expect(page.getByTestId("topic-create-dialog")).toBeVisible();
 	await page.getByTestId("topic-title-input").fill(title);
 	await page.getByTestId("topic-create-submit").click();
@@ -104,26 +102,26 @@ export async function createActivity(page: Page, type: "Теория" | "Пра�
 }
 
 export async function editTheoryActivity(page: Page, body: string) {
-	const editButton = page
+	const editLink = page
 		.getByTestId("activities-list")
-		.getByRole("button", { name: "Редактор" })
+		.getByRole("link", { name: "Редактировать" })
 		.first();
-	await editButton.click();
-	await expect(page.getByTestId("activity-content-dialog")).toBeVisible();
+	await editLink.click();
+	await expect(page.getByTestId("admin-activity-edit")).toBeVisible();
 	await fillTipTap(page, "theory-editor-content", body);
 	await page.getByTestId("activity-content-submit").click();
-	await expect(page.getByTestId("activity-content-dialog")).toBeHidden();
+	await expect(page.getByTestId("admin-lesson-detail")).toBeVisible();
 }
 
 export async function editPracticeShortText(
 	page: Page,
 	opts: { prompt: string; correctAnswer: string },
 ) {
-	const editButtons = page
+	const editLinks = page
 		.getByTestId("activities-list")
-		.getByRole("button", { name: "Редактор" });
-	await editButtons.last().click();
-	await expect(page.getByTestId("activity-content-dialog")).toBeVisible();
+		.getByRole("link", { name: "Редактировать" });
+	await editLinks.last().click();
+	await expect(page.getByTestId("admin-activity-edit")).toBeVisible();
 	await expect(page.getByTestId("practice-editor")).toBeVisible();
 	await page.getByTestId("practice-editor-content").click();
 	await page.getByTestId("practice-toolbar-short-text").click();
@@ -135,21 +133,22 @@ export async function editPracticeShortText(
 		.getByTestId("practice-question-correct-shortText")
 		.fill(opts.correctAnswer);
 	await page.getByTestId("activity-content-submit").click();
-	await expect(page.getByTestId("activity-content-dialog")).toBeHidden();
+	await expect(page.getByTestId("admin-lesson-detail")).toBeVisible();
 }
 
 export async function linkLessonToTopic(
 	page: Page,
 	opts: { topicTitle: string; lessonTitle: string },
 ) {
-	const workspace = page.getByTestId("admin-programs-workspace");
-	await workspace
+	await page
 		.getByTestId("admin-program-detail")
 		.getByRole("button", { name: opts.topicTitle, exact: true })
 		.click();
-	const topicPane = workspace.getByTestId("topic-pane");
-	await expect(topicPane).toBeVisible();
-	await topicPane.getByRole("button", { name: /Урок/ }).click();
+	await expect(page.getByTestId("topic-pane")).toBeVisible();
+	await page
+		.getByTestId("topic-pane")
+		.getByRole("button", { name: /Урок/ })
+		.click();
 	await expect(page.getByTestId("add-lesson-dialog")).toBeVisible();
 	await page.getByTestId("add-lesson-pick-existing").click();
 	await selectRadixOption(page, "add-lesson-filter", "Все уроки");
@@ -157,7 +156,7 @@ export async function linkLessonToTopic(
 	await page.getByTestId("add-lesson-link-submit").click();
 	await expect(page.getByTestId("add-lesson-dialog")).toBeHidden();
 	await expect(
-		topicPane.getByText(opts.lessonTitle, { exact: true }),
+		page.getByTestId("topic-pane").getByText(opts.lessonTitle, { exact: true }),
 	).toBeVisible();
 }
 

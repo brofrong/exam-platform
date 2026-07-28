@@ -86,7 +86,7 @@ export function LessonDetailPage({
 		>
 			<PageHeader
 				title={lesson.title}
-				description="Редактирование урока и порядка activities."
+				description="Редактирование урока и порядка активностей."
 				breadcrumbs={
 					embedded ? undefined : (
 						<nav className="text-sm">

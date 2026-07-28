@@ -47,6 +47,7 @@ import { Route as AdminLessonsNewRouteImport } from './routes/admin/lessons/new'
 import { Route as AdminLessonsLessonIdRouteImport } from './routes/admin/lessons/$lessonId'
 import { Route as AdminAnalyticsUserIdProgramIdRouteImport } from './routes/admin/analytics/$userId/$programId'
 import { Route as AppProgramsProgramIdLessonsLessonIdRouteImport } from './routes/app/programs/$programId_.lessons.$lessonId'
+import { Route as AdminLessonsLessonIdActivitiesActivityIdRouteImport } from './routes/admin/lessons/$lessonId_.activities.$activityId'
 
 const ZeroRoute = ZeroRouteImport.update({
   id: '/zero',
@@ -241,6 +242,12 @@ const AppProgramsProgramIdLessonsLessonIdRoute =
     path: '/programs/$programId/lessons/$lessonId',
     getParentRoute: () => AppRoute,
   } as any)
+const AdminLessonsLessonIdActivitiesActivityIdRoute =
+  AdminLessonsLessonIdActivitiesActivityIdRouteImport.update({
+    id: '/lessons/$lessonId_/activities/$activityId',
+    path: '/lessons/$lessonId/activities/$activityId',
+    getParentRoute: () => AdminRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -280,6 +287,7 @@ export interface FileRoutesByFullPath {
   '/admin/support/': typeof AdminSupportIndexRoute
   '/app/programs/': typeof AppProgramsIndexRoute
   '/admin/analytics/$userId/$programId': typeof AdminAnalyticsUserIdProgramIdRoute
+  '/admin/lessons/$lessonId/activities/$activityId': typeof AdminLessonsLessonIdActivitiesActivityIdRoute
   '/app/programs/$programId/lessons/$lessonId': typeof AppProgramsProgramIdLessonsLessonIdRoute
 }
 export interface FileRoutesByTo {
@@ -317,6 +325,7 @@ export interface FileRoutesByTo {
   '/admin/support': typeof AdminSupportIndexRoute
   '/app/programs': typeof AppProgramsIndexRoute
   '/admin/analytics/$userId/$programId': typeof AdminAnalyticsUserIdProgramIdRoute
+  '/admin/lessons/$lessonId/activities/$activityId': typeof AdminLessonsLessonIdActivitiesActivityIdRoute
   '/app/programs/$programId/lessons/$lessonId': typeof AppProgramsProgramIdLessonsLessonIdRoute
 }
 export interface FileRoutesById {
@@ -358,6 +367,7 @@ export interface FileRoutesById {
   '/admin/support/': typeof AdminSupportIndexRoute
   '/app/programs/': typeof AppProgramsIndexRoute
   '/admin/analytics/$userId/$programId': typeof AdminAnalyticsUserIdProgramIdRoute
+  '/admin/lessons/$lessonId_/activities/$activityId': typeof AdminLessonsLessonIdActivitiesActivityIdRoute
   '/app/programs/$programId_/lessons/$lessonId': typeof AppProgramsProgramIdLessonsLessonIdRoute
 }
 export interface FileRouteTypes {
@@ -400,6 +410,7 @@ export interface FileRouteTypes {
     | '/admin/support/'
     | '/app/programs/'
     | '/admin/analytics/$userId/$programId'
+    | '/admin/lessons/$lessonId/activities/$activityId'
     | '/app/programs/$programId/lessons/$lessonId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -437,6 +448,7 @@ export interface FileRouteTypes {
     | '/admin/support'
     | '/app/programs'
     | '/admin/analytics/$userId/$programId'
+    | '/admin/lessons/$lessonId/activities/$activityId'
     | '/app/programs/$programId/lessons/$lessonId'
   id:
     | '__root__'
@@ -477,6 +489,7 @@ export interface FileRouteTypes {
     | '/admin/support/'
     | '/app/programs/'
     | '/admin/analytics/$userId/$programId'
+    | '/admin/lessons/$lessonId_/activities/$activityId'
     | '/app/programs/$programId_/lessons/$lessonId'
   fileRoutesById: FileRoutesById
 }
@@ -766,6 +779,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppProgramsProgramIdLessonsLessonIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/admin/lessons/$lessonId_/activities/$activityId': {
+      id: '/admin/lessons/$lessonId_/activities/$activityId'
+      path: '/lessons/$lessonId/activities/$activityId'
+      fullPath: '/admin/lessons/$lessonId/activities/$activityId'
+      preLoaderRoute: typeof AdminLessonsLessonIdActivitiesActivityIdRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
@@ -783,6 +803,7 @@ interface AdminRouteChildren {
   AdminReviewsIndexRoute: typeof AdminReviewsIndexRoute
   AdminSupportIndexRoute: typeof AdminSupportIndexRoute
   AdminAnalyticsUserIdProgramIdRoute: typeof AdminAnalyticsUserIdProgramIdRoute
+  AdminLessonsLessonIdActivitiesActivityIdRoute: typeof AdminLessonsLessonIdActivitiesActivityIdRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
@@ -799,6 +820,8 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminReviewsIndexRoute: AdminReviewsIndexRoute,
   AdminSupportIndexRoute: AdminSupportIndexRoute,
   AdminAnalyticsUserIdProgramIdRoute: AdminAnalyticsUserIdProgramIdRoute,
+  AdminLessonsLessonIdActivitiesActivityIdRoute:
+    AdminLessonsLessonIdActivitiesActivityIdRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
@@ -877,12 +900,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}
