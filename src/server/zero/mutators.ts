@@ -418,14 +418,29 @@ export const mutators = defineMutators({
 		z.object({
 			id: z.string().optional(),
 			title: z.string().min(1).max(255),
+			homeProgramId: z.string().optional(),
+			homeTopicId: z.string().optional(),
+			linkTopicId: z.string().optional(),
+			linkPosition: z.number().int().nonnegative().optional(),
 		}),
 		async ({ ctx, args, tx }) => {
 			requireCapability(ctx, "lesson:write");
+			const id = newId(args.id);
 			await tx.mutate.lesson.insert({
-				id: newId(args.id),
+				id,
 				title: args.title,
 				status: "draft",
+				homeProgramId: args.homeProgramId,
+				homeTopicId: args.homeTopicId,
 			});
+			if (args.linkTopicId !== undefined) {
+				requireCapability(ctx, "program:write");
+				await tx.mutate.topicLesson.insert({
+					topicId: args.linkTopicId,
+					lessonId: id,
+					position: args.linkPosition ?? 0,
+				});
+			}
 		},
 	),
 

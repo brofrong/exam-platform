@@ -63,6 +63,37 @@ export const queries = defineQueries({
 		return zql.lesson.orderBy("title", "asc");
 	}),
 
+	/** Admin lesson picker — optional home program/topic filters. */
+	lessonsByHome: defineQuery(
+		z.object({
+			homeProgramId: z.string().optional(),
+			homeTopicId: z.string().optional(),
+		}),
+		({ ctx, args }) => {
+			requireCapability(ctx, "lesson:write");
+			let q = zql.lesson;
+			if (args.homeProgramId) {
+				q = q.where("homeProgramId", args.homeProgramId);
+			}
+			if (args.homeTopicId) {
+				q = q.where("homeTopicId", args.homeTopicId);
+			}
+			return q.orderBy("title", "asc");
+		},
+	),
+
+	/** Full admin outline for programs file-tree. */
+	programsOutline: defineQuery(({ ctx }) => {
+		requireCapability(ctx, "program:write");
+		return zql.program.orderBy("createdAt", "desc").related("topics", (q) =>
+			q
+				.orderBy("position", "asc")
+				.related("topicLessons", (tl) =>
+					tl.orderBy("position", "asc").related("lesson"),
+				),
+		);
+	}),
+
 	lessonById: defineQuery(z.object({ id: z.string() }), ({ ctx, args }) => {
 		requireCapability(ctx, "lesson:write");
 		return zql.lesson
