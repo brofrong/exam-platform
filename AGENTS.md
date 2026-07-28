@@ -22,6 +22,9 @@ Cursor project rules in `.cursor/rules/` are the source of truth:
 | Generate Zero schema | `bun run zero:generate` |
 | Add shadcn component | `bunx shadcn@latest add <name>` |
 | E2E | `bun run test:e2e` (starts e2e compose + migrate; also runs in GitHub Actions) |
+| Bump version | `bun run version:patch` / `version:minor` / `version:major` (patch also runs on every regular commit via `.githooks/pre-commit`) |
+
+`SKIP_VERSION_BUMP=1` skips the auto patch bump (useful for amend / intentional major-minor). After clone, `bun install` sets `core.hooksPath` to `.githooks`.
 
 ## Do / Don't
 

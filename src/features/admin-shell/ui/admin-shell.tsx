@@ -2,7 +2,11 @@ import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { BookOpenIcon, ClipboardCheckIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import ThemeToggle from "#/components/ThemeToggle";
-import { AdminMoreMenu } from "#/features/admin-shell/ui/admin-more-menu";
+import {
+	AdminMoreMenu,
+	secondaryAdminLinks,
+} from "#/features/admin-shell/ui/admin-more-menu";
+import { APP_VERSION } from "#/shared/app-version";
 import { authClient } from "#/shared/auth-client";
 import type { Role } from "#/shared/authz";
 import { Button } from "@/components/ui/button";
@@ -32,6 +36,13 @@ function isMorePath(pathname: string): boolean {
 	);
 }
 
+type AdminRoute =
+	| "/admin/programs"
+	| "/admin/reviews"
+	| "/admin/analytics"
+	| "/admin/support"
+	| "/admin/invites";
+
 function NavLink({
 	to,
 	active,
@@ -40,7 +51,7 @@ function NavLink({
 	testId,
 	variant,
 }: {
-	to: "/admin/programs" | "/admin/reviews";
+	to: AdminRoute;
 	active: boolean;
 	icon: ReactNode;
 	label: string;
@@ -136,6 +147,7 @@ export function AdminShell({
 	const programsActive = isProgramsPath(pathname);
 	const reviewsActive = isReviewsPath(pathname);
 	const moreActive = isMorePath(pathname);
+	const secondary = secondaryAdminLinks(role);
 
 	return (
 		<div className="flex min-h-svh bg-background" data-testid="admin-shell">
@@ -152,6 +164,12 @@ export function AdminShell({
 						<span className="size-2 rounded-full bg-primary" />
 						Админка
 					</Link>
+					<p
+						className="mt-1.5 pl-4 text-xs text-muted-foreground"
+						data-testid="admin-app-version"
+					>
+						v{APP_VERSION}
+					</p>
 				</div>
 
 				<nav className="flex flex-1 flex-col gap-1 p-3" aria-label="Админка">
@@ -171,7 +189,17 @@ export function AdminShell({
 						testId="admin-nav-reviews"
 						variant="sidebar"
 					/>
-					<AdminMoreMenu role={role} variant="sidebar" active={moreActive} />
+					{secondary.map((link) => (
+						<NavLink
+							key={link.to}
+							to={link.to}
+							active={link.match(pathname)}
+							icon={link.icon}
+							label={link.label}
+							testId={link.testId}
+							variant="sidebar"
+						/>
+					))}
 				</nav>
 
 				<div className="border-t border-sidebar-border p-3">
@@ -205,7 +233,7 @@ export function AdminShell({
 						testId="admin-nav-reviews"
 						variant="tab"
 					/>
-					<AdminMoreMenu role={role} variant="tab" active={moreActive} />
+					<AdminMoreMenu role={role} active={moreActive} />
 				</div>
 			</nav>
 		</div>

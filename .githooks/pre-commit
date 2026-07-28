@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# Bump patch version on every regular commit and include it in the same commit.
+# Skip: SKIP_VERSION_BUMP=1, merge, rebase, cherry-pick.
+set -euo pipefail
+
+if [[ "${SKIP_VERSION_BUMP:-}" == "1" ]]; then
+	exit 0
+fi
+
+git_dir="$(git rev-parse --git-path .)"
+git_dir="${git_dir%/}"
+
+if [[ -f "${git_dir}/MERGE_HEAD" ]]; then
+	exit 0
+fi
+if [[ -d "${git_dir}/rebase-merge" || -d "${git_dir}/rebase-apply" ]]; then
+	exit 0
+fi
+if [[ -f "${git_dir}/CHERRY_PICK_HEAD" || -f "${git_dir}/REVERT_HEAD" ]]; then
+	exit 0
+fi
+
+bun run scripts/bump-version.ts patch
+git add package.json src/shared/app-version.ts
