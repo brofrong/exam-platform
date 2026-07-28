@@ -20,9 +20,14 @@ import { Button } from "@/components/ui/button";
 
 type LessonDetailPageProps = {
 	lessonId: string;
+	/** Render without full-page chrome for split-pane embedding. */
+	embedded?: boolean;
 };
 
-export function LessonDetailPage({ lessonId }: LessonDetailPageProps) {
+export function LessonDetailPage({
+	lessonId,
+	embedded = false,
+}: LessonDetailPageProps) {
 	const zero = useZero();
 	const [lesson] = useQuery(queries.lessonById({ id: lessonId }));
 	const [editOpen, setEditOpen] = useState(false);
@@ -72,32 +77,30 @@ export function LessonDetailPage({ lessonId }: LessonDetailPageProps) {
 
 	return (
 		<main
-			className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 py-10"
+			className={
+				embedded
+					? "flex w-full flex-col gap-6"
+					: "mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 py-10"
+			}
 			data-testid="admin-lesson-detail"
 		>
 			<PageHeader
 				title={lesson.title}
 				description="Редактирование урока и порядка activities."
 				breadcrumbs={
-					<nav className="text-sm">
-						<Link
-							to="/admin"
-							className="hover:text-foreground"
-							data-testid="lesson-detail-admin-link"
-						>
-							Админка
-						</Link>
-						<span className="mx-1.5">/</span>
-						<Link
-							to="/admin/lessons"
-							className="hover:text-foreground"
-							data-testid="lesson-detail-list-link"
-						>
-							Уроки
-						</Link>
-						<span className="mx-1.5">/</span>
-						<span className="text-foreground">{lesson.title}</span>
-					</nav>
+					embedded ? undefined : (
+						<nav className="text-sm">
+							<Link
+								to="/admin/programs"
+								className="hover:text-foreground"
+								data-testid="lesson-detail-admin-link"
+							>
+								Программы
+							</Link>
+							<span className="mx-1.5">/</span>
+							<span className="text-foreground">{lesson.title}</span>
+						</nav>
+					)
 				}
 				actions={
 					<div className="flex flex-wrap items-center gap-2">

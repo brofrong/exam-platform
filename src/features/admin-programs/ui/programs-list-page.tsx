@@ -56,14 +56,6 @@ export function ProgramsListPage() {
 				description="Создавайте программы, темы и привязку уроков."
 				breadcrumbs={
 					<nav className="text-sm">
-						<Link
-							to="/admin"
-							className="hover:text-foreground"
-							data-testid="admin-programs-back"
-						>
-							Админка
-						</Link>
-						<span className="mx-1.5">/</span>
 						<span className="text-foreground">Программы</span>
 					</nav>
 				}

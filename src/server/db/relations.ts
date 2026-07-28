@@ -56,6 +56,14 @@ export const relations = defineRelations(DrizzleSchema, (r) => ({
 		topicLessons: r.many.topicLesson(),
 		activities: r.many.activity(),
 		lessonProgress: r.many.lessonProgress(),
+		homeProgram: r.one.program({
+			from: r.lesson.homeProgramId,
+			to: r.program.id,
+		}),
+		homeTopic: r.one.topic({
+			from: r.lesson.homeTopicId,
+			to: r.topic.id,
+		}),
 	},
 	topicLesson: {
 		topic: r.one.topic({

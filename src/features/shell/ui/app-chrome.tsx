@@ -8,10 +8,11 @@ export function AppChrome({ children }: { children: ReactNode }) {
 	});
 	const isLanding = pathname === "/" || pathname.startsWith("/v/");
 	const isStudentApp = pathname === "/app" || pathname.startsWith("/app/");
+	const isAdmin = pathname === "/admin" || pathname.startsWith("/admin/");
 
 	return (
 		<>
-			{isLanding || isStudentApp ? null : <AppHeader />}
+			{isLanding || isStudentApp || isAdmin ? null : <AppHeader />}
 			{children}
 		</>
 	);

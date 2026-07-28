@@ -42,6 +42,7 @@ import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AdminSupportThreadIdRouteImport } from './routes/admin/support/$threadId'
 import { Route as AdminReviewsSubmissionIdRouteImport } from './routes/admin/reviews/$submissionId'
 import { Route as AdminProgramsProgramIdRouteImport } from './routes/admin/programs/$programId'
+import { Route as AdminLessonsNewRouteImport } from './routes/admin/lessons/new'
 import { Route as AdminLessonsLessonIdRouteImport } from './routes/admin/lessons/$lessonId'
 import { Route as AdminAnalyticsUserIdProgramIdRouteImport } from './routes/admin/analytics/$userId/$programId'
 import { Route as AppProgramsProgramIdLessonsLessonIdRouteImport } from './routes/app/programs/$programId_.lessons.$lessonId'
@@ -212,6 +213,11 @@ const AdminProgramsProgramIdRoute = AdminProgramsProgramIdRouteImport.update({
   path: '/programs/$programId',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminLessonsNewRoute = AdminLessonsNewRouteImport.update({
+  id: '/lessons/new',
+  path: '/lessons/new',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminLessonsLessonIdRoute = AdminLessonsLessonIdRouteImport.update({
   id: '/lessons/$lessonId',
   path: '/lessons/$lessonId',
@@ -250,6 +256,7 @@ export interface FileRoutesByFullPath {
   '/app/': typeof AppIndexRoute
   '/dev/': typeof DevIndexRoute
   '/admin/lessons/$lessonId': typeof AdminLessonsLessonIdRoute
+  '/admin/lessons/new': typeof AdminLessonsNewRoute
   '/admin/programs/$programId': typeof AdminProgramsProgramIdRoute
   '/admin/reviews/$submissionId': typeof AdminReviewsSubmissionIdRoute
   '/admin/support/$threadId': typeof AdminSupportThreadIdRoute
@@ -285,6 +292,7 @@ export interface FileRoutesByTo {
   '/app': typeof AppIndexRoute
   '/dev': typeof DevIndexRoute
   '/admin/lessons/$lessonId': typeof AdminLessonsLessonIdRoute
+  '/admin/lessons/new': typeof AdminLessonsNewRoute
   '/admin/programs/$programId': typeof AdminProgramsProgramIdRoute
   '/admin/reviews/$submissionId': typeof AdminReviewsSubmissionIdRoute
   '/admin/support/$threadId': typeof AdminSupportThreadIdRoute
@@ -324,6 +332,7 @@ export interface FileRoutesById {
   '/app/': typeof AppIndexRoute
   '/dev/': typeof DevIndexRoute
   '/admin/lessons/$lessonId': typeof AdminLessonsLessonIdRoute
+  '/admin/lessons/new': typeof AdminLessonsNewRoute
   '/admin/programs/$programId': typeof AdminProgramsProgramIdRoute
   '/admin/reviews/$submissionId': typeof AdminReviewsSubmissionIdRoute
   '/admin/support/$threadId': typeof AdminSupportThreadIdRoute
@@ -364,6 +373,7 @@ export interface FileRouteTypes {
     | '/app/'
     | '/dev/'
     | '/admin/lessons/$lessonId'
+    | '/admin/lessons/new'
     | '/admin/programs/$programId'
     | '/admin/reviews/$submissionId'
     | '/admin/support/$threadId'
@@ -399,6 +409,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/dev'
     | '/admin/lessons/$lessonId'
+    | '/admin/lessons/new'
     | '/admin/programs/$programId'
     | '/admin/reviews/$submissionId'
     | '/admin/support/$threadId'
@@ -437,6 +448,7 @@ export interface FileRouteTypes {
     | '/app/'
     | '/dev/'
     | '/admin/lessons/$lessonId'
+    | '/admin/lessons/new'
     | '/admin/programs/$programId'
     | '/admin/reviews/$submissionId'
     | '/admin/support/$threadId'
@@ -706,6 +718,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminProgramsProgramIdRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/lessons/new': {
+      id: '/admin/lessons/new'
+      path: '/lessons/new'
+      fullPath: '/admin/lessons/new'
+      preLoaderRoute: typeof AdminLessonsNewRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/lessons/$lessonId': {
       id: '/admin/lessons/$lessonId'
       path: '/lessons/$lessonId'
@@ -733,6 +752,7 @@ declare module '@tanstack/react-router' {
 interface AdminRouteChildren {
   AdminIndexRoute: typeof AdminIndexRoute
   AdminLessonsLessonIdRoute: typeof AdminLessonsLessonIdRoute
+  AdminLessonsNewRoute: typeof AdminLessonsNewRoute
   AdminProgramsProgramIdRoute: typeof AdminProgramsProgramIdRoute
   AdminReviewsSubmissionIdRoute: typeof AdminReviewsSubmissionIdRoute
   AdminSupportThreadIdRoute: typeof AdminSupportThreadIdRoute
@@ -748,6 +768,7 @@ interface AdminRouteChildren {
 const AdminRouteChildren: AdminRouteChildren = {
   AdminIndexRoute: AdminIndexRoute,
   AdminLessonsLessonIdRoute: AdminLessonsLessonIdRoute,
+  AdminLessonsNewRoute: AdminLessonsNewRoute,
   AdminProgramsProgramIdRoute: AdminProgramsProgramIdRoute,
   AdminReviewsSubmissionIdRoute: AdminReviewsSubmissionIdRoute,
   AdminSupportThreadIdRoute: AdminSupportThreadIdRoute,
@@ -835,12 +856,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}

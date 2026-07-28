@@ -1,5 +1,6 @@
 import { ZeroProvider } from "@rocicorp/zero/react";
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { AdminShell } from "#/features/admin-shell";
 import { getCurrentUser } from "#/server/auth/get-current-user";
 import { mutators } from "#/server/zero/mutators";
 import { schema } from "#/server/zero/schema";
@@ -31,7 +32,9 @@ function AdminLayout() {
 			userID={user.id}
 			context={{ id: user.id, name: user.name, role: user.role }}
 		>
-			<Outlet />
+			<AdminShell role={user.role}>
+				<Outlet />
+			</AdminShell>
 		</ZeroProvider>
 	);
 }

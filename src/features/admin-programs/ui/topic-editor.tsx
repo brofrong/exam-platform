@@ -1,16 +1,10 @@
-import { useQuery, useZero } from "@rocicorp/zero/react";
+import { useZero } from "@rocicorp/zero/react";
 import { Link } from "@tanstack/react-router";
-import {
-	ArrowDownIcon,
-	ArrowUpIcon,
-	LinkIcon,
-	PlusIcon,
-	UnlinkIcon,
-} from "lucide-react";
+import { ArrowDownIcon, ArrowUpIcon, PlusIcon, UnlinkIcon } from "lucide-react";
 import { useState } from "react";
+import { AddLessonDialog } from "#/features/admin-lessons/ui/add-lesson-dialog";
 import type { PublishStatus } from "#/server/zero/constants";
 import { mutators } from "#/server/zero/mutators";
-import { queries } from "#/server/zero/queries";
 import {
 	ConfirmActionDialog,
 	EmptyState,
@@ -29,13 +23,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
 
 type TopicWithLessons = {
 	id: string;
@@ -61,11 +48,15 @@ export function TopicEditor({ programId, topics }: TopicEditorProps) {
 	const [newTitle, setNewTitle] = useState("");
 	const [renameId, setRenameId] = useState<string | null>(null);
 	const [renameTitle, setRenameTitle] = useState("");
-	const [linkTopicId, setLinkTopicId] = useState<string | null>(null);
-	const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
-	const [lessons] = useQuery(queries.lessons());
+	const [addLessonTopicId, setAddLessonTopicId] = useState<string | null>(null);
 
 	const sortedTopics = [...topics].sort((a, b) => a.position - b.position);
+	const addLessonTopic = sortedTopics.find(
+		(topic) => topic.id === addLessonTopicId,
+	);
+	const addLessonLinks = [...(addLessonTopic?.topicLessons ?? [])].sort(
+		(a, b) => a.position - b.position,
+	);
 
 	const handleCreateTopic = async (event: React.FormEvent) => {
 		event.preventDefault();
@@ -118,24 +109,6 @@ export function TopicEditor({ programId, topics }: TopicEditorProps) {
 		await zero.mutate(mutators.reorderTopics({ programId, orderedIds }));
 	};
 
-	const handleLinkLesson = async (event: React.FormEvent) => {
-		event.preventDefault();
-		if (!linkTopicId || !selectedLessonId) {
-			return;
-		}
-		const topic = sortedTopics.find((item) => item.id === linkTopicId);
-		const position = topic?.topicLessons?.length ?? 0;
-		await zero.mutate(
-			mutators.linkTopicLesson({
-				topicId: linkTopicId,
-				lessonId: selectedLessonId,
-				position,
-			}),
-		);
-		setLinkTopicId(null);
-		setSelectedLessonId(null);
-	};
-
 	const handleUnlink = async (topicId: string, lessonId: string) => {
 		await zero.mutate(mutators.unlinkTopicLesson({ topicId, lessonId }));
 	};
@@ -166,17 +139,6 @@ export function TopicEditor({ programId, topics }: TopicEditorProps) {
 			mutators.reorderTopicLessons({ topicId, orderedLessonIds }),
 		);
 	};
-
-	const availableLessons = (lessons ?? []).filter((lesson) => {
-		if (!linkTopicId) {
-			return true;
-		}
-		const topic = sortedTopics.find((item) => item.id === linkTopicId);
-		const linkedIds = new Set(
-			(topic?.topicLessons ?? []).map((link) => link.lessonId),
-		);
-		return !linkedIds.has(lesson.id);
-	});
 
 	return (
 		<section className="space-y-4" data-testid="topic-editor">
@@ -272,12 +234,8 @@ export function TopicEditor({ programId, topics }: TopicEditorProps) {
 												variant="outline"
 												size="sm"
 												data-testid={`topic-link-open-${topic.id}`}
-												onClick={() => {
-													setLinkTopicId(topic.id);
-													setSelectedLessonId(null);
-												}}
+												onClick={() => setAddLessonTopicId(topic.id)}
 											>
-												<LinkIcon />
 												Урок
 											</Button>
 										</div>
@@ -289,14 +247,7 @@ export function TopicEditor({ programId, topics }: TopicEditorProps) {
 										className="px-1 text-xs text-muted-foreground"
 										data-testid={`topic-lessons-empty-${topic.id}`}
 									>
-										Уроки не привязаны.{" "}
-										<Link
-											to="/admin/lessons"
-											className="underline underline-offset-2 hover:text-foreground"
-											data-testid={`topic-lessons-catalog-link-${topic.id}`}
-										>
-											Открыть каталог уроков
-										</Link>
+										Уроки не привязаны.
 									</p>
 								) : (
 									<ul className="ml-2 flex flex-col gap-1.5 border-l pl-3">
@@ -319,6 +270,19 @@ export function TopicEditor({ programId, topics }: TopicEditorProps) {
 													}
 													actions={
 														<div className="flex items-center gap-1">
+															<Button
+																variant="outline"
+																size="sm"
+																asChild
+																data-testid={`lesson-open-${link.lessonId}`}
+															>
+																<Link
+																	to="/admin/lessons/$lessonId"
+																	params={{ lessonId: link.lessonId }}
+																>
+																	Открыть
+																</Link>
+															</Button>
 															<Button
 																variant="ghost"
 																size="icon-sm"
@@ -459,82 +423,20 @@ export function TopicEditor({ programId, topics }: TopicEditorProps) {
 				</DialogContent>
 			</Dialog>
 
-			<Dialog
-				open={linkTopicId !== null}
-				onOpenChange={(open) => {
-					if (!open) {
-						setLinkTopicId(null);
-						setSelectedLessonId(null);
-					}
-				}}
-			>
-				<DialogContent data-testid="topic-link-lesson-dialog">
-					<form onSubmit={handleLinkLesson} className="grid gap-4">
-						<DialogHeader>
-							<DialogTitle>Привязать урок</DialogTitle>
-							<DialogDescription>
-								Выберите урок из каталога. Если список пуст — сначала создайте
-								уроки в CMS уроков.
-							</DialogDescription>
-						</DialogHeader>
-
-						{(lessons ?? []).length === 0 ? (
-							<EmptyState
-								title="Каталог уроков пуст"
-								description="Сначала создайте уроки в каталоге, затем вернитесь сюда."
-								action={
-									<Button asChild data-testid="topic-link-open-lessons">
-										<Link to="/admin/lessons">К каталогу уроков</Link>
-									</Button>
-								}
-							/>
-						) : availableLessons.length === 0 ? (
-							<p className="text-sm text-muted-foreground">
-								Все доступные уроки уже привязаны к этой теме.
-							</p>
-						) : (
-							<div className="space-y-1.5">
-								<Label>Урок</Label>
-								<Select
-									value={selectedLessonId ?? undefined}
-									onValueChange={(value) => setSelectedLessonId(value)}
-								>
-									<SelectTrigger
-										className="w-full"
-										data-testid="topic-link-lesson-select"
-									>
-										<SelectValue placeholder="Выберите урок" />
-									</SelectTrigger>
-									<SelectContent>
-										{availableLessons.map((lesson) => (
-											<SelectItem key={lesson.id} value={lesson.id}>
-												{lesson.title}
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
-							</div>
-						)}
-
-						<DialogFooter>
-							<Button
-								type="button"
-								variant="outline"
-								onClick={() => setLinkTopicId(null)}
-							>
-								Отмена
-							</Button>
-							<Button
-								type="submit"
-								data-testid="topic-link-lesson-submit"
-								disabled={!selectedLessonId}
-							>
-								Привязать
-							</Button>
-						</DialogFooter>
-					</form>
-				</DialogContent>
-			</Dialog>
+			{addLessonTopicId ? (
+				<AddLessonDialog
+					open={addLessonTopicId !== null}
+					onOpenChange={(open) => {
+						if (!open) {
+							setAddLessonTopicId(null);
+						}
+					}}
+					programId={programId}
+					topicId={addLessonTopicId}
+					linkedLessonIds={addLessonLinks.map((link) => link.lessonId)}
+					nextPosition={addLessonLinks.length}
+				/>
+			) : null}
 		</section>
 	);
 }

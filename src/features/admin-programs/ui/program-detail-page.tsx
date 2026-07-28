@@ -90,14 +90,6 @@ export function ProgramDetailPage({ programId }: ProgramDetailPageProps) {
 				breadcrumbs={
 					<nav className="text-sm">
 						<Link
-							to="/admin"
-							className="hover:text-foreground"
-							data-testid="program-detail-admin-link"
-						>
-							Админка
-						</Link>
-						<span className="mx-1.5">/</span>
-						<Link
 							to="/admin/programs"
 							className="hover:text-foreground"
 							data-testid="program-detail-list-link"
