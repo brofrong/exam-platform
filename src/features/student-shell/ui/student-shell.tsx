@@ -73,7 +73,9 @@ function NavLink({
 					: "text-sidebar-foreground/80 hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground",
 			)}
 		>
-			<span className="inline-flex size-5 items-center justify-center">{icon}</span>
+			<span className="inline-flex size-5 items-center justify-center">
+				{icon}
+			</span>
 			{label}
 		</Link>
 	);
@@ -102,7 +104,12 @@ export function StudentAccountControls({
 			)}
 			data-testid="student-account-controls"
 		>
-			<div className={cn("flex items-center", compact ? "gap-2" : "justify-between")}>
+			<div
+				className={cn(
+					"flex items-center",
+					compact ? "gap-2" : "justify-between",
+				)}
+			>
 				{!compact ? (
 					<span className="text-xs text-muted-foreground">Тема</span>
 				) : null}

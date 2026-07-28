@@ -7,661 +7,963 @@ import { createBuilder } from "@rocicorp/zero";
 import type { CustomType } from "drizzle-zero";
 import type * as drizzleSchema from "../db/schema";
 
-export type ActivityContentCustomType = CustomType<typeof drizzleSchema, "activity", "content">;
-export type SubmissionAnswersCustomType = CustomType<typeof drizzleSchema, "submission", "answers">;
+export type ActivityContentCustomType = CustomType<
+	typeof drizzleSchema,
+	"activity",
+	"content"
+>;
+export type SubmissionAnswersCustomType = CustomType<
+	typeof drizzleSchema,
+	"submission",
+	"answers"
+>;
 
 const activityTable = {
-    "name": "activity",
-    "columns": {
-        "id": {
-            "type": "string",
-            "optional": false,
-            "customType": null as unknown as string
-        },
-        "lessonId": {
-            "type": "string",
-            "optional": false,
-            "customType": null as unknown as string,
-            "serverName": "lesson_id"
-        },
-        "type": {
-            "type": "string",
-            "optional": false,
-            "customType": null as unknown as string
-        },
-        "position": {
-            "type": "number",
-            "optional": false,
-            "customType": null as unknown as number
-        },
-        "content": {
-            "type": "json",
-            "optional": false,
-            "customType": null as unknown as ActivityContentCustomType
-        }
-    },
-    "primaryKey": ["id"]
+	name: "activity",
+	columns: {
+		id: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+		},
+		lessonId: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+			serverName: "lesson_id",
+		},
+		type: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+		},
+		position: {
+			type: "number",
+			optional: false,
+			customType: null as unknown as number,
+		},
+		content: {
+			type: "json",
+			optional: false,
+			customType: null as unknown as ActivityContentCustomType,
+		},
+	},
+	primaryKey: ["id"],
 } as const;
 const activityProgressTable = {
-    "name": "activityProgress",
-    "columns": {
-        "userId": {
-            "type": "string",
-            "optional": false,
-            "customType": null as unknown as string,
-            "serverName": "user_id"
-        },
-        "programId": {
-            "type": "string",
-            "optional": false,
-            "customType": null as unknown as string,
-            "serverName": "program_id"
-        },
-        "activityId": {
-            "type": "string",
-            "optional": false,
-            "customType": null as unknown as string,
-            "serverName": "activity_id"
-        },
-        "status": {
-            "type": "string",
-            "optional": false,
-            "customType": null as unknown as string
-        },
-        "videoPositionSec": {
-            "type": "number",
-            "optional": true,
-            "customType": null as unknown as number,
-            "serverName": "video_position_sec"
-        },
-        "videoPercent": {
-            "type": "number",
-            "optional": true,
-            "customType": null as unknown as number,
-            "serverName": "video_percent"
-        },
-        "completedAt": {
-            "type": "number",
-            "optional": true,
-            "customType": null as unknown as number,
-            "serverName": "completed_at"
-        }
-    },
-    "primaryKey": ["userId", "programId", "activityId"],
-    "serverName": "activity_progress"
+	name: "activityProgress",
+	columns: {
+		userId: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+			serverName: "user_id",
+		},
+		programId: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+			serverName: "program_id",
+		},
+		activityId: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+			serverName: "activity_id",
+		},
+		status: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+		},
+		videoPositionSec: {
+			type: "number",
+			optional: true,
+			customType: null as unknown as number,
+			serverName: "video_position_sec",
+		},
+		videoPercent: {
+			type: "number",
+			optional: true,
+			customType: null as unknown as number,
+			serverName: "video_percent",
+		},
+		completedAt: {
+			type: "number",
+			optional: true,
+			customType: null as unknown as number,
+			serverName: "completed_at",
+		},
+	},
+	primaryKey: ["userId", "programId", "activityId"],
+	serverName: "activity_progress",
 } as const;
 const enrollmentTable = {
-    "name": "enrollment",
-    "columns": {
-        "id": {
-            "type": "string",
-            "optional": false,
-            "customType": null as unknown as string
-        },
-        "userId": {
-            "type": "string",
-            "optional": false,
-            "customType": null as unknown as string,
-            "serverName": "user_id"
-        },
-        "programId": {
-            "type": "string",
-            "optional": false,
-            "customType": null as unknown as string,
-            "serverName": "program_id"
-        },
-        "createdAt": {
-            "type": "number",
-            "optional": true,
-            "customType": null as unknown as number,
-            "serverName": "created_at"
-        }
-    },
-    "primaryKey": ["id"]
+	name: "enrollment",
+	columns: {
+		id: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+		},
+		userId: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+			serverName: "user_id",
+		},
+		programId: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+			serverName: "program_id",
+		},
+		createdAt: {
+			type: "number",
+			optional: true,
+			customType: null as unknown as number,
+			serverName: "created_at",
+		},
+	},
+	primaryKey: ["id"],
 } as const;
 const lessonTable = {
-    "name": "lesson",
-    "columns": {
-        "id": {
-            "type": "string",
-            "optional": false,
-            "customType": null as unknown as string
-        },
-        "title": {
-            "type": "string",
-            "optional": false,
-            "customType": null as unknown as string
-        },
-        "status": {
-            "type": "string",
-            "optional": true,
-            "customType": null as unknown as string
-        },
-        "homeProgramId": {
-            "type": "string",
-            "optional": true,
-            "customType": null as unknown as string,
-            "serverName": "home_program_id"
-        },
-        "homeTopicId": {
-            "type": "string",
-            "optional": true,
-            "customType": null as unknown as string,
-            "serverName": "home_topic_id"
-        }
-    },
-    "primaryKey": ["id"]
+	name: "lesson",
+	columns: {
+		id: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+		},
+		title: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+		},
+		status: {
+			type: "string",
+			optional: true,
+			customType: null as unknown as string,
+		},
+		homeProgramId: {
+			type: "string",
+			optional: true,
+			customType: null as unknown as string,
+			serverName: "home_program_id",
+		},
+		homeTopicId: {
+			type: "string",
+			optional: true,
+			customType: null as unknown as string,
+			serverName: "home_topic_id",
+		},
+	},
+	primaryKey: ["id"],
 } as const;
 const lessonProgressTable = {
-    "name": "lessonProgress",
-    "columns": {
-        "userId": {
-            "type": "string",
-            "optional": false,
-            "customType": null as unknown as string,
-            "serverName": "user_id"
-        },
-        "programId": {
-            "type": "string",
-            "optional": false,
-            "customType": null as unknown as string,
-            "serverName": "program_id"
-        },
-        "lessonId": {
-            "type": "string",
-            "optional": false,
-            "customType": null as unknown as string,
-            "serverName": "lesson_id"
-        },
-        "status": {
-            "type": "string",
-            "optional": false,
-            "customType": null as unknown as string
-        },
-        "percent": {
-            "type": "number",
-            "optional": false,
-            "customType": null as unknown as number
-        },
-        "completedAt": {
-            "type": "number",
-            "optional": true,
-            "customType": null as unknown as number,
-            "serverName": "completed_at"
-        }
-    },
-    "primaryKey": ["userId", "programId", "lessonId"],
-    "serverName": "lesson_progress"
+	name: "lessonProgress",
+	columns: {
+		userId: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+			serverName: "user_id",
+		},
+		programId: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+			serverName: "program_id",
+		},
+		lessonId: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+			serverName: "lesson_id",
+		},
+		status: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+		},
+		percent: {
+			type: "number",
+			optional: false,
+			customType: null as unknown as number,
+		},
+		completedAt: {
+			type: "number",
+			optional: true,
+			customType: null as unknown as number,
+			serverName: "completed_at",
+		},
+	},
+	primaryKey: ["userId", "programId", "lessonId"],
+	serverName: "lesson_progress",
 } as const;
 const programTable = {
-    "name": "program",
-    "columns": {
-        "id": {
-            "type": "string",
-            "optional": false,
-            "customType": null as unknown as string
-        },
-        "title": {
-            "type": "string",
-            "optional": false,
-            "customType": null as unknown as string
-        },
-        "description": {
-            "type": "string",
-            "optional": true,
-            "customType": null as unknown as string
-        },
-        "examType": {
-            "type": "string",
-            "optional": false,
-            "customType": null as unknown as string,
-            "serverName": "exam_type"
-        },
-        "subject": {
-            "type": "string",
-            "optional": false,
-            "customType": null as unknown as string
-        },
-        "status": {
-            "type": "string",
-            "optional": true,
-            "customType": null as unknown as string
-        },
-        "createdAt": {
-            "type": "number",
-            "optional": true,
-            "customType": null as unknown as number,
-            "serverName": "created_at"
-        },
-        "updatedAt": {
-            "type": "number",
-            "optional": true,
-            "customType": null as unknown as number,
-            "serverName": "updated_at"
-        }
-    },
-    "primaryKey": ["id"]
+	name: "program",
+	columns: {
+		id: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+		},
+		title: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+		},
+		description: {
+			type: "string",
+			optional: true,
+			customType: null as unknown as string,
+		},
+		examType: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+			serverName: "exam_type",
+		},
+		subject: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+		},
+		status: {
+			type: "string",
+			optional: true,
+			customType: null as unknown as string,
+		},
+		createdAt: {
+			type: "number",
+			optional: true,
+			customType: null as unknown as number,
+			serverName: "created_at",
+		},
+		updatedAt: {
+			type: "number",
+			optional: true,
+			customType: null as unknown as number,
+			serverName: "updated_at",
+		},
+	},
+	primaryKey: ["id"],
 } as const;
 const programInviteTable = {
-    "name": "programInvite",
-    "columns": {
-        "id": {
-            "type": "string",
-            "optional": false,
-            "customType": null as unknown as string
-        },
-        "token": {
-            "type": "string",
-            "optional": false,
-            "customType": null as unknown as string
-        },
-        "createdByUserId": {
-            "type": "string",
-            "optional": false,
-            "customType": null as unknown as string,
-            "serverName": "created_by_user_id"
-        },
-        "inviteeEmail": {
-            "type": "string",
-            "optional": true,
-            "customType": null as unknown as string,
-            "serverName": "invitee_email"
-        },
-        "inviteeName": {
-            "type": "string",
-            "optional": true,
-            "customType": null as unknown as string,
-            "serverName": "invitee_name"
-        },
-        "expiresAt": {
-            "type": "number",
-            "optional": true,
-            "customType": null as unknown as number,
-            "serverName": "expires_at"
-        },
-        "usedAt": {
-            "type": "number",
-            "optional": true,
-            "customType": null as unknown as number,
-            "serverName": "used_at"
-        },
-        "usedByUserId": {
-            "type": "string",
-            "optional": true,
-            "customType": null as unknown as string,
-            "serverName": "used_by_user_id"
-        },
-        "createdAt": {
-            "type": "number",
-            "optional": true,
-            "customType": null as unknown as number,
-            "serverName": "created_at"
-        }
-    },
-    "primaryKey": ["id"],
-    "serverName": "program_invite"
+	name: "programInvite",
+	columns: {
+		id: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+		},
+		token: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+		},
+		createdByUserId: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+			serverName: "created_by_user_id",
+		},
+		inviteeEmail: {
+			type: "string",
+			optional: true,
+			customType: null as unknown as string,
+			serverName: "invitee_email",
+		},
+		inviteeName: {
+			type: "string",
+			optional: true,
+			customType: null as unknown as string,
+			serverName: "invitee_name",
+		},
+		expiresAt: {
+			type: "number",
+			optional: true,
+			customType: null as unknown as number,
+			serverName: "expires_at",
+		},
+		usedAt: {
+			type: "number",
+			optional: true,
+			customType: null as unknown as number,
+			serverName: "used_at",
+		},
+		usedByUserId: {
+			type: "string",
+			optional: true,
+			customType: null as unknown as string,
+			serverName: "used_by_user_id",
+		},
+		createdAt: {
+			type: "number",
+			optional: true,
+			customType: null as unknown as number,
+			serverName: "created_at",
+		},
+	},
+	primaryKey: ["id"],
+	serverName: "program_invite",
 } as const;
 const programInviteProgramTable = {
-    "name": "programInviteProgram",
-    "columns": {
-        "inviteId": {
-            "type": "string",
-            "optional": false,
-            "customType": null as unknown as string,
-            "serverName": "invite_id"
-        },
-        "programId": {
-            "type": "string",
-            "optional": false,
-            "customType": null as unknown as string,
-            "serverName": "program_id"
-        }
-    },
-    "primaryKey": ["inviteId", "programId"],
-    "serverName": "program_invite_program"
+	name: "programInviteProgram",
+	columns: {
+		inviteId: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+			serverName: "invite_id",
+		},
+		programId: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+			serverName: "program_id",
+		},
+	},
+	primaryKey: ["inviteId", "programId"],
+	serverName: "program_invite_program",
 } as const;
 const submissionTable = {
-    "name": "submission",
-    "columns": {
-        "id": {
-            "type": "string",
-            "optional": false,
-            "customType": null as unknown as string
-        },
-        "userId": {
-            "type": "string",
-            "optional": false,
-            "customType": null as unknown as string,
-            "serverName": "user_id"
-        },
-        "programId": {
-            "type": "string",
-            "optional": false,
-            "customType": null as unknown as string,
-            "serverName": "program_id"
-        },
-        "activityId": {
-            "type": "string",
-            "optional": false,
-            "customType": null as unknown as string,
-            "serverName": "activity_id"
-        },
-        "answers": {
-            "type": "json",
-            "optional": false,
-            "customType": null as unknown as SubmissionAnswersCustomType
-        },
-        "status": {
-            "type": "string",
-            "optional": false,
-            "customType": null as unknown as string
-        },
-        "reviewedBy": {
-            "type": "string",
-            "optional": true,
-            "customType": null as unknown as string,
-            "serverName": "reviewed_by"
-        },
-        "reviewerComment": {
-            "type": "string",
-            "optional": true,
-            "customType": null as unknown as string,
-            "serverName": "reviewer_comment"
-        },
-        "reviewedAt": {
-            "type": "number",
-            "optional": true,
-            "customType": null as unknown as number,
-            "serverName": "reviewed_at"
-        },
-        "createdAt": {
-            "type": "number",
-            "optional": true,
-            "customType": null as unknown as number,
-            "serverName": "created_at"
-        },
-        "updatedAt": {
-            "type": "number",
-            "optional": true,
-            "customType": null as unknown as number,
-            "serverName": "updated_at"
-        }
-    },
-    "primaryKey": ["id"]
+	name: "submission",
+	columns: {
+		id: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+		},
+		userId: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+			serverName: "user_id",
+		},
+		programId: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+			serverName: "program_id",
+		},
+		activityId: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+			serverName: "activity_id",
+		},
+		answers: {
+			type: "json",
+			optional: false,
+			customType: null as unknown as SubmissionAnswersCustomType,
+		},
+		status: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+		},
+		reviewedBy: {
+			type: "string",
+			optional: true,
+			customType: null as unknown as string,
+			serverName: "reviewed_by",
+		},
+		reviewerComment: {
+			type: "string",
+			optional: true,
+			customType: null as unknown as string,
+			serverName: "reviewer_comment",
+		},
+		reviewedAt: {
+			type: "number",
+			optional: true,
+			customType: null as unknown as number,
+			serverName: "reviewed_at",
+		},
+		createdAt: {
+			type: "number",
+			optional: true,
+			customType: null as unknown as number,
+			serverName: "created_at",
+		},
+		updatedAt: {
+			type: "number",
+			optional: true,
+			customType: null as unknown as number,
+			serverName: "updated_at",
+		},
+	},
+	primaryKey: ["id"],
 } as const;
 const supportMessageTable = {
-    "name": "supportMessage",
-    "columns": {
-        "id": {
-            "type": "string",
-            "optional": false,
-            "customType": null as unknown as string
-        },
-        "threadId": {
-            "type": "string",
-            "optional": false,
-            "customType": null as unknown as string,
-            "serverName": "thread_id"
-        },
-        "authorId": {
-            "type": "string",
-            "optional": false,
-            "customType": null as unknown as string,
-            "serverName": "author_id"
-        },
-        "body": {
-            "type": "string",
-            "optional": false,
-            "customType": null as unknown as string
-        },
-        "createdAt": {
-            "type": "number",
-            "optional": true,
-            "customType": null as unknown as number,
-            "serverName": "created_at"
-        }
-    },
-    "primaryKey": ["id"],
-    "serverName": "support_message"
+	name: "supportMessage",
+	columns: {
+		id: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+		},
+		threadId: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+			serverName: "thread_id",
+		},
+		authorId: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+			serverName: "author_id",
+		},
+		body: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+		},
+		createdAt: {
+			type: "number",
+			optional: true,
+			customType: null as unknown as number,
+			serverName: "created_at",
+		},
+	},
+	primaryKey: ["id"],
+	serverName: "support_message",
 } as const;
 const supportThreadTable = {
-    "name": "supportThread",
-    "columns": {
-        "id": {
-            "type": "string",
-            "optional": false,
-            "customType": null as unknown as string
-        },
-        "studentUserId": {
-            "type": "string",
-            "optional": false,
-            "customType": null as unknown as string,
-            "serverName": "student_user_id"
-        },
-        "createdAt": {
-            "type": "number",
-            "optional": true,
-            "customType": null as unknown as number,
-            "serverName": "created_at"
-        }
-    },
-    "primaryKey": ["id"],
-    "serverName": "support_thread"
+	name: "supportThread",
+	columns: {
+		id: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+		},
+		studentUserId: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+			serverName: "student_user_id",
+		},
+		createdAt: {
+			type: "number",
+			optional: true,
+			customType: null as unknown as number,
+			serverName: "created_at",
+		},
+	},
+	primaryKey: ["id"],
+	serverName: "support_thread",
 } as const;
 const topicTable = {
-    "name": "topic",
-    "columns": {
-        "id": {
-            "type": "string",
-            "optional": false,
-            "customType": null as unknown as string
-        },
-        "programId": {
-            "type": "string",
-            "optional": false,
-            "customType": null as unknown as string,
-            "serverName": "program_id"
-        },
-        "title": {
-            "type": "string",
-            "optional": false,
-            "customType": null as unknown as string
-        },
-        "position": {
-            "type": "number",
-            "optional": false,
-            "customType": null as unknown as number
-        },
-        "status": {
-            "type": "string",
-            "optional": true,
-            "customType": null as unknown as string
-        }
-    },
-    "primaryKey": ["id"]
+	name: "topic",
+	columns: {
+		id: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+		},
+		programId: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+			serverName: "program_id",
+		},
+		title: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+		},
+		position: {
+			type: "number",
+			optional: false,
+			customType: null as unknown as number,
+		},
+		status: {
+			type: "string",
+			optional: true,
+			customType: null as unknown as string,
+		},
+	},
+	primaryKey: ["id"],
 } as const;
 const topicLessonTable = {
-    "name": "topicLesson",
-    "columns": {
-        "topicId": {
-            "type": "string",
-            "optional": false,
-            "customType": null as unknown as string,
-            "serverName": "topic_id"
-        },
-        "lessonId": {
-            "type": "string",
-            "optional": false,
-            "customType": null as unknown as string,
-            "serverName": "lesson_id"
-        },
-        "position": {
-            "type": "number",
-            "optional": false,
-            "customType": null as unknown as number
-        }
-    },
-    "primaryKey": ["topicId", "lessonId"],
-    "serverName": "topic_lesson"
+	name: "topicLesson",
+	columns: {
+		topicId: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+			serverName: "topic_id",
+		},
+		lessonId: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+			serverName: "lesson_id",
+		},
+		position: {
+			type: "number",
+			optional: false,
+			customType: null as unknown as number,
+		},
+	},
+	primaryKey: ["topicId", "lessonId"],
+	serverName: "topic_lesson",
 } as const;
 const userTable = {
-    "name": "user",
-    "columns": {
-        "id": {
-            "type": "string",
-            "optional": false,
-            "customType": null as unknown as string
-        },
-        "name": {
-            "type": "string",
-            "optional": false,
-            "customType": null as unknown as string
-        },
-        "email": {
-            "type": "string",
-            "optional": false,
-            "customType": null as unknown as string
-        },
-        "emailVerified": {
-            "type": "boolean",
-            "optional": true,
-            "customType": null as unknown as boolean,
-            "serverName": "email_verified"
-        },
-        "image": {
-            "type": "string",
-            "optional": true,
-            "customType": null as unknown as string
-        },
-        "role": {
-            "type": "string",
-            "optional": true,
-            "customType": null as unknown as string
-        },
-        "createdAt": {
-            "type": "number",
-            "optional": true,
-            "customType": null as unknown as number,
-            "serverName": "created_at"
-        },
-        "updatedAt": {
-            "type": "number",
-            "optional": true,
-            "customType": null as unknown as number,
-            "serverName": "updated_at"
-        }
-    },
-    "primaryKey": ["id"]
+	name: "user",
+	columns: {
+		id: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+		},
+		name: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+		},
+		email: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+		},
+		emailVerified: {
+			type: "boolean",
+			optional: true,
+			customType: null as unknown as boolean,
+			serverName: "email_verified",
+		},
+		image: {
+			type: "string",
+			optional: true,
+			customType: null as unknown as string,
+		},
+		role: {
+			type: "string",
+			optional: true,
+			customType: null as unknown as string,
+		},
+		createdAt: {
+			type: "number",
+			optional: true,
+			customType: null as unknown as number,
+			serverName: "created_at",
+		},
+		updatedAt: {
+			type: "number",
+			optional: true,
+			customType: null as unknown as number,
+			serverName: "updated_at",
+		},
+	},
+	primaryKey: ["id"],
 } as const;
 const userRelationships = {
-    "enrollments": [{ "sourceField": ["id"], "destField": ["userId"], "destSchema": "enrollment", "cardinality": "many" }],
-    "supportThreads": [{ "sourceField": ["id"], "destField": ["studentUserId"], "destSchema": "supportThread", "cardinality": "many" }],
-    "supportMessages": [{ "sourceField": ["id"], "destField": ["authorId"], "destSchema": "supportMessage", "cardinality": "many" }]
+	enrollments: [
+		{
+			sourceField: ["id"],
+			destField: ["userId"],
+			destSchema: "enrollment",
+			cardinality: "many",
+		},
+	],
+	supportThreads: [
+		{
+			sourceField: ["id"],
+			destField: ["studentUserId"],
+			destSchema: "supportThread",
+			cardinality: "many",
+		},
+	],
+	supportMessages: [
+		{
+			sourceField: ["id"],
+			destField: ["authorId"],
+			destSchema: "supportMessage",
+			cardinality: "many",
+		},
+	],
 } as const;
 const programRelationships = {
-    "topics": [{ "sourceField": ["id"], "destField": ["programId"], "destSchema": "topic", "cardinality": "many" }],
-    "submissions": [{ "sourceField": ["id"], "destField": ["programId"], "destSchema": "submission", "cardinality": "many" }],
-    "activityProgress": [{ "sourceField": ["id"], "destField": ["programId"], "destSchema": "activityProgress", "cardinality": "many" }],
-    "lessonProgress": [{ "sourceField": ["id"], "destField": ["programId"], "destSchema": "lessonProgress", "cardinality": "many" }],
-    "enrollments": [{ "sourceField": ["id"], "destField": ["programId"], "destSchema": "enrollment", "cardinality": "many" }],
-    "invitePrograms": [{ "sourceField": ["id"], "destField": ["programId"], "destSchema": "programInviteProgram", "cardinality": "many" }]
+	topics: [
+		{
+			sourceField: ["id"],
+			destField: ["programId"],
+			destSchema: "topic",
+			cardinality: "many",
+		},
+	],
+	submissions: [
+		{
+			sourceField: ["id"],
+			destField: ["programId"],
+			destSchema: "submission",
+			cardinality: "many",
+		},
+	],
+	activityProgress: [
+		{
+			sourceField: ["id"],
+			destField: ["programId"],
+			destSchema: "activityProgress",
+			cardinality: "many",
+		},
+	],
+	lessonProgress: [
+		{
+			sourceField: ["id"],
+			destField: ["programId"],
+			destSchema: "lessonProgress",
+			cardinality: "many",
+		},
+	],
+	enrollments: [
+		{
+			sourceField: ["id"],
+			destField: ["programId"],
+			destSchema: "enrollment",
+			cardinality: "many",
+		},
+	],
+	invitePrograms: [
+		{
+			sourceField: ["id"],
+			destField: ["programId"],
+			destSchema: "programInviteProgram",
+			cardinality: "many",
+		},
+	],
 } as const;
 const topicRelationships = {
-    "program": [{ "sourceField": ["programId"], "destField": ["id"], "destSchema": "program", "cardinality": "one" }],
-    "topicLessons": [{ "sourceField": ["id"], "destField": ["topicId"], "destSchema": "topicLesson", "cardinality": "many" }]
+	program: [
+		{
+			sourceField: ["programId"],
+			destField: ["id"],
+			destSchema: "program",
+			cardinality: "one",
+		},
+	],
+	topicLessons: [
+		{
+			sourceField: ["id"],
+			destField: ["topicId"],
+			destSchema: "topicLesson",
+			cardinality: "many",
+		},
+	],
 } as const;
 const lessonRelationships = {
-    "topicLessons": [{ "sourceField": ["id"], "destField": ["lessonId"], "destSchema": "topicLesson", "cardinality": "many" }],
-    "activities": [{ "sourceField": ["id"], "destField": ["lessonId"], "destSchema": "activity", "cardinality": "many" }],
-    "lessonProgress": [{ "sourceField": ["id"], "destField": ["lessonId"], "destSchema": "lessonProgress", "cardinality": "many" }],
-    "homeProgram": [{ "sourceField": ["homeProgramId"], "destField": ["id"], "destSchema": "program", "cardinality": "one" }],
-    "homeTopic": [{ "sourceField": ["homeTopicId"], "destField": ["id"], "destSchema": "topic", "cardinality": "one" }]
+	topicLessons: [
+		{
+			sourceField: ["id"],
+			destField: ["lessonId"],
+			destSchema: "topicLesson",
+			cardinality: "many",
+		},
+	],
+	activities: [
+		{
+			sourceField: ["id"],
+			destField: ["lessonId"],
+			destSchema: "activity",
+			cardinality: "many",
+		},
+	],
+	lessonProgress: [
+		{
+			sourceField: ["id"],
+			destField: ["lessonId"],
+			destSchema: "lessonProgress",
+			cardinality: "many",
+		},
+	],
+	homeProgram: [
+		{
+			sourceField: ["homeProgramId"],
+			destField: ["id"],
+			destSchema: "program",
+			cardinality: "one",
+		},
+	],
+	homeTopic: [
+		{
+			sourceField: ["homeTopicId"],
+			destField: ["id"],
+			destSchema: "topic",
+			cardinality: "one",
+		},
+	],
 } as const;
 const topicLessonRelationships = {
-    "topic": [{ "sourceField": ["topicId"], "destField": ["id"], "destSchema": "topic", "cardinality": "one" }],
-    "lesson": [{ "sourceField": ["lessonId"], "destField": ["id"], "destSchema": "lesson", "cardinality": "one" }]
+	topic: [
+		{
+			sourceField: ["topicId"],
+			destField: ["id"],
+			destSchema: "topic",
+			cardinality: "one",
+		},
+	],
+	lesson: [
+		{
+			sourceField: ["lessonId"],
+			destField: ["id"],
+			destSchema: "lesson",
+			cardinality: "one",
+		},
+	],
 } as const;
 const activityRelationships = {
-    "lesson": [{ "sourceField": ["lessonId"], "destField": ["id"], "destSchema": "lesson", "cardinality": "one" }],
-    "submissions": [{ "sourceField": ["id"], "destField": ["activityId"], "destSchema": "submission", "cardinality": "many" }],
-    "activityProgress": [{ "sourceField": ["id"], "destField": ["activityId"], "destSchema": "activityProgress", "cardinality": "many" }]
+	lesson: [
+		{
+			sourceField: ["lessonId"],
+			destField: ["id"],
+			destSchema: "lesson",
+			cardinality: "one",
+		},
+	],
+	submissions: [
+		{
+			sourceField: ["id"],
+			destField: ["activityId"],
+			destSchema: "submission",
+			cardinality: "many",
+		},
+	],
+	activityProgress: [
+		{
+			sourceField: ["id"],
+			destField: ["activityId"],
+			destSchema: "activityProgress",
+			cardinality: "many",
+		},
+	],
 } as const;
 const submissionRelationships = {
-    "user": [{ "sourceField": ["userId"], "destField": ["id"], "destSchema": "user", "cardinality": "one" }],
-    "program": [{ "sourceField": ["programId"], "destField": ["id"], "destSchema": "program", "cardinality": "one" }],
-    "activity": [{ "sourceField": ["activityId"], "destField": ["id"], "destSchema": "activity", "cardinality": "one" }],
-    "reviewer": [{ "sourceField": ["reviewedBy"], "destField": ["id"], "destSchema": "user", "cardinality": "one" }]
+	user: [
+		{
+			sourceField: ["userId"],
+			destField: ["id"],
+			destSchema: "user",
+			cardinality: "one",
+		},
+	],
+	program: [
+		{
+			sourceField: ["programId"],
+			destField: ["id"],
+			destSchema: "program",
+			cardinality: "one",
+		},
+	],
+	activity: [
+		{
+			sourceField: ["activityId"],
+			destField: ["id"],
+			destSchema: "activity",
+			cardinality: "one",
+		},
+	],
+	reviewer: [
+		{
+			sourceField: ["reviewedBy"],
+			destField: ["id"],
+			destSchema: "user",
+			cardinality: "one",
+		},
+	],
 } as const;
 const activityProgressRelationships = {
-    "user": [{ "sourceField": ["userId"], "destField": ["id"], "destSchema": "user", "cardinality": "one" }],
-    "program": [{ "sourceField": ["programId"], "destField": ["id"], "destSchema": "program", "cardinality": "one" }],
-    "activity": [{ "sourceField": ["activityId"], "destField": ["id"], "destSchema": "activity", "cardinality": "one" }]
+	user: [
+		{
+			sourceField: ["userId"],
+			destField: ["id"],
+			destSchema: "user",
+			cardinality: "one",
+		},
+	],
+	program: [
+		{
+			sourceField: ["programId"],
+			destField: ["id"],
+			destSchema: "program",
+			cardinality: "one",
+		},
+	],
+	activity: [
+		{
+			sourceField: ["activityId"],
+			destField: ["id"],
+			destSchema: "activity",
+			cardinality: "one",
+		},
+	],
 } as const;
 const lessonProgressRelationships = {
-    "user": [{ "sourceField": ["userId"], "destField": ["id"], "destSchema": "user", "cardinality": "one" }],
-    "program": [{ "sourceField": ["programId"], "destField": ["id"], "destSchema": "program", "cardinality": "one" }],
-    "lesson": [{ "sourceField": ["lessonId"], "destField": ["id"], "destSchema": "lesson", "cardinality": "one" }]
+	user: [
+		{
+			sourceField: ["userId"],
+			destField: ["id"],
+			destSchema: "user",
+			cardinality: "one",
+		},
+	],
+	program: [
+		{
+			sourceField: ["programId"],
+			destField: ["id"],
+			destSchema: "program",
+			cardinality: "one",
+		},
+	],
+	lesson: [
+		{
+			sourceField: ["lessonId"],
+			destField: ["id"],
+			destSchema: "lesson",
+			cardinality: "one",
+		},
+	],
 } as const;
 const programInviteRelationships = {
-    "createdBy": [{ "sourceField": ["createdByUserId"], "destField": ["id"], "destSchema": "user", "cardinality": "one" }],
-    "usedBy": [{ "sourceField": ["usedByUserId"], "destField": ["id"], "destSchema": "user", "cardinality": "one" }],
-    "programs": [{ "sourceField": ["id"], "destField": ["inviteId"], "destSchema": "programInviteProgram", "cardinality": "many" }]
+	createdBy: [
+		{
+			sourceField: ["createdByUserId"],
+			destField: ["id"],
+			destSchema: "user",
+			cardinality: "one",
+		},
+	],
+	usedBy: [
+		{
+			sourceField: ["usedByUserId"],
+			destField: ["id"],
+			destSchema: "user",
+			cardinality: "one",
+		},
+	],
+	programs: [
+		{
+			sourceField: ["id"],
+			destField: ["inviteId"],
+			destSchema: "programInviteProgram",
+			cardinality: "many",
+		},
+	],
 } as const;
 const programInviteProgramRelationships = {
-    "invite": [{ "sourceField": ["inviteId"], "destField": ["id"], "destSchema": "programInvite", "cardinality": "one" }],
-    "program": [{ "sourceField": ["programId"], "destField": ["id"], "destSchema": "program", "cardinality": "one" }]
+	invite: [
+		{
+			sourceField: ["inviteId"],
+			destField: ["id"],
+			destSchema: "programInvite",
+			cardinality: "one",
+		},
+	],
+	program: [
+		{
+			sourceField: ["programId"],
+			destField: ["id"],
+			destSchema: "program",
+			cardinality: "one",
+		},
+	],
 } as const;
 const enrollmentRelationships = {
-    "user": [{ "sourceField": ["userId"], "destField": ["id"], "destSchema": "user", "cardinality": "one" }],
-    "program": [{ "sourceField": ["programId"], "destField": ["id"], "destSchema": "program", "cardinality": "one" }]
+	user: [
+		{
+			sourceField: ["userId"],
+			destField: ["id"],
+			destSchema: "user",
+			cardinality: "one",
+		},
+	],
+	program: [
+		{
+			sourceField: ["programId"],
+			destField: ["id"],
+			destSchema: "program",
+			cardinality: "one",
+		},
+	],
 } as const;
 const supportThreadRelationships = {
-    "student": [{ "sourceField": ["studentUserId"], "destField": ["id"], "destSchema": "user", "cardinality": "one" }],
-    "messages": [{ "sourceField": ["id"], "destField": ["threadId"], "destSchema": "supportMessage", "cardinality": "many" }]
+	student: [
+		{
+			sourceField: ["studentUserId"],
+			destField: ["id"],
+			destSchema: "user",
+			cardinality: "one",
+		},
+	],
+	messages: [
+		{
+			sourceField: ["id"],
+			destField: ["threadId"],
+			destSchema: "supportMessage",
+			cardinality: "many",
+		},
+	],
 } as const;
 const supportMessageRelationships = {
-    "thread": [{ "sourceField": ["threadId"], "destField": ["id"], "destSchema": "supportThread", "cardinality": "one" }],
-    "author": [{ "sourceField": ["authorId"], "destField": ["id"], "destSchema": "user", "cardinality": "one" }]
+	thread: [
+		{
+			sourceField: ["threadId"],
+			destField: ["id"],
+			destSchema: "supportThread",
+			cardinality: "one",
+		},
+	],
+	author: [
+		{
+			sourceField: ["authorId"],
+			destField: ["id"],
+			destSchema: "user",
+			cardinality: "one",
+		},
+	],
 } as const;
 /**
  * The Zero schema object.
  * This type is auto-generated from your Drizzle schema definition.
  */
 export const schema = {
-    "tables": {
-        "activity": activityTable,
-        "activityProgress": activityProgressTable,
-        "enrollment": enrollmentTable,
-        "lesson": lessonTable,
-        "lessonProgress": lessonProgressTable,
-        "program": programTable,
-        "programInvite": programInviteTable,
-        "programInviteProgram": programInviteProgramTable,
-        "submission": submissionTable,
-        "supportMessage": supportMessageTable,
-        "supportThread": supportThreadTable,
-        "topic": topicTable,
-        "topicLesson": topicLessonTable,
-        "user": userTable
-    },
-    "relationships": {
-        "user": userRelationships,
-        "program": programRelationships,
-        "topic": topicRelationships,
-        "lesson": lessonRelationships,
-        "topicLesson": topicLessonRelationships,
-        "activity": activityRelationships,
-        "submission": submissionRelationships,
-        "activityProgress": activityProgressRelationships,
-        "lessonProgress": lessonProgressRelationships,
-        "programInvite": programInviteRelationships,
-        "programInviteProgram": programInviteProgramRelationships,
-        "enrollment": enrollmentRelationships,
-        "supportThread": supportThreadRelationships,
-        "supportMessage": supportMessageRelationships
-    },
-    "enableLegacyQueries": false,
-    "enableLegacyMutators": false
+	tables: {
+		activity: activityTable,
+		activityProgress: activityProgressTable,
+		enrollment: enrollmentTable,
+		lesson: lessonTable,
+		lessonProgress: lessonProgressTable,
+		program: programTable,
+		programInvite: programInviteTable,
+		programInviteProgram: programInviteProgramTable,
+		submission: submissionTable,
+		supportMessage: supportMessageTable,
+		supportThread: supportThreadTable,
+		topic: topicTable,
+		topicLesson: topicLessonTable,
+		user: userTable,
+	},
+	relationships: {
+		user: userRelationships,
+		program: programRelationships,
+		topic: topicRelationships,
+		lesson: lessonRelationships,
+		topicLesson: topicLessonRelationships,
+		activity: activityRelationships,
+		submission: submissionRelationships,
+		activityProgress: activityProgressRelationships,
+		lessonProgress: lessonProgressRelationships,
+		programInvite: programInviteRelationships,
+		programInviteProgram: programInviteProgramRelationships,
+		enrollment: enrollmentRelationships,
+		supportThread: supportThreadRelationships,
+		supportMessage: supportMessageRelationships,
+	},
+	enableLegacyQueries: false,
+	enableLegacyMutators: false,
 } as const;
 
 /**
@@ -678,7 +980,9 @@ export type Activity = Row<(typeof schema)["tables"]["activity"]>;
  * Represents a row from the "activityProgress" table.
  * This type is auto-generated from your Drizzle schema definition.
  */
-export type ActivityProgress = Row<(typeof schema)["tables"]["activityProgress"]>;
+export type ActivityProgress = Row<
+	(typeof schema)["tables"]["activityProgress"]
+>;
 /**
  * Represents a row from the "enrollment" table.
  * This type is auto-generated from your Drizzle schema definition.
@@ -708,7 +1012,9 @@ export type ProgramInvite = Row<(typeof schema)["tables"]["programInvite"]>;
  * Represents a row from the "programInviteProgram" table.
  * This type is auto-generated from your Drizzle schema definition.
  */
-export type ProgramInviteProgram = Row<(typeof schema)["tables"]["programInviteProgram"]>;
+export type ProgramInviteProgram = Row<
+	(typeof schema)["tables"]["programInviteProgram"]
+>;
 /**
  * Represents a row from the "submission" table.
  * This type is auto-generated from your Drizzle schema definition.
@@ -752,4 +1058,8 @@ export const zql = createBuilder(schema);
 export const builder = zql;
 
 /** Defines the default types for Zero */
-declare module '@rocicorp/zero' { interface DefaultTypes { schema: Schema; } }
+declare module "@rocicorp/zero" {
+	interface DefaultTypes {
+		schema: Schema;
+	}
+}

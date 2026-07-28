@@ -83,18 +83,18 @@ test.describe("lms critical paths", () => {
 			lessonTitle,
 		});
 
-		const topicBlock = page
-			.locator("[data-testid^='topic-block-']")
-			.filter({ hasText: topicTitle });
-		const topicPublishId = await topicBlock
+		const topicPane = page.getByTestId("topic-pane");
+		const topicPublishId = await topicPane
 			.locator("[data-testid^='topic-publish-']")
 			.getAttribute("data-testid");
 		expect(topicPublishId).toBeTruthy();
 		await page.getByTestId(topicPublishId as string).click();
 		await expect(
-			topicBlock.locator('[data-status="published"]').first(),
+			topicPane.locator('[data-status="published"]').first(),
 		).toBeVisible();
 
+		await page.getByTestId(`tree-folder-program:${programId}`).click();
+		await expect(page.getByTestId("admin-program-detail")).toBeVisible();
 		await page.getByTestId(`program-detail-publish-${programId}`).click();
 		await expect(
 			page

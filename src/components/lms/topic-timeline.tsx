@@ -31,16 +31,26 @@ function TopicProgressRing({
 	const radius = (size - stroke) / 2;
 	const circumference = 2 * Math.PI * radius;
 	const offset = circumference * (1 - percent / 100);
-	const track = complete ? "stroke-emerald-500/25" : "stroke-muted-foreground/25";
+	const track = complete
+		? "stroke-emerald-500/25"
+		: "stroke-muted-foreground/25";
 	const fill = complete ? "stroke-emerald-500" : "stroke-muted-foreground/70";
-	const label = complete ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground";
+	const label = complete
+		? "text-emerald-600 dark:text-emerald-400"
+		: "text-muted-foreground";
 
 	return (
 		<span
 			className="relative inline-flex size-10 shrink-0 items-center justify-center"
 			aria-hidden
 		>
-			<svg width={size} height={size} className="-rotate-90" viewBox={`0 0 ${size} ${size}`}>
+			<svg
+				width={size}
+				height={size}
+				className="-rotate-90"
+				viewBox={`0 0 ${size} ${size}`}
+				aria-hidden
+			>
 				<circle
 					cx={size / 2}
 					cy={size / 2}
@@ -58,7 +68,10 @@ function TopicProgressRing({
 					strokeLinecap="round"
 					strokeDasharray={circumference}
 					strokeDashoffset={offset}
-					className={cn(fill, "transition-[stroke-dashoffset] duration-500 ease-out")}
+					className={cn(
+						fill,
+						"transition-[stroke-dashoffset] duration-500 ease-out",
+					)}
 				/>
 			</svg>
 			<span
