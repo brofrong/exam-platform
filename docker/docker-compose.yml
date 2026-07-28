@@ -28,6 +28,9 @@ services:
         condition: service_started
       minio:
         condition: service_healthy
+    networks:
+      - proxy
+      - exam-network
 
   zero-cache:
     image: rocicorp/zero:1.8.0
@@ -50,6 +53,8 @@ services:
     depends_on:
       zero-postgres:
         condition: service_healthy
+    networks:
+      - exam-network
 
   zero-postgres:
     image: postgres:18
@@ -66,6 +71,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - exam-network
 
   minio:
     image: minio/minio:latest
@@ -86,6 +93,8 @@ services:
       timeout: 5s
       retries: 10
       start_period: 5s
+    networks:
+      - exam-network
 
   minio-init:
     image: minio/mc:latest
@@ -104,8 +113,16 @@ services:
       S3_SECRET_KEY: ${S3_SECRET_KEY:-minioadmin}
       S3_BUCKET_UPLOADS: ${S3_BUCKET_UPLOADS:-exam-platform-uploads}
     restart: "no"
+    networks:
+      - exam-network
 
 volumes:
   zero-cache-data:
   zero-postgres-data:
   minio-data:
+
+networks:
+  proxy:
+    external: true
+  exam-network:
+    driver: bridge
