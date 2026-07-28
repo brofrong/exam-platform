@@ -26,6 +26,7 @@ import { Route as ApiZeroRouteImport } from './routes/api/zero'
 import { Route as ApiUploadRouteImport } from './routes/api/upload'
 import { Route as ApiQueryRouteImport } from './routes/api/query'
 import { Route as ApiMutateRouteImport } from './routes/api/mutate'
+import { Route as AppProgramsIndexRouteImport } from './routes/app/programs/index'
 import { Route as AdminSupportIndexRouteImport } from './routes/admin/support/index'
 import { Route as AdminReviewsIndexRouteImport } from './routes/admin/reviews/index'
 import { Route as AdminProgramsIndexRouteImport } from './routes/admin/programs/index'
@@ -128,6 +129,11 @@ const ApiMutateRoute = ApiMutateRouteImport.update({
   id: '/api/mutate',
   path: '/api/mutate',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AppProgramsIndexRoute = AppProgramsIndexRouteImport.update({
+  id: '/programs/',
+  path: '/programs/',
+  getParentRoute: () => AppRoute,
 } as any)
 const AdminSupportIndexRoute = AdminSupportIndexRouteImport.update({
   id: '/support/',
@@ -251,6 +257,7 @@ export interface FileRoutesByFullPath {
   '/admin/programs/': typeof AdminProgramsIndexRoute
   '/admin/reviews/': typeof AdminReviewsIndexRoute
   '/admin/support/': typeof AdminSupportIndexRoute
+  '/app/programs/': typeof AppProgramsIndexRoute
   '/admin/analytics/$userId/$programId': typeof AdminAnalyticsUserIdProgramIdRoute
   '/app/programs/$programId/lessons/$lessonId': typeof AppProgramsProgramIdLessonsLessonIdRoute
 }
@@ -284,6 +291,7 @@ export interface FileRoutesByTo {
   '/admin/programs': typeof AdminProgramsIndexRoute
   '/admin/reviews': typeof AdminReviewsIndexRoute
   '/admin/support': typeof AdminSupportIndexRoute
+  '/app/programs': typeof AppProgramsIndexRoute
   '/admin/analytics/$userId/$programId': typeof AdminAnalyticsUserIdProgramIdRoute
   '/app/programs/$programId/lessons/$lessonId': typeof AppProgramsProgramIdLessonsLessonIdRoute
 }
@@ -321,6 +329,7 @@ export interface FileRoutesById {
   '/admin/programs/': typeof AdminProgramsIndexRoute
   '/admin/reviews/': typeof AdminReviewsIndexRoute
   '/admin/support/': typeof AdminSupportIndexRoute
+  '/app/programs/': typeof AppProgramsIndexRoute
   '/admin/analytics/$userId/$programId': typeof AdminAnalyticsUserIdProgramIdRoute
   '/app/programs/$programId_/lessons/$lessonId': typeof AppProgramsProgramIdLessonsLessonIdRoute
 }
@@ -359,6 +368,7 @@ export interface FileRouteTypes {
     | '/admin/programs/'
     | '/admin/reviews/'
     | '/admin/support/'
+    | '/app/programs/'
     | '/admin/analytics/$userId/$programId'
     | '/app/programs/$programId/lessons/$lessonId'
   fileRoutesByTo: FileRoutesByTo
@@ -392,6 +402,7 @@ export interface FileRouteTypes {
     | '/admin/programs'
     | '/admin/reviews'
     | '/admin/support'
+    | '/app/programs'
     | '/admin/analytics/$userId/$programId'
     | '/app/programs/$programId/lessons/$lessonId'
   id:
@@ -428,6 +439,7 @@ export interface FileRouteTypes {
     | '/admin/programs/'
     | '/admin/reviews/'
     | '/admin/support/'
+    | '/app/programs/'
     | '/admin/analytics/$userId/$programId'
     | '/app/programs/$programId_/lessons/$lessonId'
   fileRoutesById: FileRoutesById
@@ -569,6 +581,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/mutate'
       preLoaderRoute: typeof ApiMutateRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/app/programs/': {
+      id: '/app/programs/'
+      path: '/programs'
+      fullPath: '/app/programs/'
+      preLoaderRoute: typeof AppProgramsIndexRouteImport
+      parentRoute: typeof AppRoute
     }
     '/admin/support/': {
       id: '/admin/support/'
@@ -728,6 +747,7 @@ interface AppRouteChildren {
   AppSupportRoute: typeof AppSupportRoute
   AppIndexRoute: typeof AppIndexRoute
   AppProgramsProgramIdRoute: typeof AppProgramsProgramIdRoute
+  AppProgramsIndexRoute: typeof AppProgramsIndexRoute
   AppProgramsProgramIdLessonsLessonIdRoute: typeof AppProgramsProgramIdLessonsLessonIdRoute
 }
 
@@ -735,6 +755,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppSupportRoute: AppSupportRoute,
   AppIndexRoute: AppIndexRoute,
   AppProgramsProgramIdRoute: AppProgramsProgramIdRoute,
+  AppProgramsIndexRoute: AppProgramsIndexRoute,
   AppProgramsProgramIdLessonsLessonIdRoute:
     AppProgramsProgramIdLessonsLessonIdRoute,
 }

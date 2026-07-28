@@ -34,5 +34,10 @@ export {
 } from "@/components/lms/status-badge";
 export type { SupportMessageBubbleProps } from "@/components/lms/support-message-bubble";
 export { SupportMessageBubble } from "@/components/lms/support-message-bubble";
+export type {
+	TopicTimelineItem,
+	TopicTimelineProps,
+} from "@/components/lms/topic-timeline";
+export { TopicTimeline } from "@/components/lms/topic-timeline";
 export type { VideoEmbedFrameProps } from "@/components/lms/video-embed-frame";
 export { VideoEmbedFrame } from "@/components/lms/video-embed-frame";
