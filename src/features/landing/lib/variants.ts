@@ -3,10 +3,13 @@ import { AtelierLanding } from "#/features/landing/ui/variants/atelier-landing";
 import { BloomLanding } from "#/features/landing/ui/variants/bloom-landing";
 import { ChalkLanding } from "#/features/landing/ui/variants/chalk-landing";
 import { NeonLanding } from "#/features/landing/ui/variants/neon-landing";
+import { NotebookLanding } from "#/features/landing/ui/variants/notebook-landing";
 import { OrbitLanding } from "#/features/landing/ui/variants/orbit-landing";
 import { ProofLanding } from "#/features/landing/ui/variants/proof-landing";
+import { PulseLanding } from "#/features/landing/ui/variants/pulse-landing";
 import { SparkLanding } from "#/features/landing/ui/variants/spark-landing";
 import { StoryLanding } from "#/features/landing/ui/variants/story-landing";
+import { TrajectoryLanding } from "#/features/landing/ui/variants/trajectory-landing";
 
 export const LANDING_VARIANT_SLUGS = [
 	"orbit",
@@ -17,6 +20,9 @@ export const LANDING_VARIANT_SLUGS = [
 	"spark",
 	"neon",
 	"bloom",
+	"trajectory",
+	"notebook",
+	"pulse",
 ] as const;
 
 export type LandingVariantSlug = (typeof LANDING_VARIANT_SLUGS)[number];
@@ -94,6 +100,27 @@ export const LANDING_VERSIONS: readonly LandingVersionMeta[] = [
 		href: "/v/$slug",
 		slug: "bloom",
 	},
+	{
+		id: "trajectory",
+		label: "Trajectory",
+		description: "Живая физика на canvas",
+		href: "/v/$slug",
+		slug: "trajectory",
+	},
+	{
+		id: "notebook",
+		label: "Notebook",
+		description: "Живая тетрадь + дневник",
+		href: "/v/$slug",
+		slug: "notebook",
+	},
+	{
+		id: "pulse",
+		label: "Pulse",
+		description: "Spring-физика на motion",
+		href: "/v/$slug",
+		slug: "pulse",
+	},
 ] as const;
 
 export const LANDING_VARIANT_PAGES: Record<LandingVariantSlug, ComponentType> =
@@ -106,6 +133,9 @@ export const LANDING_VARIANT_PAGES: Record<LandingVariantSlug, ComponentType> =
 		spark: SparkLanding,
 		neon: NeonLanding,
 		bloom: BloomLanding,
+		trajectory: TrajectoryLanding,
+		notebook: NotebookLanding,
+		pulse: PulseLanding,
 	};
 
 export function isLandingVariantSlug(
