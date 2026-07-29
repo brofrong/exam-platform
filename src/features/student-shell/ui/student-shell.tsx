@@ -120,7 +120,7 @@ function Brand({ testId }: { testId: string }) {
 			data-testid={testId}
 		>
 			<span className="size-2 rounded-full bg-primary" />
-			Exam Platform
+			PHYS&MATH
 		</Link>
 	);
 }

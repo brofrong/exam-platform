@@ -12,7 +12,7 @@ export function AppHeader() {
 						className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-sm text-foreground no-underline shadow-sm sm:px-4 sm:py-2"
 					>
 						<span className="h-2 w-2 rounded-full bg-primary" />
-						Exam Platform
+						PHYS&MATH
 					</Link>
 				</h2>
 
