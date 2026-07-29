@@ -63,6 +63,12 @@ export function ProgramDetailPage({ programId }: ProgramDetailPageProps) {
 		);
 	};
 
+	const handlePublicChange = async (isPublic: boolean) => {
+		await zero.mutate(
+			mutators.updateProgram({ id: program.id, public: isPublic }),
+		);
+	};
+
 	const handleUpdate = async (values: ProgramFormValues) => {
 		await zero.mutate(
 			mutators.updateProgram({
@@ -110,6 +116,15 @@ export function ProgramDetailPage({ programId }: ProgramDetailPageProps) {
 							published={status === "published"}
 							onPublishedChange={(published) => {
 								void handlePublish(published);
+							}}
+						/>
+						<PublishToggle
+							id={`program-detail-public-${program.id}`}
+							published={program.public ?? false}
+							publishedLabel="Публичная"
+							draftLabel="По приглашению"
+							onPublishedChange={(isPublic) => {
+								void handlePublicChange(isPublic);
 							}}
 						/>
 						<Button
