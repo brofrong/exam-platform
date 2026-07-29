@@ -84,8 +84,8 @@ export function LandingFormatsSection({
 									{format.why}
 								</p>
 
-								<div className="mt-auto pt-6">
-									<Button
+							<div className="mt-auto pt-6 pb-2">
+								<Button
 										asChild
 										className={cn(
 											"w-full",
