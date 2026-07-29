@@ -235,7 +235,7 @@ export function StudentSettingsPage() {
 							className="hover:text-foreground"
 							data-testid="settings-back-profile"
 						>
-							Мой профиль
+							Главная
 						</Link>
 						<span className="mx-1.5">/</span>
 						<span className="text-foreground">Настройки</span>

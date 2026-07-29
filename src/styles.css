@@ -181,6 +181,29 @@
 	}
 }
 
+/* App — staggered section entrance */
+@keyframes app-fade-up {
+	from {
+		opacity: 0;
+		transform: translateY(0.75rem);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.app-enter {
+	animation: app-fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+	animation-delay: calc(var(--enter-index, 0) * 70ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.app-enter {
+		animation: none;
+	}
+}
+
 /* PHYS&MATH landing — fixed brand theme (ignores app light/dark) */
 .landing {
 	--pm-navy: #0b1c33;

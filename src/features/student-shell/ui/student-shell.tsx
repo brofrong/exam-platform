@@ -1,7 +1,17 @@
-import { Link, useRouterState } from "@tanstack/react-router";
-import { BookOpenIcon, SettingsIcon, UserRoundIcon } from "lucide-react";
-import type { ReactNode } from "react";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import { BookOpenIcon, HomeIcon, LogOutIcon, SettingsIcon } from "lucide-react";
+import { type ReactNode, useState } from "react";
+import ThemeToggle from "#/components/ThemeToggle";
+import { authClient } from "#/shared/auth-client";
+import type { Role } from "#/shared/authz";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+
+type ShellUser = {
+	name: string;
+	role: Role;
+};
 
 function isProgramsPath(pathname: string): boolean {
 	return pathname === "/app/programs" || pathname.startsWith("/app/programs/");
@@ -11,7 +21,7 @@ function isSettingsPath(pathname: string): boolean {
 	return pathname === "/app/settings" || pathname.startsWith("/app/settings/");
 }
 
-function isProfilePath(pathname: string): boolean {
+function isHomePath(pathname: string): boolean {
 	if (isProgramsPath(pathname) || isSettingsPath(pathname)) {
 		return false;
 	}
@@ -20,6 +30,21 @@ function isProfilePath(pathname: string): boolean {
 		pathname === "/app/" ||
 		pathname.startsWith("/app/support")
 	);
+}
+
+function roleLabel(role: Role): string {
+	return role === "admin" ? "Преподаватель" : "Ученик";
+}
+
+function initialsFromName(name: string): string {
+	const parts = name.trim().split(/\s+/).filter(Boolean);
+	if (parts.length === 0) {
+		return "?";
+	}
+	if (parts.length === 1) {
+		return parts[0].slice(0, 2).toUpperCase();
+	}
+	return `${parts[0][0] ?? ""}${parts[1][0] ?? ""}`.toUpperCase();
 }
 
 function NavLink({
@@ -87,12 +112,74 @@ function NavLink({
 	);
 }
 
-export function StudentShell({ children }: { children: ReactNode }) {
+function Brand({ testId }: { testId: string }) {
+	return (
+		<Link
+			to="/app"
+			className="inline-flex items-center gap-2 text-sm font-semibold tracking-tight text-foreground no-underline"
+			data-testid={testId}
+		>
+			<span className="size-2 rounded-full bg-primary" />
+			Exam Platform
+		</Link>
+	);
+}
+
+function UserBlock({ user }: { user: ShellUser }) {
+	const navigate = useNavigate();
+	const [loggingOut, setLoggingOut] = useState(false);
+
+	return (
+		<div
+			className="space-y-1 border-t border-sidebar-border p-3"
+			data-testid="student-user-block"
+		>
+			<div className="flex items-center gap-2.5 px-1.5 py-1.5">
+				<Avatar className="size-9">
+					<AvatarFallback className="text-xs font-medium">
+						{initialsFromName(user.name)}
+					</AvatarFallback>
+				</Avatar>
+				<div className="min-w-0 flex-1">
+					<p className="truncate text-sm font-medium text-sidebar-foreground">
+						{user.name}
+					</p>
+					<p className="truncate text-xs text-sidebar-foreground/60">
+						{roleLabel(user.role)}
+					</p>
+				</div>
+				<ThemeToggle />
+			</div>
+			<Button
+				type="button"
+				variant="ghost"
+				className="w-full justify-start text-sidebar-foreground/80 hover:text-sidebar-accent-foreground"
+				disabled={loggingOut}
+				data-testid="student-logout"
+				onClick={() => {
+					setLoggingOut(true);
+					void authClient.signOut().then(() => navigate({ to: "/login" }));
+				}}
+			>
+				<LogOutIcon className="size-4" />
+				{loggingOut ? "Выход…" : "Выйти"}
+			</Button>
+		</div>
+	);
+}
+
+export function StudentShell({
+	children,
+	user,
+}: {
+	children: ReactNode;
+	user: ShellUser;
+}) {
 	const pathname = useRouterState({
 		select: (state) => state.location.pathname,
 	});
 	const programsActive = isProgramsPath(pathname);
-	const profileActive = isProfilePath(pathname);
+	const homeActive = isHomePath(pathname);
 	const settingsActive = isSettingsPath(pathname);
 
 	return (
@@ -102,14 +189,7 @@ export function StudentShell({ children }: { children: ReactNode }) {
 				data-testid="student-sidebar"
 			>
 				<div className="border-b border-sidebar-border px-4 py-4">
-					<Link
-						to="/app"
-						className="inline-flex items-center gap-2 text-sm font-semibold tracking-tight text-sidebar-foreground no-underline"
-						data-testid="student-brand"
-					>
-						<span className="size-2 rounded-full bg-primary" />
-						Exam Platform
-					</Link>
+					<Brand testId="student-brand" />
 				</div>
 
 				<nav className="flex flex-1 flex-col gap-1 p-3" aria-label="Кабинет">
@@ -123,9 +203,9 @@ export function StudentShell({ children }: { children: ReactNode }) {
 					/>
 					<NavLink
 						to="/app"
-						active={profileActive}
-						icon={<UserRoundIcon className="size-4" />}
-						label="Мой профиль"
+						active={homeActive}
+						icon={<HomeIcon className="size-4" />}
+						label="Главная"
 						testId="student-sidebar-profile"
 						variant="sidebar"
 					/>
@@ -138,14 +218,20 @@ export function StudentShell({ children }: { children: ReactNode }) {
 						variant="sidebar"
 					/>
 				</nav>
+
+				<UserBlock user={user} />
 			</aside>
 
 			<div className="flex min-w-0 flex-1 flex-col pb-[4.75rem] md:pb-0">
+				<header className="sticky top-0 z-40 flex items-center justify-between gap-3 border-b border-border bg-background/95 px-4 py-2.5 backdrop-blur-lg md:hidden">
+					<Brand testId="student-mobile-brand" />
+					<ThemeToggle />
+				</header>
 				{children}
 			</div>
 
 			<nav
-				className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background/95 backdrop-blur-lg md:hidden"
+				className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-lg md:hidden"
 				data-testid="student-bottom-nav"
 				aria-label="Главное меню"
 			>
@@ -160,9 +246,9 @@ export function StudentShell({ children }: { children: ReactNode }) {
 					/>
 					<NavLink
 						to="/app"
-						active={profileActive || settingsActive}
-						icon={<UserRoundIcon className="size-4" />}
-						label="Мой профиль"
+						active={homeActive || settingsActive}
+						icon={<HomeIcon className="size-4" />}
+						label="Главная"
 						testId="student-nav-profile"
 						variant="tab"
 					/>

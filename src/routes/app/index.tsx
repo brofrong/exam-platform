@@ -7,5 +7,7 @@ export const Route = createFileRoute("/app/")({
 
 function AppHomePage() {
 	const { user } = Route.useRouteContext();
-	return <StudentHomePage userName={user.name} role={user.role} />;
+	return (
+		<StudentHomePage userId={user.id} userName={user.name} role={user.role} />
+	);
 }

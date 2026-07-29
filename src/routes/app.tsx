@@ -28,7 +28,7 @@ function AppLayout() {
 			userID={user.id}
 			context={{ id: user.id, name: user.name, role: user.role }}
 		>
-			<StudentShell>
+			<StudentShell user={{ name: user.name, role: user.role }}>
 				<Outlet />
 			</StudentShell>
 		</ZeroProvider>
