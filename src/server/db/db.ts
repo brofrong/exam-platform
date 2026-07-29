@@ -8,8 +8,6 @@ import { ensureAppSettings } from "#/server/db/setting/ensure-settings";
 import { schema } from "#/server/zero/schema";
 import { env } from "#/shared/env";
 
-export const db = drizzle(env.ZERO_UPSTREAM_DB, { relations });
-
 /**
  * Prefer the source tree path (works for `bun run start` after build).
  * Fall back to a path next to this module (Docker copies migrations there).
@@ -26,11 +24,30 @@ function resolveMigrationsFolder(): string {
 	return fromCwd;
 }
 
-await migrate(db, {
-	migrationsFolder: resolveMigrationsFolder(),
-});
+// Cache DB instance in globalThis to survive Vite SSR HMR reloads
+// without leaking connection pools.
+const globalDb = globalThis as unknown as {
+	__db?: ReturnType<typeof drizzle>;
+	__dbMigrated?: boolean;
+	__betterAuthSecret?: string;
+};
 
-export const betterAuthSecret = await ensureAppSettings(db);
+if (!globalDb.__db) {
+	globalDb.__db = drizzle(env.ZERO_UPSTREAM_DB, { relations });
+}
+
+export const db = globalDb.__db;
+
+if (!globalDb.__dbMigrated) {
+	await migrate(db, { migrationsFolder: resolveMigrationsFolder() });
+	globalDb.__dbMigrated = true;
+}
+
+if (!globalDb.__betterAuthSecret) {
+	globalDb.__betterAuthSecret = await ensureAppSettings(db);
+}
+
+export const betterAuthSecret = globalDb.__betterAuthSecret;
 
 export const dbProvider = zeroDrizzle(schema, db);
 
