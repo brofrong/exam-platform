@@ -459,6 +459,20 @@ function ProgramsDesktopWorkspace({
 											);
 										}}
 									/>
+									<PublishToggle
+										id={`program-detail-public-${selectedProgram.id}`}
+										published={selectedProgram.public ?? false}
+										publishedLabel="Публичная"
+										draftLabel="По приглашению"
+										onPublishedChange={(isPublic) => {
+											void zero.mutate(
+												mutators.updateProgram({
+													id: selectedProgram.id,
+													public: isPublic,
+												}),
+											);
+										}}
+									/>
 									<Button
 										data-testid="topic-create-open"
 										onClick={() => setTopicCreateForProgram(selectedProgram.id)}
