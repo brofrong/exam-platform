@@ -92,11 +92,16 @@ type MutatorTx = {
 	};
 };
 
-async function requireEnrollment(
+async function requireEnrollmentOrPublic(
 	tx: MutatorTx,
 	userId: string,
 	programId: string,
 ) {
+	const program = (await tx.run(zql.program.where("id", programId).one())) as
+		| { id: string; public: boolean }
+		| undefined;
+	if (program?.public) return;
+
 	const enrollment = (await tx.run(
 		zql.enrollment.where("userId", userId).where("programId", programId).one(),
 	)) as { id: string } | undefined;
@@ -235,6 +240,7 @@ export const mutators = defineMutators({
 			description: z.string().max(4000).nullable().optional(),
 			examType: z.string().min(1).max(64),
 			subject: z.string().min(1).max(128),
+			public: z.boolean().optional(),
 		}),
 		async ({ ctx, args, tx }) => {
 			requireCapability(ctx, "program:write");
@@ -246,6 +252,7 @@ export const mutators = defineMutators({
 				examType: args.examType,
 				subject: args.subject,
 				status: "draft",
+				public: args.public ?? false,
 				createdAt: now,
 				updatedAt: now,
 			});
@@ -259,6 +266,7 @@ export const mutators = defineMutators({
 			description: z.string().max(4000).nullable().optional(),
 			examType: z.string().min(1).max(64).optional(),
 			subject: z.string().min(1).max(128).optional(),
+			public: z.boolean().optional(),
 		}),
 		async ({ ctx, args, tx }) => {
 			requireCapability(ctx, "program:write");
@@ -268,6 +276,7 @@ export const mutators = defineMutators({
 				description: args.description,
 				examType: args.examType,
 				subject: args.subject,
+				public: args.public,
 				updatedAt: Date.now(),
 			});
 		},
@@ -542,7 +551,7 @@ export const mutators = defineMutators({
 		}),
 		async ({ ctx, args, tx }) => {
 			const user = requireUser(ctx);
-			await requireEnrollment(tx as MutatorTx, user.id, args.programId);
+			await requireEnrollmentOrPublic(tx as MutatorTx, user.id, args.programId);
 			const activity = await requireActivityInProgram(
 				tx as MutatorTx,
 				args.activityId,
@@ -690,7 +699,7 @@ export const mutators = defineMutators({
 		}),
 		async ({ ctx, args, tx }) => {
 			const user = requireUser(ctx);
-			await requireEnrollment(tx as MutatorTx, user.id, args.programId);
+			await requireEnrollmentOrPublic(tx as MutatorTx, user.id, args.programId);
 			const activity = await requireActivityInProgram(
 				tx as MutatorTx,
 				args.activityId,
@@ -726,7 +735,7 @@ export const mutators = defineMutators({
 		}),
 		async ({ ctx, args, tx }) => {
 			const user = requireUser(ctx);
-			await requireEnrollment(tx as MutatorTx, user.id, args.programId);
+			await requireEnrollmentOrPublic(tx as MutatorTx, user.id, args.programId);
 			const activity = await requireActivityInProgram(
 				tx as MutatorTx,
 				args.activityId,

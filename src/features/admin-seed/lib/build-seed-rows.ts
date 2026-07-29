@@ -18,6 +18,7 @@ export type SeedRows = {
 		examType: string;
 		subject: string;
 		status: "published";
+		public: boolean;
 	}>;
 	topics: Array<{
 		id: string;
@@ -63,6 +64,7 @@ export function buildSeedRows(): SeedRows {
 			examType: program.examType,
 			subject: program.subject,
 			status: "published",
+			public: true,
 		});
 
 		program.topics.forEach((topic, topicIndex) => {

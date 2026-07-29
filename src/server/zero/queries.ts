@@ -121,12 +121,17 @@ export const queries = defineQueries({
 
 	// ── Student (auth + enrollment + published) ──────────────────────────
 
-	/** Published programs the current user is enrolled in (with outline). */
+	/** Published programs the current user is enrolled in OR public. */
 	publishedPrograms: defineQuery(({ ctx }) => {
 		const user = requireUser(ctx);
 		return zql.program
 			.where("status", "published")
-			.whereExists("enrollments", (q) => q.where("userId", user.id))
+			.where(({ or, cmp, exists }) =>
+				or(
+					cmp("public", true),
+					exists("enrollments", (q) => q.where("userId", user.id)),
+				),
+			)
 			.orderBy("createdAt", "desc")
 			.related("topics", (q) =>
 				q
@@ -144,7 +149,7 @@ export const queries = defineQueries({
 			);
 	}),
 
-	/** One enrolled + published program with published topics/lessons. */
+	/** One published program — enrolled OR public. */
 	publishedProgramById: defineQuery(
 		z.object({ id: z.string() }),
 		({ ctx, args }) => {
@@ -152,7 +157,12 @@ export const queries = defineQueries({
 			return zql.program
 				.where("id", args.id)
 				.where("status", "published")
-				.whereExists("enrollments", (q) => q.where("userId", user.id))
+				.where(({ or, cmp, exists }) =>
+					or(
+						cmp("public", true),
+						exists("enrollments", (q) => q.where("userId", user.id)),
+					),
+				)
 				.one()
 				.related("topics", (q) =>
 					q
@@ -171,7 +181,7 @@ export const queries = defineQueries({
 
 	/**
 	 * Published lesson + activities, only if linked to a published topic
-	 * inside a published program the user is enrolled in.
+	 * inside a published program the user is enrolled in OR that is public.
 	 */
 	publishedLessonById: defineQuery(
 		z.object({ id: z.string() }),
@@ -187,8 +197,11 @@ export const queries = defineQueries({
 							.whereExists("program", (program) =>
 								program
 									.where("status", "published")
-									.whereExists("enrollments", (e) =>
-										e.where("userId", user.id),
+									.where(({ or, cmp, exists }) =>
+										or(
+											cmp("public", true),
+											exists("enrollments", (e) => e.where("userId", user.id)),
+										),
 									),
 							),
 					),
@@ -289,6 +302,15 @@ export const queries = defineQueries({
 			.where("userId", user.id)
 			.whereExists("program", (q) => q.where("status", "published"))
 			.related("program", (q) => q.where("status", "published"))
+			.orderBy("createdAt", "desc");
+	}),
+
+	/** All public published programs (for catalog / discovery). */
+	publicPrograms: defineQuery(({ ctx }) => {
+		requireUser(ctx);
+		return zql.program
+			.where("status", "published")
+			.where("public", true)
 			.orderBy("createdAt", "desc");
 	}),
 
