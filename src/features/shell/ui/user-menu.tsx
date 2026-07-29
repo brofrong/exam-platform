@@ -77,12 +77,20 @@ export function UserMenu() {
 						Кабинет
 					</Link>
 				</DropdownMenuItem>
+				<DropdownMenuItem asChild>
+					<Link to="/app/settings" data-testid="nav-settings">
+						Настройки
+					</Link>
+				</DropdownMenuItem>
 				{showAdmin ? (
-					<DropdownMenuItem asChild>
-						<Link to="/admin" data-testid="nav-admin">
-							Админка
-						</Link>
-					</DropdownMenuItem>
+					<>
+						<DropdownMenuSeparator />
+						<DropdownMenuItem asChild>
+							<Link to="/admin" data-testid="nav-admin">
+								Админка
+							</Link>
+						</DropdownMenuItem>
+					</>
 				) : null}
 				<DropdownMenuSeparator />
 				<DropdownMenuItem

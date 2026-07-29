@@ -1,11 +1,15 @@
-import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { BookOpenIcon, ClipboardCheckIcon } from "lucide-react";
+import { Link, useRouterState } from "@tanstack/react-router";
+import {
+	ArrowLeftIcon,
+	BookOpenIcon,
+	ClipboardCheckIcon,
+	SettingsIcon,
+} from "lucide-react";
 import type { ReactNode } from "react";
-import ThemeToggle from "#/components/ThemeToggle";
 import { SeedDemoCatalogButton } from "#/features/admin-seed";
 import { AdminMoreMenu } from "#/features/admin-shell/ui/admin-more-menu";
-import { authClient } from "#/shared/auth-client";
 import type { Role } from "#/shared/authz";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -94,32 +98,35 @@ function NavLink({
 	);
 }
 
-function AdminAccountControls() {
-	const navigate = useNavigate();
+function initialsFromName(name: string): string {
+	const parts = name.trim().split(/\s+/).filter(Boolean);
+	if (parts.length === 0) return "?";
+	if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+	return `${parts[0][0] ?? ""}${parts[1][0] ?? ""}`.toUpperCase();
+}
 
-	const handleLogout = async () => {
-		await authClient.signOut();
-		await navigate({ to: "/login" });
-	};
-
+function AdminAccountControls({ userName }: { userName: string }) {
 	return (
 		<div
 			className="flex flex-col items-stretch gap-2"
 			data-testid="admin-account-controls"
 		>
-			<div className="flex items-center justify-between">
-				<span className="text-xs text-muted-foreground">Тема</span>
-				<ThemeToggle />
-			</div>
-			<SeedDemoCatalogButton variant="sidebar" />
-			<Button
-				type="button"
-				variant="outline"
-				size="sm"
-				data-testid="admin-nav-logout"
-				onClick={handleLogout}
+			<Link
+				to="/app/settings"
+				className="flex items-center gap-2.5 rounded-xl px-2 py-2 transition-colors hover:bg-sidebar-accent"
+				data-testid="admin-nav-settings"
 			>
-				Выйти
+				<Avatar size="sm">
+					<AvatarFallback>{initialsFromName(userName)}</AvatarFallback>
+				</Avatar>
+				<span className="truncate text-sm font-medium">{userName}</span>
+				<SettingsIcon className="ml-auto size-4 shrink-0 text-muted-foreground" />
+			</Link>
+			<SeedDemoCatalogButton variant="sidebar" />
+			<Button asChild variant="ghost" size="sm" data-testid="admin-back-to-app">
+				<Link to="/app">
+					<ArrowLeftIcon className="size-4" />В приложение
+				</Link>
 			</Button>
 		</div>
 	);
@@ -128,9 +135,11 @@ function AdminAccountControls() {
 export function AdminShell({
 	children,
 	role,
+	userName,
 }: {
 	children: React.ReactNode;
 	role: Role;
+	userName: string;
 }) {
 	const pathname = useRouterState({
 		select: (state) => state.location.pathname,
@@ -177,7 +186,7 @@ export function AdminShell({
 				</nav>
 
 				<div className="border-t border-sidebar-border p-3">
-					<AdminAccountControls />
+					<AdminAccountControls userName={userName} />
 				</div>
 			</aside>
 

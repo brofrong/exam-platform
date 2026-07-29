@@ -32,7 +32,7 @@ function AdminLayout() {
 			userID={user.id}
 			context={{ id: user.id, name: user.name, role: user.role }}
 		>
-			<AdminShell role={user.role}>
+			<AdminShell role={user.role} userName={user.name}>
 				<Outlet />
 			</AdminShell>
 		</ZeroProvider>
