@@ -7,7 +7,11 @@ import {
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { SeedDemoCatalogButton } from "#/features/admin-seed";
-import { AdminMoreMenu } from "#/features/admin-shell/ui/admin-more-menu";
+import {
+	AdminMoreMenu,
+	type AdminMoreTarget,
+	getAdminMoreLinks,
+} from "#/features/admin-shell/ui/admin-more-menu";
 import type { Role } from "#/shared/authz";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -25,16 +29,17 @@ function isReviewsPath(pathname: string): boolean {
 	);
 }
 
-function isMorePath(pathname: string): boolean {
-	if (isProgramsPath(pathname) || isReviewsPath(pathname)) {
-		return false;
+type AdminNavTarget = "/admin/programs" | "/admin/reviews" | AdminMoreTarget;
+
+function isAdminPathActive(pathname: string, to: AdminNavTarget): boolean {
+	switch (to) {
+		case "/admin/programs":
+			return isProgramsPath(pathname);
+		case "/admin/reviews":
+			return isReviewsPath(pathname);
+		default:
+			return pathname === to || pathname.startsWith(`${to}/`);
 	}
-	return (
-		pathname.startsWith("/admin/analytics") ||
-		pathname.startsWith("/admin/support") ||
-		pathname.startsWith("/admin/invites") ||
-		pathname.startsWith("/admin/lessons")
-	);
 }
 
 function NavLink({
@@ -45,7 +50,7 @@ function NavLink({
 	testId,
 	variant,
 }: {
-	to: "/admin/programs" | "/admin/reviews";
+	to: AdminNavTarget;
 	active: boolean;
 	icon: ReactNode;
 	label: string;
@@ -144,9 +149,7 @@ export function AdminShell({
 	const pathname = useRouterState({
 		select: (state) => state.location.pathname,
 	});
-	const programsActive = isProgramsPath(pathname);
-	const reviewsActive = isReviewsPath(pathname);
-	const moreActive = isMorePath(pathname);
+	const moreLinks = getAdminMoreLinks(role);
 
 	return (
 		<div className="flex min-h-svh bg-background" data-testid="admin-shell">
@@ -168,7 +171,7 @@ export function AdminShell({
 				<nav className="flex flex-1 flex-col gap-1 p-3" aria-label="Админка">
 					<NavLink
 						to="/admin/programs"
-						active={programsActive}
+						active={isAdminPathActive(pathname, "/admin/programs")}
 						icon={<BookOpenIcon className="size-4" />}
 						label="Программы"
 						testId="admin-nav-programs"
@@ -176,13 +179,23 @@ export function AdminShell({
 					/>
 					<NavLink
 						to="/admin/reviews"
-						active={reviewsActive}
+						active={isAdminPathActive(pathname, "/admin/reviews")}
 						icon={<ClipboardCheckIcon className="size-4" />}
 						label="Проверка"
 						testId="admin-nav-reviews"
 						variant="sidebar"
 					/>
-					<AdminMoreMenu role={role} variant="sidebar" active={moreActive} />
+					{moreLinks.map((link) => (
+						<NavLink
+							key={link.to}
+							to={link.to}
+							active={isAdminPathActive(pathname, link.to)}
+							icon={link.icon}
+							label={link.label}
+							testId={link.testId}
+							variant="sidebar"
+						/>
+					))}
 				</nav>
 
 				<div className="border-t border-sidebar-border p-3">
@@ -202,7 +215,7 @@ export function AdminShell({
 				<div className="mx-auto flex max-w-lg">
 					<NavLink
 						to="/admin/programs"
-						active={programsActive}
+						active={isAdminPathActive(pathname, "/admin/programs")}
 						icon={<BookOpenIcon className="size-4" />}
 						label="Программы"
 						testId="admin-nav-programs"
@@ -210,13 +223,18 @@ export function AdminShell({
 					/>
 					<NavLink
 						to="/admin/reviews"
-						active={reviewsActive}
+						active={isAdminPathActive(pathname, "/admin/reviews")}
 						icon={<ClipboardCheckIcon className="size-4" />}
 						label="Проверка"
 						testId="admin-nav-reviews"
 						variant="tab"
 					/>
-					<AdminMoreMenu role={role} variant="tab" active={moreActive} />
+					<AdminMoreMenu
+						role={role}
+						active={moreLinks.some((link) =>
+							isAdminPathActive(pathname, link.to),
+						)}
+					/>
 				</div>
 			</nav>
 		</div>

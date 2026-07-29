@@ -24,30 +24,29 @@ function resolveMigrationsFolder(): string {
 	return fromCwd;
 }
 
-// Cache DB instance in globalThis to survive Vite SSR HMR reloads
-// without leaking connection pools.
-const globalDb = globalThis as unknown as {
-	__db?: ReturnType<typeof drizzle>;
-	__dbMigrated?: boolean;
-	__betterAuthSecret?: string;
+type DbCache = typeof globalThis & {
+	__examPlatformDb?: ReturnType<typeof drizzle>;
+	__examPlatformDbInit?: Promise<string>;
 };
 
-if (!globalDb.__db) {
-	globalDb.__db = drizzle(env.ZERO_UPSTREAM_DB, { relations });
+// Cache DB setup in globalThis to survive Vite SSR HMR reloads
+// without leaking connection pools or re-running bootstrap work.
+const globalDb = globalThis as DbCache;
+
+if (!globalDb.__examPlatformDb) {
+	globalDb.__examPlatformDb = drizzle(env.ZERO_UPSTREAM_DB, { relations });
 }
 
-export const db = globalDb.__db;
+export const db = globalDb.__examPlatformDb;
 
-if (!globalDb.__dbMigrated) {
-	await migrate(db, { migrationsFolder: resolveMigrationsFolder() });
-	globalDb.__dbMigrated = true;
+if (!globalDb.__examPlatformDbInit) {
+	globalDb.__examPlatformDbInit = (async () => {
+		await migrate(db, { migrationsFolder: resolveMigrationsFolder() });
+		return ensureAppSettings(db);
+	})();
 }
 
-if (!globalDb.__betterAuthSecret) {
-	globalDb.__betterAuthSecret = await ensureAppSettings(db);
-}
-
-export const betterAuthSecret = globalDb.__betterAuthSecret;
+export const betterAuthSecret = await globalDb.__examPlatformDbInit;
 
 export const dbProvider = zeroDrizzle(schema, db);
 

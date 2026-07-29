@@ -10,12 +10,6 @@ import { SeedDemoCatalogButton } from "#/features/admin-seed";
 import { can, type Role } from "#/shared/authz";
 import { Button } from "@/components/ui/button";
 import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
 	Sheet,
 	SheetContent,
 	SheetHeader,
@@ -24,16 +18,21 @@ import {
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 
-type MoreLink = {
-	to: "/admin/analytics" | "/admin/support" | "/admin/invites";
+export type AdminMoreTarget =
+	| "/admin/analytics"
+	| "/admin/support"
+	| "/admin/invites";
+
+export type AdminMoreLink = {
+	to: AdminMoreTarget;
 	label: string;
 	description: string;
 	testId: string;
 	icon: React.ReactNode;
 };
 
-function moreLinks(role: Role): MoreLink[] {
-	const links: MoreLink[] = [];
+export function getAdminMoreLinks(role: Role): AdminMoreLink[] {
+	const links: AdminMoreLink[] = [];
 	if (can(role, "analytics:read")) {
 		links.push({
 			to: "/admin/analytics",
@@ -64,50 +63,13 @@ function moreLinks(role: Role): MoreLink[] {
 
 export function AdminMoreMenu({
 	role,
-	variant,
 	active,
 }: {
 	role: Role;
-	variant: "sidebar" | "tab";
 	active: boolean;
 }) {
-	const links = moreLinks(role);
+	const links = getAdminMoreLinks(role);
 	const [sheetOpen, setSheetOpen] = useState(false);
-
-	if (variant === "sidebar") {
-		return (
-			<DropdownMenu>
-				<DropdownMenuTrigger asChild>
-					<button
-						type="button"
-						data-testid="admin-nav-more"
-						aria-current={active ? "page" : undefined}
-						className={cn(
-							"flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
-							active
-								? "bg-sidebar-accent text-sidebar-accent-foreground"
-								: "text-sidebar-foreground/80 hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground",
-						)}
-					>
-						<span className="inline-flex size-5 items-center justify-center">
-							<MoreHorizontalIcon className="size-4" />
-						</span>
-						Ещё
-					</button>
-				</DropdownMenuTrigger>
-				<DropdownMenuContent align="start" className="w-56">
-					{links.map((link) => (
-						<DropdownMenuItem key={link.to} asChild>
-							<Link to={link.to} data-testid={link.testId}>
-								{link.icon}
-								<span>{link.label}</span>
-							</Link>
-						</DropdownMenuItem>
-					))}
-				</DropdownMenuContent>
-			</DropdownMenu>
-		);
-	}
 
 	return (
 		<Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
