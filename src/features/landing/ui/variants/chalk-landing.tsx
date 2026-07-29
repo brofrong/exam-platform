@@ -16,6 +16,7 @@ import {
 	LandingTrialSection,
 } from "#/features/landing/ui/shared-sections";
 import { SocialLinks } from "#/features/landing/ui/social-links";
+import { ChalkTheorySection } from "#/features/landing/ui/variants/chalk-interactive";
 import { Button } from "@/components/ui/button";
 
 function ChalkGeometry() {
@@ -188,6 +189,8 @@ export function ChalkLanding() {
 				className="bg-[#f4f7f6] [--pm-amber:#FF6B5B] [--pm-amber-deep:#e25548] [--pm-amber-bright:#ff8274]"
 				featuredCardClassName="border-[#FF6B5B] ring-[#FF6B5B]/30"
 			/>
+
+			<ChalkTheorySection />
 
 			<section className="bg-white py-20 text-[#0b1c33] sm:py-28">
 				<div className="mx-auto max-w-6xl px-4 sm:px-6">
