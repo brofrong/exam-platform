@@ -1,5 +1,6 @@
 {
 	"name": "exam-platform",
+	"version": "0.1.0",
 	"private": true,
 	"type": "module",
 	"license": "MIT",
@@ -27,6 +28,7 @@
 		"format": "biome format",
 		"lint": "biome lint",
 		"check": "biome check",
+		"version:bump": "bun run scripts/bump-version.ts",
 		"db:generate": "drizzle-kit generate",
 		"db:migrate": "drizzle-kit migrate",
 		"db:studio": "drizzle-kit studio",

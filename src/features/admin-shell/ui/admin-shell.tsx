@@ -12,6 +12,7 @@ import {
 	type AdminMoreTarget,
 	getAdminMoreLinks,
 } from "#/features/admin-shell/ui/admin-more-menu";
+import { APP_VERSION } from "#/shared/app-version";
 import type { Role } from "#/shared/authz";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -165,6 +166,12 @@ export function AdminShell({
 					>
 						<span className="size-2 rounded-full bg-primary" />
 						Админка
+						<span
+							className="text-[10px] font-normal leading-none text-muted-foreground"
+							data-testid="admin-version"
+						>
+							v{APP_VERSION}
+						</span>
 					</Link>
 				</div>
 
