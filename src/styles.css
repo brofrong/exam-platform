@@ -243,6 +243,16 @@
 	font-family: var(--font-landing-display);
 }
 
+.landing ::selection {
+	background: color-mix(in srgb, var(--pm-amber) 78%, white);
+	color: var(--pm-navy);
+}
+
+.landing ::-moz-selection {
+	background: color-mix(in srgb, var(--pm-amber) 78%, white);
+	color: var(--pm-navy);
+}
+
 /* Body uses overflow-wrap:anywhere — keep display titles as whole words */
 .landing :is(h1, h2, h3, h4),
 .landing .font-display {

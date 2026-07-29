@@ -44,10 +44,11 @@ function RootNotFound() {
 		<main className="mx-auto flex min-h-[calc(100vh-8rem)] w-full max-w-7xl items-center justify-center px-4 py-10">
 			<div className="max-w-md space-y-4 text-center">
 				<h1 className="text-4xl font-bold text-foreground">404</h1>
-				<p className="text-sm text-muted-foreground">
-					Страница не найдена
-				</p>
-				<Link to="/" className="inline-block text-sm text-primary hover:underline">
+				<p className="text-sm text-muted-foreground">Страница не найдена</p>
+				<Link
+					to="/"
+					className="inline-block text-sm text-primary hover:underline"
+				>
 					На главную
 				</Link>
 			</div>
