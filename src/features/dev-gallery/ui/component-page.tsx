@@ -42,7 +42,11 @@ export function ComponentPage({ slug }: ComponentPageProps) {
 			<section className="space-y-3">
 				<h2 className="text-sm font-medium text-muted-foreground">Preview</h2>
 				<div
-					className="flex min-h-40 items-center justify-center rounded-xl border border-border bg-card p-6 sm:p-8"
+					className={
+						entry.previewLayout === "fill"
+							? "w-full rounded-xl border border-border bg-card p-3 sm:p-4"
+							: "flex min-h-40 items-center justify-center rounded-xl border border-border bg-card p-6 sm:p-8"
+					}
 					data-testid="dev-gallery-preview"
 				>
 					<Preview />

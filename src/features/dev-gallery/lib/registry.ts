@@ -422,10 +422,11 @@ export const galleryRegistry: GalleryEntry[] = [
 		slug: "theory-editor",
 		title: "Theory Editor",
 		description:
-			"TipTap StarterKit + video + liveReact/Mafs; editor and read-only renderer. Scope: React, Mafs, Coordinates, Plot, Theme, …",
+			"TipTap theory editor: formatting, links, tables, code (lowlight), KaTeX, images, video, liveReact. Split editor / live preview.",
 		category: "Editor",
 		component: TheoryEditorDemo,
-		note: "import { TheoryEditor, TheoryRenderer, LiveReactBlock } from '#/features/lesson-editor'",
+		previewLayout: "fill",
+		note: "import { TheoryEditor, TheoryRenderer } from '#/features/lesson-editor'",
 	},
 ];
 

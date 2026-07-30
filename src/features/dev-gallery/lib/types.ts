@@ -19,4 +19,6 @@ export type GalleryEntry = {
 	category: GalleryCategory;
 	component: ComponentType;
 	note?: ReactNode;
+	/** `fill` — full-width preview without centering (editors, canvases). */
+	previewLayout?: "centered" | "fill";
 };

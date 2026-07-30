@@ -1,26 +1,35 @@
+import type { EditorView } from "@tiptap/pm/view";
 import { EditorContent, useEditor } from "@tiptap/react";
+import { useRef } from "react";
+import { toast } from "sonner";
 import {
 	createTheoryExtensions,
 	emptyTheoryDoc,
 	normalizeTheoryDoc,
 	type TheoryDoc,
 } from "#/features/lesson-editor/lib/editor-schema";
+import { theoryProseClassName } from "#/features/lesson-editor/lib/theory-prose";
+import {
+	getImageFileFromDataTransfer,
+	uploadEditorImage,
+} from "#/features/lesson-editor/lib/upload-editor-image";
 import { TheoryToolbar } from "#/features/lesson-editor/ui/theory-toolbar";
 import { cn } from "@/lib/utils";
 
-const proseClassName = cn(
-	"min-h-[12rem] px-3 py-2 text-sm leading-relaxed focus:outline-none",
-	"[&_h1]:mt-4 [&_h1]:mb-2 [&_h1]:text-2xl [&_h1]:font-semibold",
-	"[&_h2]:mt-3 [&_h2]:mb-2 [&_h2]:text-xl [&_h2]:font-semibold",
-	"[&_h3]:mt-3 [&_h3]:mb-1.5 [&_h3]:text-lg [&_h3]:font-medium",
-	"[&_p]:my-1.5",
-	"[&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-6",
-	"[&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-6",
-	"[&_blockquote]:border-l-2 [&_blockquote]:border-border [&_blockquote]:pl-3 [&_blockquote]:italic",
-	"[&_code]:rounded [&_code]:bg-muted [&_code]:px-1 [&_code]:font-mono [&_code]:text-[0.85em]",
-	"[&_pre]:overflow-x-auto [&_pre]:rounded-lg [&_pre]:bg-muted [&_pre]:p-3",
-	"[&_a]:text-primary [&_a]:underline [&_a]:underline-offset-2",
-);
+const proseClassName = theoryProseClassName("min-h-[12rem] px-3 py-2");
+
+function insertImageAtSelection(
+	view: EditorView,
+	src: string,
+	alt: string,
+): void {
+	const imageType = view.state.schema.nodes.image;
+	if (!imageType) {
+		return;
+	}
+	const node = imageType.create({ src, alt });
+	view.dispatch(view.state.tr.replaceSelectionWith(node).scrollIntoView());
+}
 
 export type TheoryEditorProps = {
 	content?: unknown;
@@ -34,6 +43,7 @@ export function TheoryEditor({
 	className,
 }: TheoryEditorProps) {
 	const initial = normalizeTheoryDoc(content ?? emptyTheoryDoc);
+	const uploadingRef = useRef(false);
 
 	const editor = useEditor({
 		extensions: createTheoryExtensions(),
@@ -44,6 +54,57 @@ export function TheoryEditor({
 				class: proseClassName,
 				"data-testid": "theory-editor-content",
 			},
+			handlePaste(view, event) {
+				const file = getImageFileFromDataTransfer(event.clipboardData);
+				if (!file || uploadingRef.current) {
+					return false;
+				}
+
+				event.preventDefault();
+				uploadingRef.current = true;
+				void uploadEditorImage(file)
+					.then((src) => {
+						insertImageAtSelection(view, src, file.name);
+					})
+					.catch((error: unknown) => {
+						toast.error(
+							error instanceof Error
+								? error.message
+								: "Не удалось вставить изображение",
+						);
+					})
+					.finally(() => {
+						uploadingRef.current = false;
+					});
+				return true;
+			},
+			handleDrop(view, event, _slice, moved) {
+				if (moved) {
+					return false;
+				}
+				const file = getImageFileFromDataTransfer(event.dataTransfer);
+				if (!file || uploadingRef.current) {
+					return false;
+				}
+
+				event.preventDefault();
+				uploadingRef.current = true;
+				void uploadEditorImage(file)
+					.then((src) => {
+						insertImageAtSelection(view, src, file.name);
+					})
+					.catch((error: unknown) => {
+						toast.error(
+							error instanceof Error
+								? error.message
+								: "Не удалось вставить изображение",
+						);
+					})
+					.finally(() => {
+						uploadingRef.current = false;
+					});
+				return true;
+			},
 		},
 		onUpdate: ({ editor: instance }) => {
 			onChange?.(instance.getJSON());
@@ -52,13 +113,17 @@ export function TheoryEditor({
 
 	return (
 		<div
-			className={cn(
-				"overflow-hidden rounded-xl border border-border bg-background",
-				className,
-			)}
+			className={cn("rounded-xl border border-border bg-background", className)}
 			data-testid="theory-editor"
 		>
-			{editor ? <TheoryToolbar editor={editor} /> : null}
+			{editor ? (
+				<div
+					className="sticky top-0 z-20 border-b border-border bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/80"
+					data-testid="theory-toolbar-sticky"
+				>
+					<TheoryToolbar editor={editor} />
+				</div>
+			) : null}
 			<EditorContent editor={editor} />
 		</div>
 	);
