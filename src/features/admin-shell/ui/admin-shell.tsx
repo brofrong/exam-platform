@@ -3,10 +3,15 @@ import {
 	ArrowLeftIcon,
 	BookOpenIcon,
 	ClipboardCheckIcon,
+	PanelLeftCloseIcon,
+	PanelLeftOpenIcon,
 	SettingsIcon,
 } from "lucide-react";
-import { type ReactNode, useState } from "react";
-import { SeedDemoCatalogButton } from "#/features/admin-seed";
+import { type ReactNode, useEffect, useState } from "react";
+import {
+	readSidebarCollapsed,
+	writeSidebarCollapsed,
+} from "#/features/admin-shell/lib/sidebar-collapsed";
 import {
 	AdminMoreMenu,
 	type AdminMoreTarget,
@@ -51,6 +56,7 @@ function NavLink({
 	label,
 	testId,
 	variant,
+	collapsed = false,
 }: {
 	to: AdminNavTarget;
 	active: boolean;
@@ -58,6 +64,7 @@ function NavLink({
 	label: string;
 	testId: string;
 	variant: "sidebar" | "tab";
+	collapsed?: boolean;
 }) {
 	if (variant === "tab") {
 		return (
@@ -90,8 +97,10 @@ function NavLink({
 			to={to}
 			data-testid={testId}
 			aria-current={active ? "page" : undefined}
+			title={collapsed ? label : undefined}
 			className={cn(
 				"flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+				collapsed && "justify-center gap-0 px-0",
 				active
 					? "bg-sidebar-accent text-sidebar-accent-foreground"
 					: "text-sidebar-foreground/80 hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground",
@@ -100,7 +109,7 @@ function NavLink({
 			<span className="inline-flex size-5 items-center justify-center">
 				{icon}
 			</span>
-			{label}
+			{collapsed ? <span className="sr-only">{label}</span> : label}
 		</Link>
 	);
 }
@@ -112,7 +121,13 @@ function initialsFromName(name: string): string {
 	return `${parts[0][0] ?? ""}${parts[1][0] ?? ""}`.toUpperCase();
 }
 
-function AdminAccountControls({ userName }: { userName: string }) {
+function AdminAccountControls({
+	userName,
+	collapsed,
+}: {
+	userName: string;
+	collapsed: boolean;
+}) {
 	return (
 		<div
 			className="flex flex-col items-stretch gap-2"
@@ -120,19 +135,43 @@ function AdminAccountControls({ userName }: { userName: string }) {
 		>
 			<Link
 				to="/app/settings"
-				className="flex items-center gap-2.5 rounded-xl px-2 py-2 transition-colors hover:bg-sidebar-accent"
+				title={collapsed ? userName : undefined}
+				className={cn(
+					"flex items-center gap-2.5 rounded-xl px-2 py-2 transition-colors hover:bg-sidebar-accent",
+					collapsed && "justify-center px-0",
+				)}
 				data-testid="admin-nav-settings"
 			>
 				<Avatar size="sm">
 					<AvatarFallback>{initialsFromName(userName)}</AvatarFallback>
 				</Avatar>
-				<span className="truncate text-sm font-medium">{userName}</span>
-				<SettingsIcon className="ml-auto size-4 shrink-0 text-muted-foreground" />
+				{collapsed ? (
+					<span className="sr-only">{userName}</span>
+				) : (
+					<>
+						<span className="truncate text-sm font-medium">{userName}</span>
+						<SettingsIcon className="ml-auto size-4 shrink-0 text-muted-foreground" />
+					</>
+				)}
 			</Link>
-			<SeedDemoCatalogButton variant="sidebar" />
-			<Button asChild variant="ghost" size="sm" data-testid="admin-back-to-app">
-				<Link to="/app">
-					<ArrowLeftIcon className="size-4" />В приложение
+			<Button
+				asChild
+				variant="ghost"
+				size="sm"
+				className={cn(collapsed && "px-0 justify-center")}
+				data-testid="admin-back-to-app"
+			>
+				<Link
+					to="/app"
+					title={collapsed ? "В приложение" : undefined}
+					aria-label={collapsed ? "В приложение" : undefined}
+				>
+					<ArrowLeftIcon className="size-4" />
+					{collapsed ? (
+						<span className="sr-only">В приложение</span>
+					) : (
+						"В приложение"
+					)}
 				</Link>
 			</Button>
 		</div>
@@ -153,35 +192,68 @@ export function AdminShell({
 	});
 	const moreLinks = getAdminMoreLinks(role);
 	const [changelogOpen, setChangelogOpen] = useState(false);
+	const [collapsed, setCollapsed] = useState(false);
+
+	useEffect(() => {
+		setCollapsed(readSidebarCollapsed());
+	}, []);
+
+	const toggleCollapsed = () => {
+		setCollapsed((prev) => {
+			const next = !prev;
+			writeSidebarCollapsed(next);
+			return next;
+		});
+	};
 
 	return (
 		<div className="flex min-h-svh bg-background" data-testid="admin-shell">
 			<aside
-				className="sticky top-0 hidden h-svh w-60 shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground md:flex"
+				className={cn(
+					"sticky top-0 hidden h-svh shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground md:flex",
+					collapsed ? "w-14" : "w-60",
+				)}
 				data-testid="admin-sidebar"
+				data-collapsed={collapsed ? "true" : "false"}
 			>
-				<div className="border-b border-sidebar-border px-4 py-4">
-					<div className="inline-flex items-center gap-2 text-sm font-semibold tracking-tight text-sidebar-foreground">
+				<div
+					className={cn(
+						"border-b border-sidebar-border px-4 py-4",
+						collapsed && "px-2",
+					)}
+				>
+					<div
+						className={cn(
+							"inline-flex items-center gap-2 text-sm font-semibold tracking-tight text-sidebar-foreground",
+							collapsed && "w-full justify-center",
+						)}
+					>
 						<Link
 							to="/admin/programs"
 							className="inline-flex items-center gap-2 no-underline"
 							data-testid="admin-brand"
+							title={collapsed ? "Админка" : undefined}
 						>
 							<span className="size-2 rounded-full bg-primary" />
-							Админка
+							{collapsed ? <span className="sr-only">Админка</span> : "Админка"}
 						</Link>
-						<button
-							type="button"
-							className="text-[10px] font-normal leading-none text-muted-foreground transition-colors hover:text-foreground"
-							data-testid="admin-version"
-							onClick={() => setChangelogOpen(true)}
-						>
-							v{APP_VERSION}
-						</button>
+						{!collapsed && (
+							<button
+								type="button"
+								className="text-[10px] font-normal leading-none text-muted-foreground transition-colors hover:text-foreground"
+								data-testid="admin-version"
+								onClick={() => setChangelogOpen(true)}
+							>
+								v{APP_VERSION}
+							</button>
+						)}
 					</div>
 				</div>
 
-				<nav className="flex flex-1 flex-col gap-1 p-3" aria-label="Админка">
+				<nav
+					className={cn("flex flex-1 flex-col gap-1 p-3", collapsed && "px-1")}
+					aria-label="Админка"
+				>
 					<NavLink
 						to="/admin/programs"
 						active={isAdminPathActive(pathname, "/admin/programs")}
@@ -189,6 +261,7 @@ export function AdminShell({
 						label="Программы"
 						testId="admin-nav-programs"
 						variant="sidebar"
+						collapsed={collapsed}
 					/>
 					<NavLink
 						to="/admin/reviews"
@@ -197,6 +270,7 @@ export function AdminShell({
 						label="Проверка"
 						testId="admin-nav-reviews"
 						variant="sidebar"
+						collapsed={collapsed}
 					/>
 					{moreLinks.map((link) => (
 						<NavLink
@@ -207,12 +281,34 @@ export function AdminShell({
 							label={link.label}
 							testId={link.testId}
 							variant="sidebar"
+							collapsed={collapsed}
 						/>
 					))}
 				</nav>
 
-				<div className="border-t border-sidebar-border p-3">
-					<AdminAccountControls userName={userName} />
+				<div
+					className={cn(
+						"border-t border-sidebar-border p-3",
+						collapsed && "px-1",
+					)}
+				>
+					<Button
+						type="button"
+						variant="ghost"
+						size="sm"
+						className={cn("mb-2 w-full", collapsed && "px-0 justify-center")}
+						onClick={toggleCollapsed}
+						data-testid="admin-sidebar-collapse"
+						aria-label={collapsed ? "Развернуть меню" : "Свернуть меню"}
+						title={collapsed ? "Развернуть" : "Свернуть"}
+					>
+						{collapsed ? (
+							<PanelLeftOpenIcon className="size-4" />
+						) : (
+							<PanelLeftCloseIcon className="size-4" />
+						)}
+					</Button>
+					<AdminAccountControls userName={userName} collapsed={collapsed} />
 				</div>
 			</aside>
 
