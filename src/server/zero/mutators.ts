@@ -13,10 +13,12 @@ import {
 	markAnswersPending,
 	type StudentAnswers,
 } from "#/server/grading/grade-attempt";
+import { assertAcyclicEdges } from "#/features/program-locks/lib/lock-graph";
 import { requireCapability, requireUser } from "#/server/zero/authz";
 import {
 	ACTIVITY_TYPES,
 	EMPTY_TIPTAP_DOC,
+	LOCK_MODES,
 	PUBLISH_STATUSES,
 	TEST_ANSWER_TYPES,
 	TEST_GRADING,
@@ -26,6 +28,7 @@ import { zql } from "#/server/zero/schema";
 import { can } from "#/shared/authz";
 
 const publishStatusSchema = z.enum(PUBLISH_STATUSES);
+const lockModeSchema = z.enum(LOCK_MODES);
 const activityTypeSchema = z.enum(ACTIVITY_TYPES);
 /** TipTap JSON document — must be JSON-serializable for Zero mutator args. */
 const activityContentSchema = z.record(z.string(), z.json());
@@ -334,6 +337,131 @@ export const mutators = defineMutators({
 				status: args.status,
 				updatedAt: Date.now(),
 			});
+		},
+	),
+
+	updateProgramLockSettings: defineMutator(
+		z.object({
+			id: z.string(),
+			topicLockMode: lockModeSchema.optional(),
+			lessonLockMode: lockModeSchema.optional(),
+			unlockThresholdPercent: z.number().int().min(1).max(100).optional(),
+		}),
+		async ({ ctx, args, tx }) => {
+			requireCapability(ctx, "program:write");
+			await tx.mutate.program.update({
+				id: args.id,
+				topicLockMode: args.topicLockMode,
+				lessonLockMode: args.lessonLockMode,
+				unlockThresholdPercent: args.unlockThresholdPercent,
+				updatedAt: Date.now(),
+			});
+		},
+	),
+
+	setTopicLockEdges: defineMutator(
+		z.object({
+			programId: z.string(),
+			edges: z.array(
+				z.object({
+					id: z.string().optional(),
+					blockerTopicId: z.string(),
+					topicId: z.string(),
+				}),
+			),
+		}),
+		async ({ ctx, args, tx }) => {
+			requireCapability(ctx, "program:write");
+			const topics = await tx.run(
+				zql.topic.where("programId", args.programId),
+			);
+			const topicIds = new Set(topics.map((topic) => topic.id));
+			for (const edge of args.edges) {
+				if (
+					!topicIds.has(edge.blockerTopicId) ||
+					!topicIds.has(edge.topicId)
+				) {
+					throw new Error("Forbidden");
+				}
+			}
+			assertAcyclicEdges(
+				args.edges.map((edge) => ({
+					from: edge.blockerTopicId,
+					to: edge.topicId,
+				})),
+			);
+
+			const existing = await tx.run(
+				zql.topicLockEdge.where("programId", args.programId),
+			);
+			for (const row of existing) {
+				await tx.mutate.topicLockEdge.delete({ id: row.id });
+			}
+			for (const edge of args.edges) {
+				await tx.mutate.topicLockEdge.insert({
+					id: newId(edge.id),
+					programId: args.programId,
+					blockerTopicId: edge.blockerTopicId,
+					topicId: edge.topicId,
+				});
+			}
+		},
+	),
+
+	setLessonLockEdges: defineMutator(
+		z.object({
+			programId: z.string(),
+			topicId: z.string(),
+			edges: z.array(
+				z.object({
+					id: z.string().optional(),
+					blockerLessonId: z.string(),
+					lessonId: z.string(),
+				}),
+			),
+		}),
+		async ({ ctx, args, tx }) => {
+			requireCapability(ctx, "program:write");
+			const topic = await tx.run(zql.topic.where("id", args.topicId).one());
+			if (!topic || topic.programId !== args.programId) {
+				throw new Error("Forbidden");
+			}
+			const links = await tx.run(
+				zql.topicLesson.where("topicId", args.topicId),
+			);
+			const lessonIds = new Set(links.map((link) => link.lessonId));
+			for (const edge of args.edges) {
+				if (
+					!lessonIds.has(edge.blockerLessonId) ||
+					!lessonIds.has(edge.lessonId)
+				) {
+					throw new Error("Forbidden");
+				}
+			}
+			assertAcyclicEdges(
+				args.edges.map((edge) => ({
+					from: edge.blockerLessonId,
+					to: edge.lessonId,
+				})),
+			);
+
+			const existing = await tx.run(
+				zql.lessonLockEdge
+					.where("programId", args.programId)
+					.where("topicId", args.topicId),
+			);
+			for (const row of existing) {
+				await tx.mutate.lessonLockEdge.delete({ id: row.id });
+			}
+			for (const edge of args.edges) {
+				await tx.mutate.lessonLockEdge.insert({
+					id: newId(edge.id),
+					programId: args.programId,
+					topicId: args.topicId,
+					blockerLessonId: edge.blockerLessonId,
+					lessonId: edge.lessonId,
+				});
+			}
 		},
 	),
 
