@@ -1,15 +1,19 @@
-import { jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import {
+	boolean,
+	integer,
+	jsonb,
+	pgTable,
+	text,
+	timestamp,
+} from "drizzle-orm/pg-core";
 import { activitiesTable } from "#/server/db/activity/activity.schema";
 import { programsTable } from "#/server/db/program/program.schema";
 import { usersTable } from "#/server/db/user/user.schema";
-import type { GradedAnswers } from "#/server/grading/grade-submission";
 
-/** `pending` | `graded` */
-export type SubmissionStatus = "pending" | "graded";
+/** `in_progress` | `pending_review` | `graded` */
+export type TestAttemptStatus = "in_progress" | "pending_review" | "graded";
 
-export type SubmissionAnswers = GradedAnswers;
-
-export const submissionsTable = pgTable("submission", {
+export const testAttemptsTable = pgTable("test_attempt", {
 	id: text("id").primaryKey(),
 	userId: text("user_id")
 		.notNull()
@@ -20,14 +24,12 @@ export const submissionsTable = pgTable("submission", {
 	activityId: text("activity_id")
 		.notNull()
 		.references(() => activitiesTable.id, { onDelete: "cascade" }),
-	answers: jsonb("answers").$type<SubmissionAnswers>().notNull(),
-	/** `pending` | `graded` — see `SubmissionStatus` */
+	/** Fixed random sample of test ids for this attempt. */
+	testIds: jsonb("test_ids").$type<string[]>().notNull(),
+	/** See `TestAttemptStatus` */
 	status: text("status").notNull(),
-	reviewedBy: text("reviewed_by").references(() => usersTable.id, {
-		onDelete: "set null",
-	}),
-	reviewerComment: text("reviewer_comment"),
-	reviewedAt: timestamp("reviewed_at"),
+	scorePercent: integer("score_percent"),
+	passed: boolean("passed"),
 	createdAt: timestamp("created_at").defaultNow().notNull(),
 	updatedAt: timestamp("updated_at")
 		.defaultNow()

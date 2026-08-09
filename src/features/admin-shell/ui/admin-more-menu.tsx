@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import {
 	ChartColumnIcon,
 	LinkIcon,
+	ListChecksIcon,
 	MessageCircleIcon,
 	MoreHorizontalIcon,
 } from "lucide-react";
@@ -20,6 +21,7 @@ import { cn } from "@/lib/utils";
 
 export type AdminMoreTarget =
 	| "/admin/analytics"
+	| "/admin/tests"
 	| "/admin/support"
 	| "/admin/invites";
 
@@ -40,6 +42,15 @@ export function getAdminMoreLinks(role: Role): AdminMoreLink[] {
 			description: "Прогресс учеников",
 			testId: "admin-nav-analytics",
 			icon: <ChartColumnIcon className="size-4" />,
+		});
+	}
+	if (can(role, "lesson:write")) {
+		links.push({
+			to: "/admin/tests",
+			label: "Тесты",
+			description: "Банки вопросов для практики",
+			testId: "admin-nav-tests",
+			icon: <ListChecksIcon className="size-4" />,
 		});
 	}
 	links.push(

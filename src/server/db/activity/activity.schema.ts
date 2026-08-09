@@ -4,7 +4,10 @@ import { lessonsTable } from "#/server/db/lesson/lesson.schema";
 /** `theory` | `practice` */
 export type ActivityType = "theory" | "practice";
 
-/** TipTap document JSON stored on the activity. */
+/**
+ * TipTap document JSON for theory, or `PracticeActivityContent` for practice.
+ * See `#/server/db/activity/practice-content`.
+ */
 export type ActivityContent = Record<string, unknown>;
 
 export const activitiesTable = pgTable("activity", {

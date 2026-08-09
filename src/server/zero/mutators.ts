@@ -1,17 +1,25 @@
 import { defineMutator, defineMutators } from "@rocicorp/zero";
 import { z } from "zod";
 import {
+	isPracticeActivityContent,
+	type PracticeActivityContent,
+} from "#/server/db/activity/practice-content";
+import {
 	applyReviewResults,
+	finalizeAttemptScore,
+	type GradedAnswer,
 	type GradedAnswers,
-	gradeSubmission,
+	gradeAttempt,
 	markAnswersPending,
 	type StudentAnswers,
-} from "#/server/grading/grade-submission";
+} from "#/server/grading/grade-attempt";
 import { requireCapability, requireUser } from "#/server/zero/authz";
 import {
 	ACTIVITY_TYPES,
 	EMPTY_TIPTAP_DOC,
 	PUBLISH_STATUSES,
+	TEST_ANSWER_TYPES,
+	TEST_GRADING,
 } from "#/server/zero/constants";
 import { aggregateLessonProgress } from "#/server/zero/recompute-lesson-progress";
 import { zql } from "#/server/zero/schema";
@@ -24,6 +32,10 @@ const activityContentSchema = z.record(z.string(), z.json());
 
 const shortTextAnswerSchema = z.object({
 	type: z.literal("short_text"),
+	value: z.string(),
+});
+const numberAnswerSchema = z.object({
+	type: z.literal("number"),
 	value: z.string(),
 });
 const singleChoiceAnswerSchema = z.object({
@@ -43,6 +55,7 @@ const fileUploadAnswerSchema = z.object({
 });
 const studentAnswerSchema = z.discriminatedUnion("type", [
 	shortTextAnswerSchema,
+	numberAnswerSchema,
 	singleChoiceAnswerSchema,
 	multipleChoiceAnswerSchema,
 	fileUploadAnswerSchema,
@@ -50,9 +63,33 @@ const studentAnswerSchema = z.discriminatedUnion("type", [
 const studentAnswersSchema = z.record(z.string(), studentAnswerSchema);
 
 const reviewResultSchema = z.enum(["correct", "incorrect"]);
+const testAnswerTypeSchema = z.enum(TEST_ANSWER_TYPES);
+const testGradingSchema = z.enum(TEST_GRADING);
 
 function newId(id: string | undefined): string {
 	return id ?? crypto.randomUUID();
+}
+
+function sampleIds(ids: string[], count: number): string[] {
+	const copy = [...ids];
+	for (let i = copy.length - 1; i > 0; i--) {
+		const j = Math.floor(Math.random() * (i + 1));
+		const left = copy[i];
+		const right = copy[j];
+		if (left === undefined || right === undefined) {
+			continue;
+		}
+		copy[i] = right;
+		copy[j] = left;
+	}
+	return copy.slice(0, Math.min(count, copy.length));
+}
+
+function parsePracticeContent(content: unknown): PracticeActivityContent {
+	if (!isPracticeActivityContent(content) || !content.testGroupId) {
+		throw new Error("Practice not configured");
+	}
+	return content;
 }
 
 /** Minimal tx surface used by progress writers (avoids exporting Zero Transaction). */
@@ -493,12 +530,21 @@ export const mutators = defineMutators({
 		}),
 		async ({ ctx, args, tx }) => {
 			requireCapability(ctx, "lesson:write");
+			const content =
+				args.content ??
+				(args.type === "practice"
+					? {
+							testGroupId: "",
+							questionCount: 1,
+							passPercent: 100,
+						}
+					: EMPTY_TIPTAP_DOC);
 			await tx.mutate.activity.insert({
 				id: newId(args.id),
 				lessonId: args.lessonId,
 				type: args.type,
 				position: args.position,
-				content: args.content ?? EMPTY_TIPTAP_DOC,
+				content,
 			});
 		},
 	),
@@ -536,18 +582,215 @@ export const mutators = defineMutators({
 		},
 	),
 
-	// ── Practice submissions ──────────────────────────────────────────────
+	// ── Test groups (lesson:write) ────────────────────────────────────────
+
+	createTestGroup: defineMutator(
+		z.object({
+			id: z.string().optional(),
+			title: z.string().min(1).max(255),
+			description: z.string().max(8000).optional(),
+		}),
+		async ({ ctx, args, tx }) => {
+			requireCapability(ctx, "lesson:write");
+			await tx.mutate.testGroup.insert({
+				id: newId(args.id),
+				title: args.title,
+				description: args.description ?? "",
+				status: "draft",
+			});
+		},
+	),
+
+	updateTestGroup: defineMutator(
+		z.object({
+			id: z.string(),
+			title: z.string().min(1).max(255).optional(),
+			description: z.string().max(8000).optional(),
+		}),
+		async ({ ctx, args, tx }) => {
+			requireCapability(ctx, "lesson:write");
+			await tx.mutate.testGroup.update({
+				id: args.id,
+				title: args.title,
+				description: args.description,
+			});
+		},
+	),
+
+	publishTestGroup: defineMutator(
+		z.object({
+			id: z.string(),
+			status: publishStatusSchema,
+		}),
+		async ({ ctx, args, tx }) => {
+			requireCapability(ctx, "lesson:write");
+			await tx.mutate.testGroup.update({
+				id: args.id,
+				status: args.status,
+			});
+		},
+	),
+
+	createTest: defineMutator(
+		z.object({
+			id: z.string().optional(),
+			groupId: z.string(),
+			position: z.number().int().nonnegative(),
+			prompt: activityContentSchema.optional(),
+			answerType: testAnswerTypeSchema,
+			options: z
+				.array(z.object({ id: z.string(), label: z.string() }))
+				.nullable()
+				.optional(),
+			correctAnswer: z.json().nullable().optional(),
+			grading: testGradingSchema.optional(),
+		}),
+		async ({ ctx, args, tx }) => {
+			requireCapability(ctx, "lesson:write");
+			const id = newId(args.id);
+			const grading =
+				args.answerType === "file_upload" ? "manual" : (args.grading ?? "auto");
+			await tx.mutate.test.insert({
+				id,
+				groupId: args.groupId,
+				position: args.position,
+				prompt: args.prompt ?? EMPTY_TIPTAP_DOC,
+				answerType: args.answerType,
+				options: args.options ?? null,
+				grading,
+			});
+			await tx.mutate.testKey.insert({
+				testId: id,
+				correctAnswer:
+					args.answerType === "file_upload"
+						? null
+						: ((args.correctAnswer as string | string[] | null | undefined) ??
+							null),
+			});
+		},
+	),
+
+	updateTest: defineMutator(
+		z.object({
+			id: z.string(),
+			prompt: activityContentSchema.optional(),
+			answerType: testAnswerTypeSchema.optional(),
+			options: z
+				.array(z.object({ id: z.string(), label: z.string() }))
+				.nullable()
+				.optional(),
+			correctAnswer: z.json().nullable().optional(),
+			grading: testGradingSchema.optional(),
+			position: z.number().int().nonnegative().optional(),
+		}),
+		async ({ ctx, args, tx }) => {
+			requireCapability(ctx, "lesson:write");
+			const existing = await tx.run(zql.test.where("id", args.id).one());
+			if (!existing) {
+				throw new Error("Not found");
+			}
+			const answerType = args.answerType ?? existing.answerType;
+			const grading =
+				answerType === "file_upload"
+					? "manual"
+					: (args.grading ?? existing.grading);
+			await tx.mutate.test.update({
+				id: args.id,
+				prompt: args.prompt,
+				answerType: args.answerType,
+				options: args.options,
+				grading,
+				position: args.position,
+			});
+			if (args.correctAnswer !== undefined) {
+				await tx.mutate.testKey.upsert({
+					testId: args.id,
+					correctAnswer:
+						answerType === "file_upload"
+							? null
+							: (args.correctAnswer as string | string[] | null),
+				});
+			}
+		},
+	),
+
+	deleteTest: defineMutator(
+		z.object({ id: z.string() }),
+		async ({ ctx, args, tx }) => {
+			requireCapability(ctx, "lesson:write");
+			await tx.mutate.testKey.delete({ testId: args.id });
+			await tx.mutate.test.delete({ id: args.id });
+		},
+	),
+
+	reorderTests: defineMutator(
+		z.object({
+			groupId: z.string(),
+			orderedIds: z.array(z.string()).min(1),
+		}),
+		async ({ ctx, args, tx }) => {
+			requireCapability(ctx, "lesson:write");
+			for (const [position, id] of args.orderedIds.entries()) {
+				const test = await tx.run(zql.test.where("id", id).one());
+				if (!test || test.groupId !== args.groupId) {
+					throw new Error("Forbidden");
+				}
+				await tx.mutate.test.update({ id, position });
+			}
+		},
+	),
+
+	configurePracticeActivity: defineMutator(
+		z.object({
+			activityId: z.string(),
+			testGroupId: z.string().min(1),
+			questionCount: z.number().int().positive(),
+			passPercent: z.number().int().min(0).max(100),
+		}),
+		async ({ ctx, args, tx }) => {
+			requireCapability(ctx, "lesson:write");
+			const activity = await tx.run(
+				zql.activity.where("id", args.activityId).one(),
+			);
+			if (!activity || activity.type !== "practice") {
+				throw new Error("Not found");
+			}
+			const group = await tx.run(
+				zql.testGroup.where("id", args.testGroupId).one(),
+			);
+			if (!group) {
+				throw new Error("Not found");
+			}
+			const tests = (await tx.run(
+				zql.test.where("groupId", args.testGroupId),
+			)) as Array<{ id: string }>;
+			if (args.questionCount > tests.length) {
+				throw new Error("questionCount exceeds group size");
+			}
+			const content: PracticeActivityContent = {
+				testGroupId: args.testGroupId,
+				questionCount: args.questionCount,
+				passPercent: args.passPercent,
+			};
+			await tx.mutate.activity.update({
+				id: args.activityId,
+				content,
+			});
+		},
+	),
+
+	// ── Test attempts ─────────────────────────────────────────────────────
 
 	/**
-	 * Student practice submit. Auth required. Authoritative grading runs on
-	 * the server against full activity.content (includes correctAnswer).
+	 * Start (or restart) a practice attempt with a random sample of tests.
+	 * Client may pass `testIds` (sampled locally); server validates membership.
 	 */
-	submitPractice: defineMutator(
+	startTestAttempt: defineMutator(
 		z.object({
 			id: z.string().optional(),
 			programId: z.string(),
 			activityId: z.string(),
-			answers: studentAnswersSchema,
+			testIds: z.array(z.string()).min(1).optional(),
 		}),
 		async ({ ctx, args, tx }) => {
 			const user = requireUser(ctx);
@@ -560,27 +803,38 @@ export const mutators = defineMutators({
 			if (activity.type !== "practice") {
 				throw new Error("Not found");
 			}
+			const config = parsePracticeContent(activity.content);
+			const groupTests = (await tx.run(
+				zql.test.where("groupId", config.testGroupId),
+			)) as Array<{ id: string }>;
+			const allowed = new Set(groupTests.map((t) => t.id));
+			if (allowed.size === 0 || config.questionCount > allowed.size) {
+				throw new Error("Practice not configured");
+			}
 
-			const studentAnswers = args.answers as StudentAnswers;
-			const graded =
-				tx.location === "server"
-					? gradeSubmission(activity.content, studentAnswers)
-					: {
-							status: "pending" as const,
-							answers: markAnswersPending(studentAnswers),
-						};
+			let testIds: string[];
+			if (args.testIds && args.testIds.length > 0) {
+				if (args.testIds.length !== config.questionCount) {
+					throw new Error("Invalid sample size");
+				}
+				if (args.testIds.some((id) => !allowed.has(id))) {
+					throw new Error("Invalid test ids");
+				}
+				testIds = args.testIds;
+			} else {
+				testIds = sampleIds([...allowed], config.questionCount);
+			}
 
 			const now = Date.now();
-			await tx.mutate.submission.insert({
+			await tx.mutate.testAttempt.insert({
 				id: newId(args.id),
 				userId: user.id,
 				programId: args.programId,
 				activityId: args.activityId,
-				answers: graded.answers,
-				status: graded.status,
-				reviewedBy: null,
-				reviewerComment: null,
-				reviewedAt: null,
+				testIds,
+				status: "in_progress",
+				scorePercent: null,
+				passed: null,
 				createdAt: now,
 				updatedAt: now,
 			});
@@ -590,60 +844,222 @@ export const mutators = defineMutators({
 				programId: args.programId,
 				activityId: args.activityId,
 				lessonId: activity.lessonId,
-				status: "completed",
+				status: "in_progress",
 				now,
 			});
 		},
 	),
 
-	/**
-	 * Admin review: set per-question correct/incorrect + optional comment.
-	 * Requires `submission:review`.
-	 */
-	reviewSubmission: defineMutator(
+	submitTestAttempt: defineMutator(
 		z.object({
-			submissionId: z.string(),
+			attemptId: z.string(),
+			answers: studentAnswersSchema,
+		}),
+		async ({ ctx, args, tx }) => {
+			const user = requireUser(ctx);
+			const attempt = (await tx.run(
+				zql.testAttempt.where("id", args.attemptId).one(),
+			)) as
+				| {
+						id: string;
+						userId: string;
+						programId: string;
+						activityId: string;
+						testIds: string[];
+						status: string;
+				  }
+				| undefined;
+			if (!attempt || attempt.userId !== user.id) {
+				throw new Error("Not found");
+			}
+			if (attempt.status !== "in_progress") {
+				throw new Error("Attempt already submitted");
+			}
+
+			const activity = await requireActivityInProgram(
+				tx as MutatorTx,
+				attempt.activityId,
+				attempt.programId,
+			);
+			const config = parsePracticeContent(activity.content);
+			const studentAnswers = args.answers as StudentAnswers;
+			const testIds = attempt.testIds;
+
+			let graded: ReturnType<typeof gradeAttempt>;
+			if (tx.location === "server") {
+				const tests = (await tx.run(
+					zql.test.where("id", "IN", testIds),
+				)) as Array<{
+					id: string;
+					answerType: string;
+					grading: string;
+				}>;
+				const keys = (await tx.run(
+					zql.testKey.where("testId", "IN", testIds),
+				)) as Array<{ testId: string; correctAnswer: unknown }>;
+				const keyByTest = new Map(keys.map((k) => [k.testId, k.correctAnswer]));
+				graded = gradeAttempt(
+					tests.map((t) => ({
+						id: t.id,
+						answerType: t.answerType,
+						grading: t.grading,
+						correctAnswer: keyByTest.get(t.id) ?? null,
+					})),
+					studentAnswers,
+					config.passPercent,
+				);
+			} else {
+				graded = {
+					status: "pending_review",
+					answers: markAnswersPending(studentAnswers),
+					scorePercent: 0,
+					passed: false,
+				};
+			}
+
+			const now = Date.now();
+			for (const testId of testIds) {
+				const answer = graded.answers[testId] as GradedAnswer | undefined;
+				if (!answer) continue;
+				await tx.mutate.testAttemptAnswer.upsert({
+					attemptId: attempt.id,
+					testId,
+					answer,
+					result: answer.result,
+					reviewedBy: null,
+					reviewerComment: null,
+					reviewedAt: null,
+				});
+			}
+
+			await tx.mutate.testAttempt.update({
+				id: attempt.id,
+				status: graded.status,
+				scorePercent: graded.status === "graded" ? graded.scorePercent : null,
+				passed: graded.status === "graded" ? graded.passed : null,
+				updatedAt: now,
+			});
+
+			if (graded.status === "graded" && graded.passed) {
+				await upsertActivityProgress(tx as MutatorTx, {
+					userId: user.id,
+					programId: attempt.programId,
+					activityId: attempt.activityId,
+					lessonId: activity.lessonId,
+					status: "completed",
+					now,
+				});
+			} else {
+				await upsertActivityProgress(tx as MutatorTx, {
+					userId: user.id,
+					programId: attempt.programId,
+					activityId: attempt.activityId,
+					lessonId: activity.lessonId,
+					status: "in_progress",
+					now,
+				});
+			}
+		},
+	),
+
+	reviewAttempt: defineMutator(
+		z.object({
+			attemptId: z.string(),
 			results: z.record(z.string(), reviewResultSchema).optional(),
 			result: reviewResultSchema.optional(),
-			questionId: z.string().optional(),
+			testId: z.string().optional(),
 			comment: z.string().max(8000).nullable().optional(),
 		}),
 		async ({ ctx, args, tx }) => {
 			const reviewer = requireCapability(ctx, "submission:review");
-			const submission = await tx.run(
-				zql.submission.where("id", args.submissionId).one(),
-			);
-			if (!submission) {
+			const attempt = (await tx.run(
+				zql.testAttempt.where("id", args.attemptId).one(),
+			)) as
+				| {
+						id: string;
+						userId: string;
+						programId: string;
+						activityId: string;
+						testIds: string[];
+						status: string;
+				  }
+				| undefined;
+			if (!attempt) {
 				throw new Error("Not found");
 			}
 
 			const results: Record<string, "correct" | "incorrect"> = {
 				...(args.results ?? {}),
 			};
-			if (args.questionId && args.result) {
-				results[args.questionId] = args.result;
+			if (args.testId && args.result) {
+				results[args.testId] = args.result;
 			}
 			if (Object.keys(results).length === 0) {
 				throw new Error("Invalid args");
 			}
 
-			const reviewed = applyReviewResults(
-				submission.answers as GradedAnswers,
-				results,
-			);
+			const answerRows = (await tx.run(
+				zql.testAttemptAnswer.where("attemptId", args.attemptId),
+			)) as Array<{
+				testId: string;
+				answer: GradedAnswer;
+				reviewerComment: string | null;
+			}>;
+			const answers: GradedAnswers = {};
+			for (const row of answerRows) {
+				answers[row.testId] = row.answer;
+			}
+
+			const reviewed = applyReviewResults(answers, results);
 			const now = Date.now();
-			await tx.mutate.submission.update({
-				id: args.submissionId,
-				answers: reviewed.answers,
-				status: reviewed.status,
-				reviewedBy: reviewer.id,
-				reviewerComment:
-					args.comment === undefined
-						? submission.reviewerComment
-						: args.comment,
-				reviewedAt: now,
-				updatedAt: now,
-			});
+			for (const [testId, answer] of Object.entries(reviewed.answers)) {
+				const prev = answerRows.find((r) => r.testId === testId);
+				await tx.mutate.testAttemptAnswer.update({
+					attemptId: args.attemptId,
+					testId,
+					answer,
+					result: answer.result,
+					reviewedBy: results[testId] ? reviewer.id : undefined,
+					reviewerComment:
+						args.comment === undefined ? prev?.reviewerComment : args.comment,
+					reviewedAt: results[testId] ? now : undefined,
+				});
+			}
+
+			const activity = await requireActivityInProgram(
+				tx as MutatorTx,
+				attempt.activityId,
+				attempt.programId,
+			);
+			const config = parsePracticeContent(activity.content);
+
+			if (reviewed.status === "graded") {
+				const score = finalizeAttemptScore(
+					reviewed.answers,
+					config.passPercent,
+				);
+				await tx.mutate.testAttempt.update({
+					id: args.attemptId,
+					status: "graded",
+					scorePercent: score.scorePercent,
+					passed: score.passed,
+					updatedAt: now,
+				});
+				await upsertActivityProgress(tx as MutatorTx, {
+					userId: attempt.userId,
+					programId: attempt.programId,
+					activityId: attempt.activityId,
+					lessonId: activity.lessonId,
+					status: score.passed ? "completed" : "in_progress",
+					now,
+				});
+			} else {
+				await tx.mutate.testAttempt.update({
+					id: args.attemptId,
+					status: "pending_review",
+					updatedAt: now,
+				});
+			}
 		},
 	),
 

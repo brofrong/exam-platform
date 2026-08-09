@@ -8,12 +8,13 @@ import {
 	uniqueUser,
 } from "./helpers/auth";
 import {
+	configurePracticeActivity,
 	createActivity,
 	createInviteForProgram,
 	createLesson,
 	createProgram,
+	createShortTextTestGroup,
 	createTopic,
-	editPracticeShortText,
 	editTheoryActivity,
 	linkLessonToTopic,
 	uniqueTitle,
@@ -21,9 +22,10 @@ import {
 
 /**
  * Critical LMS paths:
- * 1. Admin creates program/topic/lesson/theory(+practice) and publishes
+ * 1. Admin creates a test group + short-text test, program/topic/lesson/
+ *    theory(+practice linked to the test group), and publishes
  * 2. Invite → student activates → sees program
- * 3. Student completes practice auto short-text (and theory «Изучено»)
+ * 3. Student completes practice test attempt (and theory «Изучено»)
  * 4. Manual file submission → admin review: skipped (MinIO/file path flaky for e2e)
  * 5. Support message round-trip
  */
@@ -37,6 +39,7 @@ test.describe("lms critical paths", () => {
 		const programTitle = uniqueTitle("E2E Program");
 		const topicTitle = uniqueTitle("E2E Topic");
 		const lessonTitle = uniqueTitle("E2E Lesson");
+		const testGroupTitle = uniqueTitle("E2E Test Group");
 		const theoryBody = `Теория ${runId}`;
 		const practiceAnswer = `ответ-${runId}`;
 		const practicePrompt = `Сколько будет? (${runId})`;
@@ -53,14 +56,22 @@ test.describe("lms critical paths", () => {
 		await page.goto("/admin", { waitUntil: "domcontentloaded" });
 		await expect(page.getByTestId("admin-shell")).toBeVisible();
 
-		// ── Lesson + theory + practice ───────────────────────────────────
+		// ── Test group with one auto-graded short-text question ───────────
+		await createShortTextTestGroup(page, {
+			groupTitle: testGroupTitle,
+			prompt: practicePrompt,
+			correctAnswer: practiceAnswer,
+		});
+
+		// ── Lesson + theory + practice (linked to the test group) ─────────
 		const lessonId = await createLesson(page, lessonTitle);
 		await createActivity(page, "Теория");
 		await editTheoryActivity(page, theoryBody);
 		await createActivity(page, "Практика");
-		await editPracticeShortText(page, {
-			prompt: practicePrompt,
-			correctAnswer: practiceAnswer,
+		await configurePracticeActivity(page, {
+			groupTitle: testGroupTitle,
+			questionCount: 1,
+			passPercent: 100,
 		});
 		await page.getByTestId(`lesson-detail-publish-${lessonId}`).click();
 		await expect(
@@ -160,13 +171,13 @@ test.describe("lms critical paths", () => {
 		await markStudied.click();
 		await expect(page.locator("[data-testid^='studied-note-']")).toBeVisible();
 
+		await expect(page.getByTestId("practice-activity")).toBeVisible();
+		await page.getByTestId("practice-start").click();
+		await expect(page.getByTestId("practice-attempt-form")).toBeVisible();
 		await page.getByTestId("short-text-answer-input").fill(practiceAnswer);
-		const practiceSubmit = page.locator("[data-testid^='practice-submit-']");
-		await practiceSubmit.click();
-		await expect(
-			page.locator("[data-testid^='practice-submission-status-']"),
-		).toBeVisible();
-		await expect(page.getByText("Проверено")).toBeVisible();
+		await page.getByTestId("practice-submit").click();
+		await expect(page.getByTestId("practice-attempt-result")).toBeVisible();
+		await expect(page.getByText("Пройдено")).toBeVisible();
 
 		// ── 4. Manual file / admin review: skipped ─────────────────────────
 		// File-upload + MinIO review path is intentionally not covered here —

@@ -11,6 +11,9 @@ import { activitiesTable } from "#/server/db/activity/activity.schema";
 import { db } from "#/server/db/db";
 import { lessonsTable } from "#/server/db/lesson/lesson.schema";
 import { programsTable } from "#/server/db/program/program.schema";
+import { testsTable } from "#/server/db/test/test.schema";
+import { testGroupsTable } from "#/server/db/test-group/test-group.schema";
+import { testKeysTable } from "#/server/db/test-key/test-key.schema";
 import { topicsTable } from "#/server/db/topic/topic.schema";
 import { topicLessonsTable } from "#/server/db/topic-lesson/topic-lesson.schema";
 import { can } from "#/shared/authz";
@@ -87,6 +90,21 @@ export const seedDemoCatalog = createServerFn({ method: "POST" }).handler(
 				(chunk) => tx.insert(topicLessonsTable).values(chunk),
 				rows.topicLessons,
 				200,
+			);
+			await insertChunked(
+				(chunk) => tx.insert(testGroupsTable).values(chunk),
+				rows.testGroups,
+				100,
+			);
+			await insertChunked(
+				(chunk) => tx.insert(testsTable).values(chunk),
+				rows.tests,
+				100,
+			);
+			await insertChunked(
+				(chunk) => tx.insert(testKeysTable).values(chunk),
+				rows.testKeys,
+				100,
 			);
 			await insertChunked(
 				(chunk) => tx.insert(activitiesTable).values(chunk),

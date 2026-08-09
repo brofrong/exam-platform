@@ -4,11 +4,24 @@ import type {
 	SeedProgramDef,
 } from "#/features/admin-seed/lib/catalog";
 import {
-	buildPracticeDoc,
+	buildTestPrompt,
 	buildTheoryDoc,
-	type PracticeBrief,
 } from "#/features/admin-seed/lib/content-builders";
 import type { PlotKind } from "#/features/admin-seed/lib/mafs-plots";
+import type {
+	TestAnswerType,
+	TestCorrectAnswer,
+	TestOptions,
+} from "#/server/db/test/test.schema";
+
+/** One seed test question, ready to become `test` + `test_key` rows. */
+export type SeedTestDef = {
+	prompt: JSONContent;
+	answerType: TestAnswerType;
+	options: TestOptions | null;
+	grading: "auto" | "manual";
+	correctAnswer: TestCorrectAnswer;
+};
 
 function keyPointsFor(
 	subject: SeedProgramDef["subject"],
@@ -82,10 +95,29 @@ function exampleFor(
 	return `Пример. Условие на тему «${lesson.title}»: переведите величины в СИ, запишите исходные уравнения модели, выразите неизвестное и оцените порядок ответа. ${lesson.focus} Сопоставьте результат с формой зависимости на интерактивном графике.`;
 }
 
+type QuestionSpec =
+	| {
+			kind: "short";
+			prompt: string;
+			answer: string;
+	  }
+	| {
+			kind: "single";
+			prompt: string;
+			options: string[];
+			correctIndex: number;
+	  }
+	| {
+			kind: "multi";
+			prompt: string;
+			options: string[];
+			correctIndexes: number[];
+	  };
+
 function practiceQuestions(
 	program: SeedProgramDef,
 	lesson: SeedLessonDef,
-): PracticeBrief["questions"] {
+): QuestionSpec[] {
 	const { subject, examType } = program;
 	const title = lesson.title;
 
@@ -195,14 +227,44 @@ export function theoryContentFor(
 	});
 }
 
-export function practiceContentFor(
+/** Test-bank questions for a lesson's practice activity (test group). */
+export function practiceTestDefsFor(
 	program: SeedProgramDef,
-	lessonKey: string,
 	lesson: SeedLessonDef,
-): JSONContent {
-	return buildPracticeDoc({
-		lessonId: lessonKey,
-		lessonTitle: lesson.title,
-		questions: practiceQuestions(program, lesson),
+): SeedTestDef[] {
+	return practiceQuestions(program, lesson).map((q, index) => {
+		if (q.kind === "short") {
+			return {
+				prompt: buildTestPrompt(q.prompt),
+				answerType: "short_text",
+				options: null,
+				grading: "auto",
+				correctAnswer: q.answer,
+			};
+		}
+		const options: TestOptions = q.options.map((label, i) => ({
+			id: `opt-${index}-${i + 1}`,
+			label,
+		}));
+		if (q.kind === "single") {
+			const correctId = options[q.correctIndex]?.id ?? options[0]?.id ?? null;
+			return {
+				prompt: buildTestPrompt(q.prompt),
+				answerType: "single_choice",
+				options,
+				grading: "auto",
+				correctAnswer: correctId,
+			};
+		}
+		const correctIds = q.correctIndexes
+			.map((i) => options[i]?.id)
+			.filter((id): id is string => typeof id === "string");
+		return {
+			prompt: buildTestPrompt(q.prompt),
+			answerType: "multiple_choice",
+			options,
+			grading: "auto",
+			correctAnswer: correctIds,
+		};
 	});
 }

@@ -15,20 +15,20 @@ function formatSubmittedAt(ms: number): string {
 
 export function ReviewsQueuePage() {
 	const navigate = useNavigate();
-	const [pending] = useQuery(queries.pendingSubmissions());
+	const [pending] = useQuery(queries.pendingAttempts());
 
-	const items = (pending ?? []).map((submission) => ({
-		id: submission.id,
-		title: submission.activity
-			? `Практика · позиция ${submission.activity.position + 1}`
+	const items = (pending ?? []).map((attempt) => ({
+		id: attempt.id,
+		title: attempt.activity
+			? `Практика · позиция ${attempt.activity.position + 1}`
 			: "Практика",
-		subtitle: [submission.user?.name ?? "Ученик", submission.program?.title]
+		subtitle: [attempt.user?.name ?? "Ученик", attempt.program?.title]
 			.filter(Boolean)
 			.join(" · "),
 		submittedAt:
-			submission.createdAt == null
+			attempt.createdAt == null
 				? undefined
-				: formatSubmittedAt(submission.createdAt),
+				: formatSubmittedAt(attempt.createdAt),
 	}));
 
 	return (
@@ -71,8 +71,8 @@ export function ReviewsQueuePage() {
 					items={items}
 					onItemClick={(id) => {
 						void navigate({
-							to: "/admin/reviews/$submissionId",
-							params: { submissionId: id },
+							to: "/admin/reviews/$attemptId",
+							params: { attemptId: id },
 						});
 					}}
 				/>

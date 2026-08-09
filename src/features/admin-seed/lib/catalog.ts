@@ -1369,3 +1369,8 @@ export function activityId(
 ): string {
 	return `${lessonKey}:activity:${type}`;
 }
+
+/** Test group id backing a lesson's practice activity. */
+export function testGroupId(lessonKey: string): string {
+	return `${lessonKey}:test-group`;
+}

@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ReviewDetailPage } from "#/features/reviews";
 
-export const Route = createFileRoute("/admin/reviews/$submissionId")({
+export const Route = createFileRoute("/admin/reviews/$attemptId")({
 	component: AdminReviewDetailRoute,
 });
 
 function AdminReviewDetailRoute() {
-	const { submissionId } = Route.useParams();
-	return <ReviewDetailPage submissionId={submissionId} />;
+	const { attemptId } = Route.useParams();
+	return <ReviewDetailPage attemptId={attemptId} />;
 }

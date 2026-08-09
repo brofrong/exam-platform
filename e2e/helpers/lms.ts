@@ -113,26 +113,74 @@ export async function editTheoryActivity(page: Page, body: string) {
 	await expect(page.getByTestId("admin-lesson-detail")).toBeVisible();
 }
 
-export async function editPracticeShortText(
+/** Create a test group with a single short-text auto-graded test. Returns groupId. */
+export async function createShortTextTestGroup(
 	page: Page,
-	opts: { prompt: string; correctAnswer: string },
+	opts: { groupTitle: string; prompt: string; correctAnswer: string },
+) {
+	await page.goto("/admin/tests");
+	await expect(page.getByTestId("admin-test-groups-list")).toBeVisible();
+	const createOpen = (await page.getByTestId("test-group-create-open").count())
+		? page.getByTestId("test-group-create-open")
+		: page.getByTestId("test-group-create-empty");
+	await createOpen.click();
+	await expect(page.getByTestId("test-group-form-dialog")).toBeVisible();
+	await page.getByTestId("test-group-title-input").fill(opts.groupTitle);
+	await page.getByTestId("test-group-form-submit").click();
+	const groupId = await waitForPath(page, /\/admin\/tests\/([^/?#]+)/);
+	await expect(page.getByTestId("admin-test-group-detail")).toBeVisible();
+
+	const addTestOpen = (await page.getByTestId("test-add-open").count())
+		? page.getByTestId("test-add-open")
+		: page.getByTestId("test-add-open-empty");
+	await addTestOpen.click();
+	await expect(page.getByTestId("add-test-dialog")).toBeVisible();
+	await selectRadixOption(page, "add-test-answer-type", "Короткий текст");
+	await page.getByTestId("add-test-submit").click();
+	await expect(page.getByTestId("admin-test-edit")).toBeVisible();
+
+	await fillTipTap(page, "theory-editor-content", opts.prompt);
+	await page.getByTestId("short-text-answer-input").fill(opts.correctAnswer);
+	await page.getByTestId("test-edit-submit").click();
+	await expect(page.getByTestId("admin-test-group-detail")).toBeVisible();
+
+	return groupId;
+}
+
+/** Link a lesson's practice activity to an existing test group. */
+export async function configurePracticeActivity(
+	page: Page,
+	opts: { groupTitle: string; questionCount?: number; passPercent?: number },
 ) {
 	const editLinks = page
 		.getByTestId("activities-list")
 		.getByRole("link", { name: "Редактировать" });
 	await editLinks.last().click();
 	await expect(page.getByTestId("admin-activity-edit")).toBeVisible();
-	await expect(page.getByTestId("practice-editor")).toBeVisible();
-	await page.getByTestId("practice-editor-content").click();
-	await page.getByTestId("practice-toolbar-short-text").click();
-	await expect(page.getByTestId("practice-question-shortText")).toBeVisible();
-	await page
-		.getByTestId("practice-question-prompt-shortText")
-		.fill(opts.prompt);
-	await page
-		.getByTestId("practice-question-correct-shortText")
-		.fill(opts.correctAnswer);
-	await page.getByTestId("activity-content-submit").click();
+	await expect(page.getByTestId("practice-config-form")).toBeVisible();
+
+	await page.getByTestId("practice-pick-group").click();
+	await expect(page.getByTestId("select-test-group-dialog")).toBeVisible();
+	await page.getByTestId("select-test-group-create").click();
+	await selectRadixOption(page, "select-test-group-picker", opts.groupTitle);
+	await page.getByTestId("select-test-group-confirm").click();
+	await expect(page.getByTestId("select-test-group-dialog")).toBeHidden();
+	await expect(page.getByTestId("practice-selected-group")).toContainText(
+		opts.groupTitle,
+	);
+
+	if (opts.questionCount != null) {
+		await page
+			.getByTestId("practice-question-count")
+			.fill(String(opts.questionCount));
+	}
+	if (opts.passPercent != null) {
+		await page
+			.getByTestId("practice-pass-percent")
+			.fill(String(opts.passPercent));
+	}
+
+	await page.getByTestId("practice-config-submit").click();
 	await expect(page.getByTestId("admin-lesson-detail")).toBeVisible();
 }
 

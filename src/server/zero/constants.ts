@@ -1,4 +1,4 @@
-/** Publish lifecycle for program / topic / lesson. */
+/** Publish lifecycle for program / topic / lesson / test_group. */
 export const PUBLISH_STATUSES = ["draft", "published"] as const;
 export type PublishStatus = (typeof PUBLISH_STATUSES)[number];
 
@@ -6,17 +6,35 @@ export type PublishStatus = (typeof PUBLISH_STATUSES)[number];
 export const ACTIVITY_TYPES = ["theory", "practice"] as const;
 export type ActivityType = (typeof ACTIVITY_TYPES)[number];
 
-/** Empty TipTap document used when creating an activity without content. */
+/** Empty TipTap document used when creating theory / test prompts. */
 export const EMPTY_TIPTAP_DOC: Record<string, unknown> = {
 	type: "doc",
 	content: [],
 };
 
-/** Submission lifecycle after practice submit / review. */
-export const SUBMISSION_STATUSES = ["pending", "graded"] as const;
-export type SubmissionStatus = (typeof SUBMISSION_STATUSES)[number];
+/** Test answer kinds. */
+export const TEST_ANSWER_TYPES = [
+	"single_choice",
+	"multiple_choice",
+	"short_text",
+	"number",
+	"file_upload",
+] as const;
+export type TestAnswerType = (typeof TEST_ANSWER_TYPES)[number];
 
-/** Per-question auto/manual review outcome (верно / неверно / ожидает). */
+/** Auto vs manual grading on a test. */
+export const TEST_GRADING = ["auto", "manual"] as const;
+export type TestGrading = (typeof TEST_GRADING)[number];
+
+/** Attempt lifecycle. */
+export const TEST_ATTEMPT_STATUSES = [
+	"in_progress",
+	"pending_review",
+	"graded",
+] as const;
+export type TestAttemptStatus = (typeof TEST_ATTEMPT_STATUSES)[number];
+
+/** Per-test auto/manual review outcome. */
 export const QUESTION_RESULTS = ["correct", "incorrect", "pending"] as const;
 export type QuestionResult = (typeof QUESTION_RESULTS)[number];
 

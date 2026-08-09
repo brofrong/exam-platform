@@ -144,18 +144,18 @@ export function StudentHomePage({
 	const [programs] = useQuery(queries.publishedPrograms());
 	const [lessonProgress] = useQuery(queries.myLessonProgress());
 	const [activityProgress] = useQuery(queries.myActivityProgress());
-	const [pendingSubmissions] = useQuery(queries.myPendingSubmissions());
+	const [pendingAttempts] = useQuery(queries.myPendingAttempts());
 
 	const programsList = programs ?? [];
 	const lessonRows = lessonProgress ?? [];
 	const activityRows = activityProgress ?? [];
-	const pending = pendingSubmissions ?? [];
+	const pending = pendingAttempts ?? [];
 
 	const loading =
 		programs === undefined ||
 		lessonProgress === undefined ||
 		activityProgress === undefined ||
-		pendingSubmissions === undefined;
+		pendingAttempts === undefined;
 
 	const avgProgress = averageEnrolledProgress(programsList, lessonRows);
 	const completedLessons = countCompletedLessons(lessonRows);
@@ -166,30 +166,30 @@ export function StudentHomePage({
 		activityRows,
 	);
 
-	const pendingItems = pending.map((submission) => ({
-		id: submission.id,
-		title: submission.activity
-			? submission.activity.type === "practice"
-				? `Практика · позиция ${submission.activity.position + 1}`
-				: `Занятие · позиция ${submission.activity.position + 1}`
+	const pendingItems = pending.map((attempt) => ({
+		id: attempt.id,
+		title: attempt.activity
+			? attempt.activity.type === "practice"
+				? `Практика · позиция ${attempt.activity.position + 1}`
+				: `Занятие · позиция ${attempt.activity.position + 1}`
 			: "Работа на проверке",
-		subtitle: submission.program?.title,
+		subtitle: attempt.program?.title,
 		submittedAt:
-			submission.createdAt == null
+			attempt.createdAt == null
 				? undefined
-				: formatSubmittedAt(submission.createdAt),
+				: formatSubmittedAt(attempt.createdAt),
 	}));
 
 	const handlePendingReviewClick = (id: string) => {
-		const submission = pending.find((row) => row.id === id);
-		const lessonId = submission?.activity?.lessonId;
-		if (!submission || !lessonId) {
+		const attempt = pending.find((row) => row.id === id);
+		const lessonId = attempt?.activity?.lessonId;
+		if (!attempt || !lessonId) {
 			return;
 		}
 		void navigate({
 			to: "/app/programs/$programId/lessons/$lessonId",
-			params: { programId: submission.programId, lessonId },
-			hash: `activity-${submission.activityId}`,
+			params: { programId: attempt.programId, lessonId },
+			hash: `activity-${attempt.activityId}`,
 		});
 	};
 

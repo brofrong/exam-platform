@@ -211,42 +211,108 @@ export const queries = defineQueries({
 		},
 	),
 
-	// ── Submissions (Task 21 UI) ──────────────────────────────────────────
+	// ── Test groups / attempts ────────────────────────────────────────────
 
-	/** Student's own submissions for a practice activity. */
-	mySubmissionsByActivity: defineQuery(
+	/** Admin catalog of all test groups. */
+	testGroups: defineQuery(({ ctx }) => {
+		requireCapability(ctx, "lesson:write");
+		return zql.testGroup
+			.orderBy("title", "asc")
+			.related("tests", (q) => q.orderBy("position", "asc"));
+	}),
+
+	/** Admin: group + tests + answer keys. */
+	testGroupById: defineQuery(z.object({ id: z.string() }), ({ ctx, args }) => {
+		requireCapability(ctx, "lesson:write");
+		return zql.testGroup
+			.where("id", args.id)
+			.one()
+			.related("tests", (q) =>
+				q.orderBy("position", "asc").related("key").related("attemptAnswers"),
+			);
+	}),
+
+	/** Admin: single test with key + answer stats rows. */
+	testById: defineQuery(z.object({ id: z.string() }), ({ ctx, args }) => {
+		requireCapability(ctx, "lesson:write");
+		return zql.test
+			.where("id", args.id)
+			.one()
+			.related("key")
+			.related("attemptAnswers")
+			.related("group");
+	}),
+
+	/**
+	 * Student/admin: tests in a group without answer keys.
+	 * Used to sample attempts and render prompts.
+	 */
+	testsByGroupId: defineQuery(
+		z.object({ groupId: z.string() }),
+		({ ctx, args }) => {
+			requireUser(ctx);
+			return zql.test.where("groupId", args.groupId).orderBy("position", "asc");
+		},
+	),
+
+	/** Student's attempts for a practice activity. */
+	myAttemptsByActivity: defineQuery(
 		z.object({ activityId: z.string() }),
 		({ ctx, args }) => {
 			const user = requireUser(ctx);
-			return zql.submission
+			return zql.testAttempt
 				.where("userId", user.id)
 				.where("activityId", args.activityId)
-				.orderBy("createdAt", "desc");
+				.orderBy("createdAt", "desc")
+				.related("answers");
 		},
 	),
 
-	/** Student's submissions across a program. */
-	mySubmissionsByProgram: defineQuery(
-		z.object({ programId: z.string() }),
-		({ ctx, args }) => {
-			const user = requireUser(ctx);
-			return zql.submission
-				.where("userId", user.id)
-				.where("programId", args.programId)
-				.orderBy("createdAt", "desc");
-		},
-	),
-
-	/** Student's own submissions awaiting review (home «На проверке»). */
-	myPendingSubmissions: defineQuery(({ ctx }) => {
+	/** Student's pending-review attempts (home «На проверке»). */
+	myPendingAttempts: defineQuery(({ ctx }) => {
 		const user = requireUser(ctx);
-		return zql.submission
+		return zql.testAttempt
 			.where("userId", user.id)
-			.where("status", "pending")
+			.where("status", "pending_review")
 			.orderBy("createdAt", "desc")
 			.related("activity")
 			.related("program");
 	}),
+
+	/** Admin pending review queue. */
+	pendingAttempts: defineQuery(({ ctx }) => {
+		requireCapability(ctx, "submission:review");
+		return zql.testAttempt
+			.where("status", "pending_review")
+			.orderBy("createdAt", "asc")
+			.related("activity")
+			.related("program")
+			.related("user")
+			.related("answers");
+	}),
+
+	/** Reviewer: any attempt. Student: own only. */
+	attemptById: defineQuery(z.object({ id: z.string() }), ({ ctx, args }) => {
+		const user = requireUser(ctx);
+		const base = can(user.role, "submission:review")
+			? zql.testAttempt.where("id", args.id)
+			: zql.testAttempt.where("id", args.id).where("userId", user.id);
+		return base
+			.one()
+			.related("activity")
+			.related("program")
+			.related("user")
+			.related("answers");
+	}),
+
+	/** Tests by ids (no keys) — for attempt player / review display. */
+	testsByIds: defineQuery(
+		z.object({ ids: z.array(z.string()).min(1) }),
+		({ ctx, args }) => {
+			requireUser(ctx);
+			return zql.test.where("id", "IN", args.ids);
+		},
+	),
 
 	/** Student's lesson progress rows (synced from progress mutators). */
 	myLessonProgress: defineQuery(({ ctx }) => {
@@ -264,26 +330,6 @@ export const queries = defineQueries({
 			.where("userId", user.id)
 			.related("activity")
 			.related("program");
-	}),
-
-	/** Admin pending review queue. */
-	pendingSubmissions: defineQuery(({ ctx }) => {
-		requireCapability(ctx, "submission:review");
-		return zql.submission
-			.where("status", "pending")
-			.orderBy("createdAt", "asc")
-			.related("activity")
-			.related("program")
-			.related("user");
-	}),
-
-	/** Reviewer: any submission. Student: own only. */
-	submissionById: defineQuery(z.object({ id: z.string() }), ({ ctx, args }) => {
-		const user = requireUser(ctx);
-		const base = can(user.role, "submission:review")
-			? zql.submission.where("id", args.id)
-			: zql.submission.where("id", args.id).where("userId", user.id);
-		return base.one().related("activity").related("program").related("user");
 	}),
 
 	// ── Invites (invite:create) ───────────────────────────────────────────

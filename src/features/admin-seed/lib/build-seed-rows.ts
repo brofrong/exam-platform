@@ -2,13 +2,20 @@ import {
 	activityId,
 	DEMO_CATALOG,
 	lessonId,
+	testGroupId,
 	topicId,
 } from "#/features/admin-seed/lib/catalog";
 import {
-	practiceContentFor,
+	practiceTestDefsFor,
 	theoryContentFor,
 } from "#/features/admin-seed/lib/lesson-content";
 import type { ActivityContent } from "#/server/db/activity/activity.schema";
+import { defaultPracticeActivityContent } from "#/server/db/activity/practice-content";
+import type {
+	TestCorrectAnswer,
+	TestOptions,
+} from "#/server/db/test/test.schema";
+import type { TestAnswerType } from "#/server/zero/constants";
 
 export type SeedRows = {
 	programs: Array<{
@@ -46,6 +53,25 @@ export type SeedRows = {
 		position: number;
 		content: ActivityContent;
 	}>;
+	testGroups: Array<{
+		id: string;
+		title: string;
+		description: string;
+		status: "published";
+	}>;
+	tests: Array<{
+		id: string;
+		groupId: string;
+		position: number;
+		prompt: Record<string, unknown>;
+		answerType: TestAnswerType;
+		options: TestOptions | null;
+		grading: "auto" | "manual";
+	}>;
+	testKeys: Array<{
+		testId: string;
+		correctAnswer: TestCorrectAnswer;
+	}>;
 };
 
 /** Expand static catalog into DB rows (all published). */
@@ -55,6 +81,9 @@ export function buildSeedRows(): SeedRows {
 	const lessons: SeedRows["lessons"] = [];
 	const topicLessons: SeedRows["topicLessons"] = [];
 	const activities: SeedRows["activities"] = [];
+	const testGroups: SeedRows["testGroups"] = [];
+	const tests: SeedRows["tests"] = [];
+	const testKeys: SeedRows["testKeys"] = [];
 
 	for (const program of DEMO_CATALOG) {
 		programs.push({
@@ -103,18 +132,57 @@ export function buildSeedRows(): SeedRows {
 						lesson,
 					) as ActivityContent,
 				});
+
+				const groupId = testGroupId(lId);
+				const defs = practiceTestDefsFor(program, lesson);
+				testGroups.push({
+					id: groupId,
+					title: `Практика: ${lesson.title}`,
+					description: `Банк тестов для урока «${lesson.title}».`,
+					status: "published",
+				});
+				defs.forEach((def, defIndex) => {
+					const questionId = `${groupId}:test:${defIndex}`;
+					tests.push({
+						id: questionId,
+						groupId,
+						position: defIndex,
+						prompt: def.prompt as Record<string, unknown>,
+						answerType: def.answerType,
+						options: def.options,
+						grading: def.grading,
+					});
+					testKeys.push({
+						testId: questionId,
+						correctAnswer: def.correctAnswer,
+					});
+				});
+
 				activities.push({
 					id: activityId(lId, "practice"),
 					lessonId: lId,
 					type: "practice",
 					position: 1,
-					content: practiceContentFor(program, lId, lesson) as ActivityContent,
+					content: defaultPracticeActivityContent({
+						testGroupId: groupId,
+						questionCount: defs.length,
+						passPercent: 70,
+					}) as ActivityContent,
 				});
 			});
 		});
 	}
 
-	return { programs, topics, lessons, topicLessons, activities };
+	return {
+		programs,
+		topics,
+		lessons,
+		topicLessons,
+		activities,
+		testGroups,
+		tests,
+		testKeys,
+	};
 }
 
 export function summarizeSeedRows(rows: SeedRows) {

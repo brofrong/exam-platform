@@ -29,6 +29,7 @@ import { Route as ApiUploadRouteImport } from './routes/api/upload'
 import { Route as ApiQueryRouteImport } from './routes/api/query'
 import { Route as ApiMutateRouteImport } from './routes/api/mutate'
 import { Route as AppProgramsIndexRouteImport } from './routes/app/programs/index'
+import { Route as AdminTestsIndexRouteImport } from './routes/admin/tests/index'
 import { Route as AdminSupportIndexRouteImport } from './routes/admin/support/index'
 import { Route as AdminReviewsIndexRouteImport } from './routes/admin/reviews/index'
 import { Route as AdminProgramsIndexRouteImport } from './routes/admin/programs/index'
@@ -40,13 +41,15 @@ import { Route as ApiZeroSplatRouteImport } from './routes/api/zero/$'
 import { Route as ApiInviteActivateRouteImport } from './routes/api/invite/activate'
 import { Route as ApiFilesSplatRouteImport } from './routes/api/files/$'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as AdminTestsGroupIdRouteImport } from './routes/admin/tests/$groupId'
 import { Route as AdminSupportThreadIdRouteImport } from './routes/admin/support/$threadId'
-import { Route as AdminReviewsSubmissionIdRouteImport } from './routes/admin/reviews/$submissionId'
+import { Route as AdminReviewsAttemptIdRouteImport } from './routes/admin/reviews/$attemptId'
 import { Route as AdminProgramsProgramIdRouteImport } from './routes/admin/programs/$programId'
 import { Route as AdminLessonsNewRouteImport } from './routes/admin/lessons/new'
 import { Route as AdminLessonsLessonIdRouteImport } from './routes/admin/lessons/$lessonId'
 import { Route as AdminAnalyticsUserIdProgramIdRouteImport } from './routes/admin/analytics/$userId/$programId'
 import { Route as AppProgramsProgramIdLessonsLessonIdRouteImport } from './routes/app/programs/$programId_.lessons.$lessonId'
+import { Route as AdminTestsGroupIdTestsTestIdRouteImport } from './routes/admin/tests/$groupId_.tests.$testId'
 import { Route as AdminLessonsLessonIdActivitiesActivityIdRouteImport } from './routes/admin/lessons/$lessonId_.activities.$activityId'
 
 const ZeroRoute = ZeroRouteImport.update({
@@ -149,6 +152,11 @@ const AppProgramsIndexRoute = AppProgramsIndexRouteImport.update({
   path: '/programs/',
   getParentRoute: () => AppRoute,
 } as any)
+const AdminTestsIndexRoute = AdminTestsIndexRouteImport.update({
+  id: '/tests/',
+  path: '/tests/',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminSupportIndexRoute = AdminSupportIndexRouteImport.update({
   id: '/support/',
   path: '/support/',
@@ -204,17 +212,21 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminTestsGroupIdRoute = AdminTestsGroupIdRouteImport.update({
+  id: '/tests/$groupId',
+  path: '/tests/$groupId',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminSupportThreadIdRoute = AdminSupportThreadIdRouteImport.update({
   id: '/support/$threadId',
   path: '/support/$threadId',
   getParentRoute: () => AdminRoute,
 } as any)
-const AdminReviewsSubmissionIdRoute =
-  AdminReviewsSubmissionIdRouteImport.update({
-    id: '/reviews/$submissionId',
-    path: '/reviews/$submissionId',
-    getParentRoute: () => AdminRoute,
-  } as any)
+const AdminReviewsAttemptIdRoute = AdminReviewsAttemptIdRouteImport.update({
+  id: '/reviews/$attemptId',
+  path: '/reviews/$attemptId',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminProgramsProgramIdRoute = AdminProgramsProgramIdRouteImport.update({
   id: '/programs/$programId',
   path: '/programs/$programId',
@@ -241,6 +253,12 @@ const AppProgramsProgramIdLessonsLessonIdRoute =
     id: '/programs/$programId_/lessons/$lessonId',
     path: '/programs/$programId/lessons/$lessonId',
     getParentRoute: () => AppRoute,
+  } as any)
+const AdminTestsGroupIdTestsTestIdRoute =
+  AdminTestsGroupIdTestsTestIdRouteImport.update({
+    id: '/tests/$groupId_/tests/$testId',
+    path: '/tests/$groupId/tests/$testId',
+    getParentRoute: () => AdminRoute,
   } as any)
 const AdminLessonsLessonIdActivitiesActivityIdRoute =
   AdminLessonsLessonIdActivitiesActivityIdRouteImport.update({
@@ -272,8 +290,9 @@ export interface FileRoutesByFullPath {
   '/admin/lessons/$lessonId': typeof AdminLessonsLessonIdRoute
   '/admin/lessons/new': typeof AdminLessonsNewRoute
   '/admin/programs/$programId': typeof AdminProgramsProgramIdRoute
-  '/admin/reviews/$submissionId': typeof AdminReviewsSubmissionIdRoute
+  '/admin/reviews/$attemptId': typeof AdminReviewsAttemptIdRoute
   '/admin/support/$threadId': typeof AdminSupportThreadIdRoute
+  '/admin/tests/$groupId': typeof AdminTestsGroupIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/files/$': typeof ApiFilesSplatRoute
   '/api/invite/activate': typeof ApiInviteActivateRoute
@@ -285,9 +304,11 @@ export interface FileRoutesByFullPath {
   '/admin/programs/': typeof AdminProgramsIndexRoute
   '/admin/reviews/': typeof AdminReviewsIndexRoute
   '/admin/support/': typeof AdminSupportIndexRoute
+  '/admin/tests/': typeof AdminTestsIndexRoute
   '/app/programs/': typeof AppProgramsIndexRoute
   '/admin/analytics/$userId/$programId': typeof AdminAnalyticsUserIdProgramIdRoute
   '/admin/lessons/$lessonId/activities/$activityId': typeof AdminLessonsLessonIdActivitiesActivityIdRoute
+  '/admin/tests/$groupId/tests/$testId': typeof AdminTestsGroupIdTestsTestIdRoute
   '/app/programs/$programId/lessons/$lessonId': typeof AppProgramsProgramIdLessonsLessonIdRoute
 }
 export interface FileRoutesByTo {
@@ -310,8 +331,9 @@ export interface FileRoutesByTo {
   '/admin/lessons/$lessonId': typeof AdminLessonsLessonIdRoute
   '/admin/lessons/new': typeof AdminLessonsNewRoute
   '/admin/programs/$programId': typeof AdminProgramsProgramIdRoute
-  '/admin/reviews/$submissionId': typeof AdminReviewsSubmissionIdRoute
+  '/admin/reviews/$attemptId': typeof AdminReviewsAttemptIdRoute
   '/admin/support/$threadId': typeof AdminSupportThreadIdRoute
+  '/admin/tests/$groupId': typeof AdminTestsGroupIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/files/$': typeof ApiFilesSplatRoute
   '/api/invite/activate': typeof ApiInviteActivateRoute
@@ -323,9 +345,11 @@ export interface FileRoutesByTo {
   '/admin/programs': typeof AdminProgramsIndexRoute
   '/admin/reviews': typeof AdminReviewsIndexRoute
   '/admin/support': typeof AdminSupportIndexRoute
+  '/admin/tests': typeof AdminTestsIndexRoute
   '/app/programs': typeof AppProgramsIndexRoute
   '/admin/analytics/$userId/$programId': typeof AdminAnalyticsUserIdProgramIdRoute
   '/admin/lessons/$lessonId/activities/$activityId': typeof AdminLessonsLessonIdActivitiesActivityIdRoute
+  '/admin/tests/$groupId/tests/$testId': typeof AdminTestsGroupIdTestsTestIdRoute
   '/app/programs/$programId/lessons/$lessonId': typeof AppProgramsProgramIdLessonsLessonIdRoute
 }
 export interface FileRoutesById {
@@ -352,8 +376,9 @@ export interface FileRoutesById {
   '/admin/lessons/$lessonId': typeof AdminLessonsLessonIdRoute
   '/admin/lessons/new': typeof AdminLessonsNewRoute
   '/admin/programs/$programId': typeof AdminProgramsProgramIdRoute
-  '/admin/reviews/$submissionId': typeof AdminReviewsSubmissionIdRoute
+  '/admin/reviews/$attemptId': typeof AdminReviewsAttemptIdRoute
   '/admin/support/$threadId': typeof AdminSupportThreadIdRoute
+  '/admin/tests/$groupId': typeof AdminTestsGroupIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/files/$': typeof ApiFilesSplatRoute
   '/api/invite/activate': typeof ApiInviteActivateRoute
@@ -365,9 +390,11 @@ export interface FileRoutesById {
   '/admin/programs/': typeof AdminProgramsIndexRoute
   '/admin/reviews/': typeof AdminReviewsIndexRoute
   '/admin/support/': typeof AdminSupportIndexRoute
+  '/admin/tests/': typeof AdminTestsIndexRoute
   '/app/programs/': typeof AppProgramsIndexRoute
   '/admin/analytics/$userId/$programId': typeof AdminAnalyticsUserIdProgramIdRoute
   '/admin/lessons/$lessonId_/activities/$activityId': typeof AdminLessonsLessonIdActivitiesActivityIdRoute
+  '/admin/tests/$groupId_/tests/$testId': typeof AdminTestsGroupIdTestsTestIdRoute
   '/app/programs/$programId_/lessons/$lessonId': typeof AppProgramsProgramIdLessonsLessonIdRoute
 }
 export interface FileRouteTypes {
@@ -395,8 +422,9 @@ export interface FileRouteTypes {
     | '/admin/lessons/$lessonId'
     | '/admin/lessons/new'
     | '/admin/programs/$programId'
-    | '/admin/reviews/$submissionId'
+    | '/admin/reviews/$attemptId'
     | '/admin/support/$threadId'
+    | '/admin/tests/$groupId'
     | '/api/auth/$'
     | '/api/files/$'
     | '/api/invite/activate'
@@ -408,9 +436,11 @@ export interface FileRouteTypes {
     | '/admin/programs/'
     | '/admin/reviews/'
     | '/admin/support/'
+    | '/admin/tests/'
     | '/app/programs/'
     | '/admin/analytics/$userId/$programId'
     | '/admin/lessons/$lessonId/activities/$activityId'
+    | '/admin/tests/$groupId/tests/$testId'
     | '/app/programs/$programId/lessons/$lessonId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -433,8 +463,9 @@ export interface FileRouteTypes {
     | '/admin/lessons/$lessonId'
     | '/admin/lessons/new'
     | '/admin/programs/$programId'
-    | '/admin/reviews/$submissionId'
+    | '/admin/reviews/$attemptId'
     | '/admin/support/$threadId'
+    | '/admin/tests/$groupId'
     | '/api/auth/$'
     | '/api/files/$'
     | '/api/invite/activate'
@@ -446,9 +477,11 @@ export interface FileRouteTypes {
     | '/admin/programs'
     | '/admin/reviews'
     | '/admin/support'
+    | '/admin/tests'
     | '/app/programs'
     | '/admin/analytics/$userId/$programId'
     | '/admin/lessons/$lessonId/activities/$activityId'
+    | '/admin/tests/$groupId/tests/$testId'
     | '/app/programs/$programId/lessons/$lessonId'
   id:
     | '__root__'
@@ -474,8 +507,9 @@ export interface FileRouteTypes {
     | '/admin/lessons/$lessonId'
     | '/admin/lessons/new'
     | '/admin/programs/$programId'
-    | '/admin/reviews/$submissionId'
+    | '/admin/reviews/$attemptId'
     | '/admin/support/$threadId'
+    | '/admin/tests/$groupId'
     | '/api/auth/$'
     | '/api/files/$'
     | '/api/invite/activate'
@@ -487,9 +521,11 @@ export interface FileRouteTypes {
     | '/admin/programs/'
     | '/admin/reviews/'
     | '/admin/support/'
+    | '/admin/tests/'
     | '/app/programs/'
     | '/admin/analytics/$userId/$programId'
     | '/admin/lessons/$lessonId_/activities/$activityId'
+    | '/admin/tests/$groupId_/tests/$testId'
     | '/app/programs/$programId_/lessons/$lessonId'
   fileRoutesById: FileRoutesById
 }
@@ -653,6 +689,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppProgramsIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/admin/tests/': {
+      id: '/admin/tests/'
+      path: '/tests'
+      fullPath: '/admin/tests/'
+      preLoaderRoute: typeof AdminTestsIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/support/': {
       id: '/admin/support/'
       path: '/support'
@@ -730,6 +773,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/tests/$groupId': {
+      id: '/admin/tests/$groupId'
+      path: '/tests/$groupId'
+      fullPath: '/admin/tests/$groupId'
+      preLoaderRoute: typeof AdminTestsGroupIdRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/support/$threadId': {
       id: '/admin/support/$threadId'
       path: '/support/$threadId'
@@ -737,11 +787,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSupportThreadIdRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/admin/reviews/$submissionId': {
-      id: '/admin/reviews/$submissionId'
-      path: '/reviews/$submissionId'
-      fullPath: '/admin/reviews/$submissionId'
-      preLoaderRoute: typeof AdminReviewsSubmissionIdRouteImport
+    '/admin/reviews/$attemptId': {
+      id: '/admin/reviews/$attemptId'
+      path: '/reviews/$attemptId'
+      fullPath: '/admin/reviews/$attemptId'
+      preLoaderRoute: typeof AdminReviewsAttemptIdRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/programs/$programId': {
@@ -779,6 +829,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppProgramsProgramIdLessonsLessonIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/admin/tests/$groupId_/tests/$testId': {
+      id: '/admin/tests/$groupId_/tests/$testId'
+      path: '/tests/$groupId/tests/$testId'
+      fullPath: '/admin/tests/$groupId/tests/$testId'
+      preLoaderRoute: typeof AdminTestsGroupIdTestsTestIdRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/lessons/$lessonId_/activities/$activityId': {
       id: '/admin/lessons/$lessonId_/activities/$activityId'
       path: '/lessons/$lessonId/activities/$activityId'
@@ -794,16 +851,19 @@ interface AdminRouteChildren {
   AdminLessonsLessonIdRoute: typeof AdminLessonsLessonIdRoute
   AdminLessonsNewRoute: typeof AdminLessonsNewRoute
   AdminProgramsProgramIdRoute: typeof AdminProgramsProgramIdRoute
-  AdminReviewsSubmissionIdRoute: typeof AdminReviewsSubmissionIdRoute
+  AdminReviewsAttemptIdRoute: typeof AdminReviewsAttemptIdRoute
   AdminSupportThreadIdRoute: typeof AdminSupportThreadIdRoute
+  AdminTestsGroupIdRoute: typeof AdminTestsGroupIdRoute
   AdminAnalyticsIndexRoute: typeof AdminAnalyticsIndexRoute
   AdminInvitesIndexRoute: typeof AdminInvitesIndexRoute
   AdminLessonsIndexRoute: typeof AdminLessonsIndexRoute
   AdminProgramsIndexRoute: typeof AdminProgramsIndexRoute
   AdminReviewsIndexRoute: typeof AdminReviewsIndexRoute
   AdminSupportIndexRoute: typeof AdminSupportIndexRoute
+  AdminTestsIndexRoute: typeof AdminTestsIndexRoute
   AdminAnalyticsUserIdProgramIdRoute: typeof AdminAnalyticsUserIdProgramIdRoute
   AdminLessonsLessonIdActivitiesActivityIdRoute: typeof AdminLessonsLessonIdActivitiesActivityIdRoute
+  AdminTestsGroupIdTestsTestIdRoute: typeof AdminTestsGroupIdTestsTestIdRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
@@ -811,17 +871,20 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminLessonsLessonIdRoute: AdminLessonsLessonIdRoute,
   AdminLessonsNewRoute: AdminLessonsNewRoute,
   AdminProgramsProgramIdRoute: AdminProgramsProgramIdRoute,
-  AdminReviewsSubmissionIdRoute: AdminReviewsSubmissionIdRoute,
+  AdminReviewsAttemptIdRoute: AdminReviewsAttemptIdRoute,
   AdminSupportThreadIdRoute: AdminSupportThreadIdRoute,
+  AdminTestsGroupIdRoute: AdminTestsGroupIdRoute,
   AdminAnalyticsIndexRoute: AdminAnalyticsIndexRoute,
   AdminInvitesIndexRoute: AdminInvitesIndexRoute,
   AdminLessonsIndexRoute: AdminLessonsIndexRoute,
   AdminProgramsIndexRoute: AdminProgramsIndexRoute,
   AdminReviewsIndexRoute: AdminReviewsIndexRoute,
   AdminSupportIndexRoute: AdminSupportIndexRoute,
+  AdminTestsIndexRoute: AdminTestsIndexRoute,
   AdminAnalyticsUserIdProgramIdRoute: AdminAnalyticsUserIdProgramIdRoute,
   AdminLessonsLessonIdActivitiesActivityIdRoute:
     AdminLessonsLessonIdActivitiesActivityIdRoute,
+  AdminTestsGroupIdTestsTestIdRoute: AdminTestsGroupIdTestsTestIdRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
@@ -900,12 +963,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}

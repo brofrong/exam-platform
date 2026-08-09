@@ -109,7 +109,7 @@ export function ActivityEditor({ lessonId, activities }: ActivityEditorProps) {
 				<EmptyState
 					icon={<FileJsonIcon />}
 					title="Активностей пока нет"
-					description="Добавьте теорию или практику. Оба типа редактируются в TipTap."
+					description="Добавьте теорию или практику (группа тестов)."
 					action={
 						<Button
 							data-testid="activity-create-empty"

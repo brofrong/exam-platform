@@ -7,9 +7,13 @@ import { lessonProgressTable } from "#/server/db/lesson-progress/lesson-progress
 import { programsTable } from "#/server/db/program/program.schema";
 import { programInvitesTable } from "#/server/db/program-invite/program-invite.schema";
 import { programInviteProgramsTable } from "#/server/db/program-invite/program-invite-program.schema";
-import { submissionsTable } from "#/server/db/submission/submission.schema";
 import { supportMessagesTable } from "#/server/db/support-message/support-message.schema";
 import { supportThreadsTable } from "#/server/db/support-thread/support-thread.schema";
+import { testsTable } from "#/server/db/test/test.schema";
+import { testAttemptsTable } from "#/server/db/test-attempt/test-attempt.schema";
+import { testAttemptAnswersTable } from "#/server/db/test-attempt-answer/test-attempt-answer.schema";
+import { testGroupsTable } from "#/server/db/test-group/test-group.schema";
+import { testKeysTable } from "#/server/db/test-key/test-key.schema";
 import { topicsTable } from "#/server/db/topic/topic.schema";
 import { topicLessonsTable } from "#/server/db/topic-lesson/topic-lesson.schema";
 import { usersTable } from "#/server/db/user/user.schema";
@@ -21,7 +25,11 @@ const DrizzleSchema = {
 	lesson: lessonsTable,
 	topicLesson: topicLessonsTable,
 	activity: activitiesTable,
-	submission: submissionsTable,
+	testGroup: testGroupsTable,
+	test: testsTable,
+	testKey: testKeysTable,
+	testAttempt: testAttemptsTable,
+	testAttemptAnswer: testAttemptAnswersTable,
 	activityProgress: activityProgressTable,
 	lessonProgress: lessonProgressTable,
 	programInvite: programInvitesTable,
@@ -36,10 +44,11 @@ export const relations = defineRelations(DrizzleSchema, (r) => ({
 		enrollments: r.many.enrollment(),
 		supportThreads: r.many.supportThread(),
 		supportMessages: r.many.supportMessage(),
+		testAttempts: r.many.testAttempt(),
 	},
 	program: {
 		topics: r.many.topic(),
-		submissions: r.many.submission(),
+		testAttempts: r.many.testAttempt(),
 		activityProgress: r.many.activityProgress(),
 		lessonProgress: r.many.lessonProgress(),
 		enrollments: r.many.enrollment(),
@@ -80,24 +89,55 @@ export const relations = defineRelations(DrizzleSchema, (r) => ({
 			from: r.activity.lessonId,
 			to: r.lesson.id,
 		}),
-		submissions: r.many.submission(),
+		testAttempts: r.many.testAttempt(),
 		activityProgress: r.many.activityProgress(),
 	},
-	submission: {
+	testGroup: {
+		tests: r.many.test(),
+	},
+	test: {
+		group: r.one.testGroup({
+			from: r.test.groupId,
+			to: r.testGroup.id,
+		}),
+		key: r.one.testKey({
+			from: r.test.id,
+			to: r.testKey.testId,
+		}),
+		attemptAnswers: r.many.testAttemptAnswer(),
+	},
+	testKey: {
+		test: r.one.test({
+			from: r.testKey.testId,
+			to: r.test.id,
+		}),
+	},
+	testAttempt: {
 		user: r.one.user({
-			from: r.submission.userId,
+			from: r.testAttempt.userId,
 			to: r.user.id,
 		}),
 		program: r.one.program({
-			from: r.submission.programId,
+			from: r.testAttempt.programId,
 			to: r.program.id,
 		}),
 		activity: r.one.activity({
-			from: r.submission.activityId,
+			from: r.testAttempt.activityId,
 			to: r.activity.id,
 		}),
+		answers: r.many.testAttemptAnswer(),
+	},
+	testAttemptAnswer: {
+		attempt: r.one.testAttempt({
+			from: r.testAttemptAnswer.attemptId,
+			to: r.testAttempt.id,
+		}),
+		test: r.one.test({
+			from: r.testAttemptAnswer.testId,
+			to: r.test.id,
+		}),
 		reviewer: r.one.user({
-			from: r.submission.reviewedBy,
+			from: r.testAttemptAnswer.reviewedBy,
 			to: r.user.id,
 		}),
 	},
