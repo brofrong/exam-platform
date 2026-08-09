@@ -2,6 +2,10 @@ import { useQuery } from "@rocicorp/zero/react";
 import { Link } from "@tanstack/react-router";
 import { PracticeActivity } from "#/features/lesson-player/ui/practice-activity";
 import { TheoryActivityView } from "#/features/lesson-player/ui/theory-activity-view";
+import {
+	formatLockHint,
+	resolveLessonAccess,
+} from "#/features/program-locks/lib/resolve-access";
 import { queries } from "#/server/zero/queries";
 import { EmptyState, PageHeader } from "@/components/lms";
 import { Button } from "@/components/ui/button";
@@ -17,8 +21,13 @@ export function LessonPlayerPage({
 }: LessonPlayerPageProps) {
 	const [program] = useQuery(queries.publishedProgramById({ id: programId }));
 	const [lesson] = useQuery(queries.publishedLessonById({ id: lessonId }));
+	const [lessonProgress] = useQuery(queries.myLessonProgress());
 
-	if (program === undefined || lesson === undefined) {
+	if (
+		program === undefined ||
+		lesson === undefined ||
+		lessonProgress === undefined
+	) {
 		return (
 			<main className="mx-auto w-full max-w-3xl px-4 py-10">
 				<p className="text-sm text-muted-foreground">Загрузка урока…</p>
@@ -38,6 +47,44 @@ export function LessonPlayerPage({
 					action={
 						<Button asChild data-testid="lesson-player-back-home">
 							<Link to="/app">На главную</Link>
+						</Button>
+					}
+				/>
+			</main>
+		);
+	}
+
+	const lessonProgressById: Record<string, number> = {};
+	for (const row of lessonProgress ?? []) {
+		if (row.programId === programId) {
+			lessonProgressById[row.lessonId] = row.percent;
+		}
+	}
+	const access = resolveLessonAccess({
+		program,
+		lessonId,
+		lessonProgressById,
+	});
+
+	if (!access.unlocked) {
+		const hint = formatLockHint({
+			threshold: access.threshold,
+			topicBlockers: access.topicBlockers,
+			lessonBlockers: access.lessonBlockers,
+		});
+		return (
+			<main
+				className="mx-auto w-full max-w-3xl px-4 py-10"
+				data-testid="lesson-locked"
+			>
+				<EmptyState
+					title="Занятие закрыто"
+					description={hint}
+					action={
+						<Button asChild data-testid="lesson-locked-back">
+							<Link to="/app/programs/$programId" params={{ programId }}>
+								К программе
+							</Link>
 						</Button>
 					}
 				/>

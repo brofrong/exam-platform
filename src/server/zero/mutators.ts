@@ -1,6 +1,8 @@
 import { defineMutator, defineMutators } from "@rocicorp/zero";
 import { z } from "zod";
 import { assertAcyclicEdges } from "#/features/program-locks/lib/lock-graph";
+import { resolveLessonAccess } from "#/features/program-locks/lib/resolve-access";
+import type { ZeroContext } from "#/server/auth/types";
 import {
 	isPracticeActivityContent,
 	type PracticeActivityContent,
@@ -174,6 +176,114 @@ async function requireActivityInProgram(
 		throw new Error("Forbidden");
 	}
 	return activity;
+}
+
+async function assertStudentCanProgressLesson(
+	tx: MutatorTx,
+	ctx: ZeroContext,
+	programId: string,
+	lessonId: string,
+) {
+	if (can(ctx.role, "program:write")) {
+		return;
+	}
+
+	const program = (await tx.run(zql.program.where("id", programId).one())) as
+		| {
+				id: string;
+				topicLockMode: string;
+				lessonLockMode: string;
+				unlockThresholdPercent: number;
+		  }
+		| undefined;
+	if (!program) {
+		throw new Error("Not found");
+	}
+
+	if (program.topicLockMode === "open" && program.lessonLockMode === "open") {
+		return;
+	}
+
+	const topics = (await tx.run(
+		zql.topic.where("programId", programId).orderBy("position", "asc"),
+	)) as Array<{
+		id: string;
+		title: string;
+		position: number;
+		status: string;
+	}>;
+
+	const links: Array<{
+		topicId: string;
+		lessonId: string;
+		position: number;
+	}> = [];
+	for (const topic of topics) {
+		const topicLinks = (await tx.run(
+			zql.topicLesson.where("topicId", topic.id),
+		)) as Array<{ topicId: string; lessonId: string; position: number }>;
+		links.push(...topicLinks);
+	}
+
+	const lessonById = new Map<
+		string,
+		{ id: string; title: string; status: string }
+	>();
+	for (const link of links) {
+		if (lessonById.has(link.lessonId)) continue;
+		const lesson = (await tx.run(
+			zql.lesson.where("id", link.lessonId).one(),
+		)) as { id: string; title: string; status: string } | undefined;
+		if (lesson) {
+			lessonById.set(lesson.id, lesson);
+		}
+	}
+
+	const topicLockEdges = (await tx.run(
+		zql.topicLockEdge.where("programId", programId),
+	)) as Array<{ blockerTopicId: string; topicId: string }>;
+	const lessonLockEdges = (await tx.run(
+		zql.lessonLockEdge.where("programId", programId),
+	)) as Array<{
+		topicId: string;
+		blockerLessonId: string;
+		lessonId: string;
+	}>;
+
+	const progressRows = (await tx.run(
+		zql.lessonProgress.where("userId", ctx.id).where("programId", programId),
+	)) as Array<{ lessonId: string; percent: number }>;
+	const lessonProgressById: Record<string, number> = {};
+	for (const row of progressRows) {
+		lessonProgressById[row.lessonId] = row.percent;
+	}
+
+	const access = resolveLessonAccess({
+		program: {
+			topicLockMode: program.topicLockMode,
+			lessonLockMode: program.lessonLockMode,
+			unlockThresholdPercent: program.unlockThresholdPercent,
+			topics: topics.map((topic) => ({
+				id: topic.id,
+				title: topic.title,
+				position: topic.position,
+				topicLessons: links
+					.filter((link) => link.topicId === topic.id)
+					.map((link) => ({
+						position: link.position,
+						lesson: lessonById.get(link.lessonId) ?? null,
+					})),
+			})),
+			topicLockEdges,
+			lessonLockEdges,
+		},
+		lessonId,
+		lessonProgressById,
+	});
+
+	if (!access.unlocked) {
+		throw new Error("Lesson locked");
+	}
 }
 
 async function recomputeLessonProgress(
@@ -1247,6 +1357,12 @@ export const mutators = defineMutators({
 				args.activityId,
 				args.programId,
 			);
+			await assertStudentCanProgressLesson(
+				tx as MutatorTx,
+				user,
+				args.programId,
+				activity.lessonId,
+			);
 			const now = Date.now();
 			await upsertActivityProgress(tx as MutatorTx, {
 				userId: user.id,
@@ -1282,6 +1398,12 @@ export const mutators = defineMutators({
 				tx as MutatorTx,
 				args.activityId,
 				args.programId,
+			);
+			await assertStudentCanProgressLesson(
+				tx as MutatorTx,
+				user,
+				args.programId,
+				activity.lessonId,
 			);
 			const now = Date.now();
 			const markComplete =
