@@ -5,11 +5,10 @@ import {
 	ListChecksIcon,
 	MessageCircleIcon,
 	MoreHorizontalIcon,
-	SparklesIcon,
+	SettingsIcon,
 	UsersIcon,
 } from "lucide-react";
 import { useState } from "react";
-import { SeedDemoCatalogButton } from "#/features/admin-seed";
 import { can, type Role } from "#/shared/authz";
 import { Button } from "@/components/ui/button";
 import {
@@ -85,10 +84,10 @@ export function getAdminMoreLinks(role: Role): AdminMoreLink[] {
 	if (can(role, "settings:ai")) {
 		links.push({
 			to: "/admin/settings",
-			label: "ИИ",
-			description: "OpenRouter: токен и модель",
+			label: "Настройки",
+			description: "ИИ, демо-каталог и платформа",
 			testId: "admin-nav-ai-settings",
-			icon: <SparklesIcon className="size-4" />,
+			icon: <SettingsIcon className="size-4" />,
 		});
 	}
 	return links;
@@ -158,10 +157,6 @@ export function AdminMoreMenu({
 							</Link>
 						</Button>
 					))}
-					<SeedDemoCatalogButton
-						variant="sheet"
-						onDone={() => setSheetOpen(false)}
-					/>
 				</nav>
 			</SheetContent>
 		</Sheet>
