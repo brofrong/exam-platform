@@ -1,5 +1,13 @@
 import { afterEach, describe, expect, test } from "bun:test";
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import {
+	existsSync,
+	mkdirSync,
+	mkdtempSync,
+	readdirSync,
+	readFileSync,
+	rmSync,
+	writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
@@ -9,6 +17,7 @@ import {
 	formatReleasedMarkdown,
 	parseUnreleasedFiles,
 } from "./release-lib";
+import { runRelease } from "./release";
 
 const tempDirs: string[] = [];
 
@@ -23,6 +32,52 @@ afterEach(() => {
 		rmSync(dir, { recursive: true, force: true });
 	}
 });
+
+const EMPTY_CHANGELOG_TS = `export type ChangelogEntry = {
+	version: string;
+	changes: string[];
+};
+
+/** Generated/updated by \`bun run release\`. Do not edit by hand during tasks. */
+export const CHANGELOG: ChangelogEntry[] = [];
+`;
+
+function makeReleaseFixture(options?: {
+	version?: string;
+	unreleased?: Record<string, string>;
+	released?: Record<string, string>;
+	changelogTs?: string;
+}): string {
+	const root = makeTempDir();
+	const version = options?.version ?? "0.1.2";
+	const unreleasedDir = join(root, "changes", "unreleased");
+	const releasedDir = join(root, "changes", "released");
+	const sharedDir = join(root, "src", "shared");
+
+	mkdirSync(unreleasedDir, { recursive: true });
+	mkdirSync(releasedDir, { recursive: true });
+	mkdirSync(sharedDir, { recursive: true });
+
+	writeFileSync(
+		join(root, "package.json"),
+		JSON.stringify({ name: "fixture", version }, null, "\t") + "\n",
+	);
+	writeFileSync(join(unreleasedDir, ".gitkeep"), "");
+	writeFileSync(join(releasedDir, ".gitkeep"), "");
+	writeFileSync(
+		join(sharedDir, "changelog.ts"),
+		options?.changelogTs ?? EMPTY_CHANGELOG_TS,
+	);
+
+	for (const [name, content] of Object.entries(options?.unreleased ?? {})) {
+		writeFileSync(join(unreleasedDir, name), content);
+	}
+	for (const [name, content] of Object.entries(options?.released ?? {})) {
+		writeFileSync(join(releasedDir, name), content);
+	}
+
+	return root;
+}
 
 describe("parseUnreleasedFiles", () => {
 	test("returns sorted entries with bullets from - and * lines", () => {
@@ -101,6 +156,13 @@ describe("buildChangelogTs", () => {
 		const source = buildChangelogTs([]);
 		expect(source).toContain("export const CHANGELOG: ChangelogEntry[] = [];");
 	});
+
+	test("escapes quotes in change text", () => {
+		const source = buildChangelogTs([
+			{ version: "0.1.3", changes: ['He said "hello"'] },
+		]);
+		expect(source).toContain('"He said \\"hello\\""');
+	});
 });
 
 describe("bumpSemver", () => {
@@ -130,24 +192,91 @@ describe("compareSemverDesc", () => {
 	});
 });
 
-describe("temp dir helpers used by release flow", () => {
-	test("can stage unreleased and released dirs like the real tree", () => {
-		const root = makeTempDir();
-		const unreleased = join(root, "unreleased");
-		const released = join(root, "released");
-		mkdirSync(unreleased);
-		mkdirSync(released);
-		writeFileSync(join(unreleased, ".gitkeep"), "");
-		writeFileSync(join(released, ".gitkeep"), "");
-		writeFileSync(join(unreleased, "feat-a.md"), "- Новый пункт\n");
+describe("runRelease", () => {
+	test("dry-run leaves the tree unchanged", async () => {
+		const root = makeReleaseFixture({
+			unreleased: { "feat-a.md": "- Новый пункт\n" },
+		});
+		const packageBefore = readFileSync(join(root, "package.json"), "utf8");
+		const changelogBefore = readFileSync(
+			join(root, "src", "shared", "changelog.ts"),
+			"utf8",
+		);
 
-		const entries = parseUnreleasedFiles(unreleased);
-		const bullets = entries.flatMap((e) => e.bullets);
-		const md = formatReleasedMarkdown(bullets);
-		const next = bumpSemver("0.1.2", "patch");
+		await runRelease({
+			level: "patch",
+			dryRun: true,
+			allowEmpty: false,
+			rootDir: root,
+		});
 
-		expect(entries).toHaveLength(1);
-		expect(md).toBe("- Новый пункт\n");
-		expect(next).toBe("0.1.3");
+		expect(existsSync(join(root, "changes", "released", "0.1.3.md"))).toBe(
+			false,
+		);
+		expect(
+			existsSync(join(root, "changes", "unreleased", "feat-a.md")),
+		).toBe(true);
+		expect(readFileSync(join(root, "package.json"), "utf8")).toBe(
+			packageBefore,
+		);
+		expect(
+			readFileSync(join(root, "src", "shared", "changelog.ts"), "utf8"),
+		).toBe(changelogBefore);
+	});
+
+	test("writes released file, clears unreleased, rebuilds changelog, bumps version", async () => {
+		const root = makeReleaseFixture({
+			unreleased: { "feat-a.md": "- Новый пункт\n" },
+			released: { "0.1.2.md": "- Старый пункт\n" },
+		});
+
+		await runRelease({
+			level: "patch",
+			dryRun: false,
+			allowEmpty: false,
+			rootDir: root,
+		});
+
+		expect(
+			readFileSync(join(root, "changes", "released", "0.1.3.md"), "utf8"),
+		).toBe("- Новый пункт\n");
+		expect(
+			existsSync(join(root, "changes", "unreleased", "feat-a.md")),
+		).toBe(false);
+		expect(
+			existsSync(join(root, "changes", "unreleased", ".gitkeep")),
+		).toBe(true);
+		expect(readdirSync(join(root, "changes", "unreleased"))).toEqual([
+			".gitkeep",
+		]);
+
+		const changelog = readFileSync(
+			join(root, "src", "shared", "changelog.ts"),
+			"utf8",
+		);
+		expect(changelog).toBe(
+			buildChangelogTs([
+				{ version: "0.1.3", changes: ["Новый пункт"] },
+				{ version: "0.1.2", changes: ["Старый пункт"] },
+			]),
+		);
+
+		const pkg = JSON.parse(
+			readFileSync(join(root, "package.json"), "utf8"),
+		) as { version: string };
+		expect(pkg.version).toBe("0.1.3");
+	});
+
+	test("throws when changelog is empty and allowEmpty is false", async () => {
+		const root = makeReleaseFixture();
+
+		await expect(
+			runRelease({
+				level: "patch",
+				dryRun: false,
+				allowEmpty: false,
+				rootDir: root,
+			}),
+		).rejects.toThrow(/No unreleased changelog bullets found/);
 	});
 });

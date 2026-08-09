@@ -106,10 +106,9 @@ export async function runRelease(options: ReleaseOptions): Promise<void> {
 	const bullets = entries.flatMap((entry) => entry.bullets);
 
 	if (bullets.length === 0 && !options.allowEmpty) {
-		console.error(
+		throw new Error(
 			"No unreleased changelog bullets found. Add files under changes/unreleased/ or pass --allow-empty.",
 		);
-		process.exit(1);
 	}
 
 	const releasedMarkdown = formatReleasedMarkdown(bullets);
