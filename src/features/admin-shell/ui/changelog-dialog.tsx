@@ -2,6 +2,7 @@ import { CHANGELOG } from "#/shared/changelog";
 import {
 	Dialog,
 	DialogContent,
+	DialogDescription,
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
@@ -17,6 +18,9 @@ export function ChangelogDialog({ open, onOpenChange }: ChangelogDialogProps) {
 			<DialogContent className="sm:max-w-md" data-testid="changelog-dialog">
 				<DialogHeader>
 					<DialogTitle>Что нового</DialogTitle>
+					<DialogDescription className="sr-only">
+						Список изменений по версиям приложения
+					</DialogDescription>
 				</DialogHeader>
 
 				{CHANGELOG.length === 0 ? (
