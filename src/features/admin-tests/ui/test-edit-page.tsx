@@ -10,7 +10,10 @@ import {
 } from "#/features/admin-tests/lib/test-labels";
 import { computeTestStats } from "#/features/admin-tests/lib/test-stats";
 import { TestOptionsEditor } from "#/features/admin-tests/ui/test-options-editor";
-import { AiAuthorWorkspace } from "#/features/ai-author-chat";
+import {
+	AiAuthorChatToggle,
+	AiAuthorWorkspace,
+} from "#/features/ai-author-chat";
 import {
 	emptyTheoryDoc,
 	normalizeTheoryDoc,
@@ -244,6 +247,7 @@ export function TestEditPage({ groupId, testId }: TestEditPageProps) {
 									onCheckedChange={setPreview}
 									data-testid="test-preview-switch"
 								/>
+								<AiAuthorChatToggle />
 							</div>
 						}
 					/>

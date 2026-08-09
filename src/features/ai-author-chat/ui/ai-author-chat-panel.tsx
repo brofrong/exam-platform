@@ -1,11 +1,19 @@
 import type { Editor } from "@tiptap/react";
 import {
 	BotIcon,
-	PanelLeftCloseIcon,
-	PanelLeftOpenIcon,
+	PanelRightCloseIcon,
+	PanelRightOpenIcon,
 	SendIcon,
 } from "lucide-react";
-import { type ReactNode, useCallback, useMemo, useRef, useState } from "react";
+import {
+	createContext,
+	type ReactNode,
+	useCallback,
+	useContext,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import { createTheoryEditorApply } from "#/features/ai-author-chat/lib/apply-to-editor";
 import type {
 	AuthorChatMessage,
@@ -22,11 +30,54 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
+type AiAuthorChatUiContextValue = {
+	open: boolean;
+	setOpen: (open: boolean) => void;
+};
+
+const AiAuthorChatUiContext = createContext<AiAuthorChatUiContextValue | null>(
+	null,
+);
+
+function useAiAuthorChatUi(): AiAuthorChatUiContextValue {
+	const ctx = useContext(AiAuthorChatUiContext);
+	if (!ctx) {
+		throw new Error("AiAuthorChatToggle must be used within AiAuthorWorkspace");
+	}
+	return ctx;
+}
+
+/** Toggle for PageHeader actions next to «Редактор теории / теста». */
+export function AiAuthorChatToggle({ className }: { className?: string }) {
+	const { open, setOpen } = useAiAuthorChatUi();
+
+	return (
+		<Button
+			type="button"
+			variant={open ? "secondary" : "outline"}
+			size="sm"
+			className={className}
+			onClick={() => setOpen(!open)}
+			data-testid={open ? "ai-author-chat-close" : "ai-author-chat-open"}
+			aria-pressed={open}
+			aria-label={open ? "Скрыть ИИ-ассистента" : "Открыть ИИ-ассистента"}
+		>
+			{open ? (
+				<PanelRightCloseIcon className="size-4" />
+			) : (
+				<PanelRightOpenIcon className="size-4" />
+			)}
+			ИИ
+		</Button>
+	);
+}
+
 type AiAuthorChatPanelProps = {
 	mode: ChatMode;
 	title?: string;
 	/** Current TipTap JSON (or stringified). Truncated before send. */
 	documentJson?: unknown;
+	onClose: () => void;
 	className?: string;
 };
 
@@ -72,13 +123,13 @@ async function readSseAssistantText(
 	}
 }
 
-export function AiAuthorChatPanel({
+function AiAuthorChatPanel({
 	mode,
 	title,
 	documentJson,
+	onClose,
 	className,
 }: AiAuthorChatPanelProps) {
-	const [open, setOpen] = useState(true);
 	const [input, setInput] = useState("");
 	const [messages, setMessages] = useState<AuthorChatMessage[]>([]);
 	const [error, setError] = useState<string | null>(null);
@@ -171,27 +222,10 @@ export function AiAuthorChatPanel({
 		}
 	};
 
-	if (!open) {
-		return (
-			<div className={cn("shrink-0", className)}>
-				<Button
-					type="button"
-					variant="outline"
-					size="sm"
-					onClick={() => setOpen(true)}
-					data-testid="ai-author-chat-open"
-				>
-					<PanelLeftOpenIcon className="size-4" />
-					ИИ
-				</Button>
-			</div>
-		);
-	}
-
 	return (
 		<aside
 			className={cn(
-				"flex w-full max-w-full shrink-0 flex-col border-r bg-muted/20 md:w-[360px] md:max-w-[360px]",
+				"flex w-full max-w-full shrink-0 flex-col border-l bg-muted/20 md:w-[360px] md:max-w-[360px]",
 				className,
 			)}
 			data-testid="ai-author-chat-panel"
@@ -209,11 +243,11 @@ export function AiAuthorChatPanel({
 					type="button"
 					variant="ghost"
 					size="icon"
-					onClick={() => setOpen(false)}
-					data-testid="ai-author-chat-close"
+					onClick={onClose}
+					data-testid="ai-author-chat-panel-close"
 					aria-label="Скрыть чат"
 				>
-					<PanelLeftCloseIcon className="size-4" />
+					<PanelRightCloseIcon className="size-4" />
 				</Button>
 			</div>
 
@@ -284,7 +318,7 @@ export function AiAuthorChatPanel({
 	);
 }
 
-/** Split layout: optional left chat + main editor column. */
+/** Split layout: main editor column + optional right chat. */
 export function AiAuthorWorkspace({
 	mode,
 	title,
@@ -298,6 +332,7 @@ export function AiAuthorWorkspace({
 		| ReactNode
 		| ((api: { onEditorReady: (editor: Editor | null) => void }) => ReactNode);
 }) {
+	const [open, setOpen] = useState(false);
 	const [editor, setEditor] = useState<Editor | null>(null);
 	const registerEditor = useCallback((next: Editor | null) => {
 		setEditor(next);
@@ -311,24 +346,31 @@ export function AiAuthorWorkspace({
 		[editor, registerEditor],
 	);
 
+	const chatUi = useMemo(() => ({ open, setOpen }), [open]);
+
 	return (
 		<AiAuthorEditorBridgeProvider value={bridge}>
-			<div
-				className="flex min-h-[calc(100svh-0px)] w-full flex-col md:flex-row"
-				data-testid="ai-author-workspace"
-			>
-				<AiAuthorChatPanel
-					mode={mode}
-					title={title}
-					documentJson={documentJson}
-					className="md:sticky md:top-0 md:h-svh"
-				/>
-				<div className="min-w-0 flex-1">
-					{typeof children === "function"
-						? children({ onEditorReady: registerEditor })
-						: children}
+			<AiAuthorChatUiContext.Provider value={chatUi}>
+				<div
+					className="flex min-h-[calc(100svh-0px)] w-full flex-col md:flex-row"
+					data-testid="ai-author-workspace"
+				>
+					<div
+						className={cn("min-w-0 flex-1", open && "pr-4 md:pr-6")}
+					>
+						{typeof children === "function"
+							? children({ onEditorReady: registerEditor })
+							: children}
+					</div>
+					<AiAuthorChatPanel
+						mode={mode}
+						title={title}
+						documentJson={documentJson}
+						onClose={() => setOpen(false)}
+						className={cn("md:sticky md:top-0 md:h-svh", !open && "hidden")}
+					/>
 				</div>
-			</div>
+			</AiAuthorChatUiContext.Provider>
 		</AiAuthorEditorBridgeProvider>
 	);
 }

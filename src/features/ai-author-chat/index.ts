@@ -4,6 +4,6 @@ export type {
 	ChatMode,
 } from "./lib/chat-types";
 export {
-	AiAuthorChatPanel,
+	AiAuthorChatToggle,
 	AiAuthorWorkspace,
 } from "./ui/ai-author-chat-panel";

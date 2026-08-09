@@ -3,7 +3,10 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import { SelectTestGroupDialog } from "#/features/admin-lessons/ui/select-test-group-dialog";
-import { AiAuthorWorkspace } from "#/features/ai-author-chat";
+import {
+	AiAuthorChatToggle,
+	AiAuthorWorkspace,
+} from "#/features/ai-author-chat";
 import {
 	emptyTheoryDoc,
 	normalizeTheoryDoc,
@@ -458,6 +461,7 @@ export function ActivityEditPage({
 									onCheckedChange={setPreview}
 									data-testid="theory-preview-switch"
 								/>
+								<AiAuthorChatToggle />
 							</div>
 						}
 					/>
