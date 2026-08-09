@@ -31,7 +31,9 @@ export const queries = defineQueries({
 					.related("topicLessons", (tl) =>
 						tl.orderBy("position", "asc").related("lesson"),
 					),
-			);
+			)
+			.related("topicLockEdges")
+			.related("lessonLockEdges");
 	}),
 
 	topicsByProgram: defineQuery(
@@ -99,7 +101,9 @@ export const queries = defineQueries({
 								),
 							),
 					),
-			);
+			)
+			.related("topicLockEdges")
+			.related("lessonLockEdges");
 	}),
 
 	lessonById: defineQuery(z.object({ id: z.string() }), ({ ctx, args }) => {
@@ -152,7 +156,9 @@ export const queries = defineQueries({
 									.related("activities", (a) => a.orderBy("position", "asc")),
 							),
 					),
-			);
+			)
+			.related("topicLockEdges")
+			.related("lessonLockEdges");
 	}),
 
 	/** One published program — enrolled OR public. */
@@ -181,7 +187,9 @@ export const queries = defineQueries({
 									lesson.where("status", "published"),
 								),
 						),
-				);
+				)
+				.related("topicLockEdges")
+				.related("lessonLockEdges");
 		},
 	),
 

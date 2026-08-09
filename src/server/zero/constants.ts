@@ -45,3 +45,7 @@ export const PROGRESS_STATUSES = [
 	"completed",
 ] as const;
 export type ProgressStatus = (typeof PROGRESS_STATUSES)[number];
+
+/** Program topic/lesson unlock modes. */
+export const LOCK_MODES = ["open", "sequential", "graph"] as const;
+export type LockMode = (typeof LOCK_MODES)[number];

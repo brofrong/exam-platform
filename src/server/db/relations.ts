@@ -4,6 +4,7 @@ import { activityProgressTable } from "#/server/db/activity-progress/activity-pr
 import { enrollmentsTable } from "#/server/db/enrollment/enrollment.schema";
 import { lessonsTable } from "#/server/db/lesson/lesson.schema";
 import { lessonProgressTable } from "#/server/db/lesson-progress/lesson-progress.schema";
+import { lessonLockEdgesTable } from "#/server/db/lesson-lock-edge/lesson-lock-edge.schema";
 import { programsTable } from "#/server/db/program/program.schema";
 import { programInvitesTable } from "#/server/db/program-invite/program-invite.schema";
 import { programInviteProgramsTable } from "#/server/db/program-invite/program-invite-program.schema";
@@ -16,6 +17,7 @@ import { testGroupsTable } from "#/server/db/test-group/test-group.schema";
 import { testKeysTable } from "#/server/db/test-key/test-key.schema";
 import { topicsTable } from "#/server/db/topic/topic.schema";
 import { topicLessonsTable } from "#/server/db/topic-lesson/topic-lesson.schema";
+import { topicLockEdgesTable } from "#/server/db/topic-lock-edge/topic-lock-edge.schema";
 import { usersTable } from "#/server/db/user/user.schema";
 
 const DrizzleSchema = {
@@ -24,6 +26,8 @@ const DrizzleSchema = {
 	topic: topicsTable,
 	lesson: lessonsTable,
 	topicLesson: topicLessonsTable,
+	topicLockEdge: topicLockEdgesTable,
+	lessonLockEdge: lessonLockEdgesTable,
 	activity: activitiesTable,
 	testGroup: testGroupsTable,
 	test: testsTable,
@@ -53,6 +57,8 @@ export const relations = defineRelations(DrizzleSchema, (r) => ({
 		lessonProgress: r.many.lessonProgress(),
 		enrollments: r.many.enrollment(),
 		invitePrograms: r.many.programInviteProgram(),
+		topicLockEdges: r.many.topicLockEdge(),
+		lessonLockEdges: r.many.lessonLockEdge(),
 	},
 	topic: {
 		program: r.one.program({
@@ -81,6 +87,38 @@ export const relations = defineRelations(DrizzleSchema, (r) => ({
 		}),
 		lesson: r.one.lesson({
 			from: r.topicLesson.lessonId,
+			to: r.lesson.id,
+		}),
+	},
+	topicLockEdge: {
+		program: r.one.program({
+			from: r.topicLockEdge.programId,
+			to: r.program.id,
+		}),
+		blockerTopic: r.one.topic({
+			from: r.topicLockEdge.blockerTopicId,
+			to: r.topic.id,
+		}),
+		topic: r.one.topic({
+			from: r.topicLockEdge.topicId,
+			to: r.topic.id,
+		}),
+	},
+	lessonLockEdge: {
+		program: r.one.program({
+			from: r.lessonLockEdge.programId,
+			to: r.program.id,
+		}),
+		topic: r.one.topic({
+			from: r.lessonLockEdge.topicId,
+			to: r.topic.id,
+		}),
+		blockerLesson: r.one.lesson({
+			from: r.lessonLockEdge.blockerLessonId,
+			to: r.lesson.id,
+		}),
+		lesson: r.one.lesson({
+			from: r.lessonLockEdge.lessonId,
 			to: r.lesson.id,
 		}),
 	},

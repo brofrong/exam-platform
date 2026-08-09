@@ -1,5 +1,11 @@
 import { useQuery } from "@rocicorp/zero/react";
 import { Link } from "@tanstack/react-router";
+import { LockIcon } from "lucide-react";
+import {
+	formatLockHint,
+	resolveLessonAccess,
+	resolveTopicAccess,
+} from "#/features/program-locks/lib/resolve-access";
 import { queries } from "#/server/zero/queries";
 import {
 	EmptyState,
@@ -60,6 +66,10 @@ export function ProgramPage({ programId }: ProgramPageProps) {
 	const progressByLesson = new Map(
 		progressRows.map((row) => [row.lessonId, row] as const),
 	);
+	const lessonProgressById: Record<string, number> = {};
+	for (const row of progressRows) {
+		lessonProgressById[row.lessonId] = row.percent;
+	}
 	const completedCount = progressRows.filter(
 		(row) => row.status === "completed",
 	).length;
@@ -88,6 +98,11 @@ export function ProgramPage({ programId }: ProgramPageProps) {
 			topicLessons.length === 0
 				? 0
 				: Math.round((completedInTopic / topicLessons.length) * 100);
+		const topicAccess = resolveTopicAccess({
+			program,
+			topicId: topic.id,
+			lessonProgressById,
+		});
 
 		return {
 			id: topic.id,
@@ -100,6 +115,19 @@ export function ProgramPage({ programId }: ProgramPageProps) {
 					</p>
 				) : (
 					<ul className="flex flex-col gap-2">
+						{!topicAccess.unlocked ? (
+							<li
+								className="flex items-center gap-2 text-sm text-muted-foreground"
+								data-testid={`student-locked-topic-${topic.id}`}
+							>
+								<LockIcon className="size-3.5 shrink-0" />
+								{formatLockHint({
+									threshold: topicAccess.threshold,
+									topicBlockers: topicAccess.blockers,
+									lessonBlockers: [],
+								})}
+							</li>
+						) : null}
 						{links.map((link) => {
 							const lesson = link.lesson;
 							if (!lesson) {
@@ -107,28 +135,53 @@ export function ProgramPage({ programId }: ProgramPageProps) {
 							}
 							const row = progressByLesson.get(lesson.id);
 							const lessonPercent = row?.percent ?? 0;
+							const access = resolveLessonAccess({
+								program,
+								lessonId: lesson.id,
+								lessonProgressById,
+							});
+							const hint = formatLockHint({
+								threshold: access.threshold,
+								topicBlockers: access.topicBlockers,
+								lessonBlockers: access.lessonBlockers,
+							});
 							return (
 								<li key={`${link.topicId}-${link.lessonId}`}>
 									<EntityRow
 										title={lesson.title}
-										subtitle={`${Math.round(lessonPercent)}%`}
+										subtitle={
+											access.unlocked ? `${Math.round(lessonPercent)}%` : hint
+										}
 										actions={
-											<Button
-												variant="outline"
-												size="sm"
-												asChild
-												data-testid={`student-open-lesson-${lesson.id}`}
-											>
-												<Link
-													to="/app/programs/$programId/lessons/$lessonId"
-													params={{
-														programId,
-														lessonId: lesson.id,
-													}}
+											access.unlocked ? (
+												<Button
+													variant="outline"
+													size="sm"
+													asChild
+													data-testid={`student-open-lesson-${lesson.id}`}
 												>
-													Открыть
-												</Link>
-											</Button>
+													<Link
+														to="/app/programs/$programId/lessons/$lessonId"
+														params={{
+															programId,
+															lessonId: lesson.id,
+														}}
+													>
+														Открыть
+													</Link>
+												</Button>
+											) : (
+												<Button
+													variant="outline"
+													size="sm"
+													disabled
+													title={hint}
+													data-testid={`student-locked-lesson-${lesson.id}`}
+												>
+													<LockIcon />
+													Закрыто
+												</Button>
+											)
 										}
 									/>
 								</li>
