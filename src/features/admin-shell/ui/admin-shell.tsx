@@ -218,26 +218,20 @@ export function AdminShell({
 			>
 				<div
 					className={cn(
-						"border-b border-sidebar-border px-4 py-4",
-						collapsed && "px-2",
+						"flex items-center border-b border-sidebar-border px-3 py-3",
+						collapsed ? "justify-center px-1" : "justify-between gap-2",
 					)}
 				>
-					<div
-						className={cn(
-							"inline-flex items-center gap-2 text-sm font-semibold tracking-tight text-sidebar-foreground",
-							collapsed && "w-full justify-center",
-						)}
-					>
-						<Link
-							to="/admin/programs"
-							className="inline-flex items-center gap-2 no-underline"
-							data-testid="admin-brand"
-							title={collapsed ? "Админка" : undefined}
-						>
-							<span className="size-2 rounded-full bg-primary" />
-							{collapsed ? <span className="sr-only">Админка</span> : "Админка"}
-						</Link>
-						{!collapsed && (
+					{!collapsed && (
+						<div className="inline-flex min-w-0 items-center gap-2 text-sm font-semibold tracking-tight text-sidebar-foreground">
+							<Link
+								to="/admin/programs"
+								className="inline-flex items-center gap-2 no-underline"
+								data-testid="admin-brand"
+							>
+								<span className="size-2 rounded-full bg-primary" />
+								Админка
+							</Link>
 							<button
 								type="button"
 								className="text-[10px] font-normal leading-none text-muted-foreground transition-colors hover:text-foreground"
@@ -246,8 +240,33 @@ export function AdminShell({
 							>
 								v{APP_VERSION}
 							</button>
+						</div>
+					)}
+					{collapsed && (
+						<Link
+							to="/admin/programs"
+							className="sr-only"
+							data-testid="admin-brand"
+						>
+							Админка
+						</Link>
+					)}
+					<Button
+						type="button"
+						variant="ghost"
+						size="sm"
+						className={cn("shrink-0", collapsed && "px-0")}
+						onClick={toggleCollapsed}
+						data-testid="admin-sidebar-collapse"
+						aria-label={collapsed ? "Развернуть меню" : "Свернуть меню"}
+						title={collapsed ? "Развернуть" : "Свернуть"}
+					>
+						{collapsed ? (
+							<PanelLeftOpenIcon className="size-4" />
+						) : (
+							<PanelLeftCloseIcon className="size-4" />
 						)}
-					</div>
+					</Button>
 				</div>
 
 				<nav
@@ -292,22 +311,6 @@ export function AdminShell({
 						collapsed && "px-1",
 					)}
 				>
-					<Button
-						type="button"
-						variant="ghost"
-						size="sm"
-						className={cn("mb-2 w-full", collapsed && "px-0 justify-center")}
-						onClick={toggleCollapsed}
-						data-testid="admin-sidebar-collapse"
-						aria-label={collapsed ? "Развернуть меню" : "Свернуть меню"}
-						title={collapsed ? "Развернуть" : "Свернуть"}
-					>
-						{collapsed ? (
-							<PanelLeftOpenIcon className="size-4" />
-						) : (
-							<PanelLeftCloseIcon className="size-4" />
-						)}
-					</Button>
 					<AdminAccountControls userName={userName} collapsed={collapsed} />
 				</div>
 			</aside>
