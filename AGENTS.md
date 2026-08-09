@@ -9,6 +9,7 @@ Cursor project rules in `.cursor/rules/` are the source of truth:
 - `architecture.mdc` — folders, Vertical Feature Slices, aliases, stack
 - `features-ui.mdc` — thin routes, features, shadcn
 - `server-zero.mdc` — Drizzle, Zero, auth, env
+- `changelog.mdc` — unreleased changelog notes after each task
 
 ## Commands
 
@@ -22,6 +23,7 @@ Cursor project rules in `.cursor/rules/` are the source of truth:
 | Generate Zero schema | `bun run zero:generate` |
 | Add shadcn component | `bunx shadcn@latest add <name>` |
 | E2E | `bun run test:e2e` (starts e2e compose + migrate; also runs in GitHub Actions) |
+| Release | `bun run release` (optional args: `patch` \| `minor` \| `major`) |
 
 ## Do / Don't
 
@@ -30,5 +32,6 @@ Cursor project rules in `.cursor/rules/` are the source of truth:
 - **Do** keep `server/zero` isomorphic (no Node-only deps).
 - **Do** scope Zero queries/mutators with real authz (membership / capabilities) — no demo-open patterns.
 - **Do** use unique emails/titles in E2E; keep `data-testid` on interactive UI.
+- **Do** write a short Russian note under `changes/unreleased/` after each feature/fix (see `changelog.mdc`).
 - **Don't** dump logic into `src/routes/*` or recreate `src/utils` / top-level `src/zero`.
 - **Don't** commit secrets (`.env`, `.env.e2e`) or edit `routeTree.gen.ts` by hand.

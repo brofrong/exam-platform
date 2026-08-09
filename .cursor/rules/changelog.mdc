@@ -1,0 +1,21 @@
+---
+description: Писать краткий changelog на русском в changes/unreleased после каждой задачи
+alwaysApply: true
+---
+
+# Changelog
+
+После завершения задачи (feature/fix), до коммита:
+
+1. Создай файл `changes/unreleased/<prefix>-<slug>.md`
+   - prefix: `feat` | `fix` | `chore`
+   - slug: короткий kebab-case, латиница
+2. Пиши **кратко на русском**, только буллеты:
+
+```markdown
+- Что изменилось для пользователя/разработчика
+```
+
+3. Не редактируй чужие файлы в `unreleased/`
+4. Не пиши в `changes/released/` и не правь `src/shared/changelog.ts` вручную — это делает `bun run release`
+5. Релиз — только через скилл `release` / `bun run release`
