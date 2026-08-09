@@ -5,13 +5,14 @@ import {
 	ClipboardCheckIcon,
 	SettingsIcon,
 } from "lucide-react";
-import type { ReactNode } from "react";
+import { type ReactNode, useState } from "react";
 import { SeedDemoCatalogButton } from "#/features/admin-seed";
 import {
 	AdminMoreMenu,
 	type AdminMoreTarget,
 	getAdminMoreLinks,
 } from "#/features/admin-shell/ui/admin-more-menu";
+import { ChangelogDialog } from "#/features/admin-shell/ui/changelog-dialog";
 import { APP_VERSION } from "#/shared/app-version";
 import type { Role } from "#/shared/authz";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -151,6 +152,7 @@ export function AdminShell({
 		select: (state) => state.location.pathname,
 	});
 	const moreLinks = getAdminMoreLinks(role);
+	const [changelogOpen, setChangelogOpen] = useState(false);
 
 	return (
 		<div className="flex min-h-svh bg-background" data-testid="admin-shell">
@@ -159,20 +161,24 @@ export function AdminShell({
 				data-testid="admin-sidebar"
 			>
 				<div className="border-b border-sidebar-border px-4 py-4">
-					<Link
-						to="/admin/programs"
-						className="inline-flex items-center gap-2 text-sm font-semibold tracking-tight text-sidebar-foreground no-underline"
-						data-testid="admin-brand"
-					>
-						<span className="size-2 rounded-full bg-primary" />
-						Админка
-						<span
-							className="text-[10px] font-normal leading-none text-muted-foreground"
+					<div className="inline-flex items-center gap-2 text-sm font-semibold tracking-tight text-sidebar-foreground">
+						<Link
+							to="/admin/programs"
+							className="inline-flex items-center gap-2 no-underline"
+							data-testid="admin-brand"
+						>
+							<span className="size-2 rounded-full bg-primary" />
+							Админка
+						</Link>
+						<button
+							type="button"
+							className="text-[10px] font-normal leading-none text-muted-foreground transition-colors hover:text-foreground"
 							data-testid="admin-version"
+							onClick={() => setChangelogOpen(true)}
 						>
 							v{APP_VERSION}
-						</span>
-					</Link>
+						</button>
+					</div>
 				</div>
 
 				<nav className="flex flex-1 flex-col gap-1 p-3" aria-label="Админка">
@@ -244,6 +250,8 @@ export function AdminShell({
 					/>
 				</div>
 			</nav>
+
+			<ChangelogDialog open={changelogOpen} onOpenChange={setChangelogOpen} />
 		</div>
 	);
 }
