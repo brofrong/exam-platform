@@ -1,5 +1,6 @@
 import { defineMutator, defineMutators } from "@rocicorp/zero";
 import { z } from "zod";
+import { assertAcyclicEdges } from "#/features/program-locks/lib/lock-graph";
 import {
 	isPracticeActivityContent,
 	type PracticeActivityContent,
@@ -13,7 +14,6 @@ import {
 	markAnswersPending,
 	type StudentAnswers,
 } from "#/server/grading/grade-attempt";
-import { assertAcyclicEdges } from "#/features/program-locks/lib/lock-graph";
 import { requireCapability, requireUser } from "#/server/zero/authz";
 import {
 	ACTIVITY_TYPES,
@@ -372,15 +372,10 @@ export const mutators = defineMutators({
 		}),
 		async ({ ctx, args, tx }) => {
 			requireCapability(ctx, "program:write");
-			const topics = await tx.run(
-				zql.topic.where("programId", args.programId),
-			);
+			const topics = await tx.run(zql.topic.where("programId", args.programId));
 			const topicIds = new Set(topics.map((topic) => topic.id));
 			for (const edge of args.edges) {
-				if (
-					!topicIds.has(edge.blockerTopicId) ||
-					!topicIds.has(edge.topicId)
-				) {
+				if (!topicIds.has(edge.blockerTopicId) || !topicIds.has(edge.topicId)) {
 					throw new Error("Forbidden");
 				}
 			}
