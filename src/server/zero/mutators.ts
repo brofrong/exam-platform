@@ -290,6 +290,9 @@ export const mutators = defineMutators({
 				subject: args.subject,
 				status: "draft",
 				public: args.public ?? false,
+				topicLockMode: "open",
+				lessonLockMode: "open",
+				unlockThresholdPercent: 80,
 				createdAt: now,
 				updatedAt: now,
 			});

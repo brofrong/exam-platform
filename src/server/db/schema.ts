@@ -3,6 +3,7 @@ import { activityProgressTable } from "./activity-progress/activity-progress.sch
 import { enrollmentsTable } from "./enrollment/enrollment.schema";
 import { lessonsTable } from "./lesson/lesson.schema";
 import { lessonProgressTable } from "./lesson-progress/lesson-progress.schema";
+import { lessonLockEdgesTable } from "./lesson-lock-edge/lesson-lock-edge.schema";
 import { programsTable } from "./program/program.schema";
 import { programInvitesTable } from "./program-invite/program-invite.schema";
 import { programInviteProgramsTable } from "./program-invite/program-invite-program.schema";
@@ -15,6 +16,7 @@ import { testGroupsTable } from "./test-group/test-group.schema";
 import { testKeysTable } from "./test-key/test-key.schema";
 import { topicsTable } from "./topic/topic.schema";
 import { topicLessonsTable } from "./topic-lesson/topic-lesson.schema";
+import { topicLockEdgesTable } from "./topic-lock-edge/topic-lock-edge.schema";
 import { usersTable } from "./user/user.schema";
 
 export { activitiesTable as activity } from "./activity/activity.schema";
@@ -22,6 +24,7 @@ export { activityProgressTable as activityProgress } from "./activity-progress/a
 export { enrollmentsTable as enrollment } from "./enrollment/enrollment.schema";
 export { lessonsTable as lesson } from "./lesson/lesson.schema";
 export { lessonProgressTable as lessonProgress } from "./lesson-progress/lesson-progress.schema";
+export { lessonLockEdgesTable as lessonLockEdge } from "./lesson-lock-edge/lesson-lock-edge.schema";
 export { programsTable as program } from "./program/program.schema";
 export { programInvitesTable as programInvite } from "./program-invite/program-invite.schema";
 export { programInviteProgramsTable as programInviteProgram } from "./program-invite/program-invite-program.schema";
@@ -35,6 +38,7 @@ export { testGroupsTable as testGroup } from "./test-group/test-group.schema";
 export { testKeysTable as testKey } from "./test-key/test-key.schema";
 export { topicsTable as topic } from "./topic/topic.schema";
 export { topicLessonsTable as topicLesson } from "./topic-lesson/topic-lesson.schema";
+export { topicLockEdgesTable as topicLockEdge } from "./topic-lock-edge/topic-lock-edge.schema";
 export { usersTable as user } from "./user/user.schema";
 
 /** App tables for Zero / drizzle-zero. Auth tables are wired only in betterAuth. */
@@ -44,6 +48,8 @@ export const DrizzleSchema = {
 	topic: topicsTable,
 	lesson: lessonsTable,
 	topicLesson: topicLessonsTable,
+	topicLockEdge: topicLockEdgesTable,
+	lessonLockEdge: lessonLockEdgesTable,
 	activity: activitiesTable,
 	testGroup: testGroupsTable,
 	test: testsTable,
