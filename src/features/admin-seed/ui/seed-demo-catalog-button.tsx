@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 type SeedDemoButtonProps = {
-	variant?: "page" | "sidebar";
+	variant?: "page";
 	className?: string;
 	onDone?: () => void;
 };
