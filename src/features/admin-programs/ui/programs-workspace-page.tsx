@@ -25,6 +25,7 @@ import {
 	type ProgramFormValues,
 } from "#/features/admin-programs/ui/program-form-dialog";
 import { ProgramsListPage } from "#/features/admin-programs/ui/programs-list-page";
+import { ProgramLockSettings } from "#/features/program-locks";
 import {
 	ACTIVITY_TYPES,
 	type ActivityType,
@@ -802,6 +803,7 @@ function ProgramsDesktopProgramPane({ programId }: { programId: string }) {
 						</div>
 					}
 				/>
+				<ProgramLockSettings program={selectedProgram} />
 				<ul className="flex flex-col gap-2">
 					{(selectedProgram.topics ?? []).map((topic) => (
 						<li key={topic.id}>

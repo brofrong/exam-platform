@@ -7,6 +7,7 @@ import {
 	type ProgramFormValues,
 } from "#/features/admin-programs/ui/program-form-dialog";
 import { TopicEditor } from "#/features/admin-programs/ui/topic-editor";
+import { ProgramLockSettings } from "#/features/program-locks";
 import type { PublishStatus } from "#/server/zero/constants";
 import { mutators } from "#/server/zero/mutators";
 import { queries } from "#/server/zero/queries";
@@ -152,6 +153,8 @@ export function ProgramDetailPage({ programId }: ProgramDetailPageProps) {
 					{program.subject}
 				</p>
 			</div>
+
+			<ProgramLockSettings program={program} />
 
 			<TopicEditor programId={program.id} topics={program.topics ?? []} />
 
