@@ -2,6 +2,7 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { username } from "better-auth/plugins";
 import { tanstackStartCookies } from "better-auth/tanstack-start";
+import { ensureFirstAdmin } from "#/server/auth/ensure-first-admin";
 import { account, session, verification } from "#/server/db/auth/auth.schema";
 import { betterAuthSecret, db } from "#/server/db/db";
 import { usersTable } from "#/server/db/user/user.schema";
@@ -50,3 +51,13 @@ export const auth = betterAuth({
 	},
 	plugins: [username(), tanstackStartCookies()],
 });
+
+type AuthBootstrapCache = typeof globalThis & {
+	__examPlatformEnsureAdmin?: Promise<void>;
+};
+
+const authBootstrap = globalThis as AuthBootstrapCache;
+if (!authBootstrap.__examPlatformEnsureAdmin) {
+	authBootstrap.__examPlatformEnsureAdmin = ensureFirstAdmin(auth);
+}
+await authBootstrap.__examPlatformEnsureAdmin;
