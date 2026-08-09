@@ -1,5 +1,5 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { AiSettingsPage } from "#/features/admin-settings";
+import { PlatformSettingsPage } from "#/features/admin-settings";
 import { can } from "#/shared/authz";
 
 export const Route = createFileRoute("/admin/settings/")({
@@ -8,9 +8,9 @@ export const Route = createFileRoute("/admin/settings/")({
 			throw redirect({ to: "/admin" });
 		}
 	},
-	component: AdminAiSettingsRoute,
+	component: AdminPlatformSettingsRoute,
 });
 
-function AdminAiSettingsRoute() {
-	return <AiSettingsPage />;
+function AdminPlatformSettingsRoute() {
+	return <PlatformSettingsPage />;
 }

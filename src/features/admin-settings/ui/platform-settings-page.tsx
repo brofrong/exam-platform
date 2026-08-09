@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
+import { SeedDemoCatalogButton } from "#/features/admin-seed";
 import { CURATED_OPENROUTER_MODELS } from "#/shared/openrouter/models";
 import { PageHeader } from "@/components/lms";
 import { Button } from "@/components/ui/button";
@@ -26,7 +27,7 @@ type ModelOption = {
 	source: "curated" | "openrouter";
 };
 
-export function AiSettingsPage() {
+export function PlatformSettingsPage() {
 	const [settings, setSettings] = useState<AiSettings | null>(null);
 	const [models, setModels] = useState<ModelOption[]>(
 		CURATED_OPENROUTER_MODELS.map((model) => ({
@@ -164,11 +165,11 @@ export function AiSettingsPage() {
 	return (
 		<main
 			className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 py-10"
-			data-testid="admin-ai-settings-page"
+			data-testid="admin-platform-settings-page"
 		>
 			<PageHeader
-				title="Настройки ИИ"
-				description="Токен и модель OpenRouter для чата автора теории и тестов. Доступно только админам."
+				title="Настройки платформы"
+				description="ИИ для автора и служебные действия платформы. Доступно только админам."
 				breadcrumbs={
 					<nav className="text-sm">
 						<Link
@@ -179,110 +180,126 @@ export function AiSettingsPage() {
 							Админка
 						</Link>
 						<span className="mx-1.5">/</span>
-						<span className="text-foreground">ИИ</span>
+						<span className="text-foreground">Настройки</span>
 					</nav>
 				}
 			/>
 
-			{isLoading ? (
-				<p className="text-sm text-muted-foreground">Загрузка…</p>
-			) : (
-				<form
-					onSubmit={(e) => void handleSave(e)}
-					className="grid gap-6"
-					data-testid="admin-ai-settings-form"
-				>
-					<div className="grid gap-2">
-						<Label htmlFor="openrouter-api-key">Токен OpenRouter</Label>
-						<p className="text-xs text-muted-foreground">
-							{settings?.hasApiKey
-								? `Сейчас сохранён: ${settings.apiKeyMasked}`
-								: "Ключ ещё не задан — чат автора не заработает."}
-						</p>
-						<Input
-							id="openrouter-api-key"
-							type="password"
-							autoComplete="off"
-							placeholder="sk-or-v1-…"
-							value={apiKeyDraft}
-							onChange={(e) => setApiKeyDraft(e.target.value)}
-							data-testid="openrouter-api-key-input"
-						/>
-						{settings?.hasApiKey ? (
+			<section className="grid gap-4" aria-labelledby="platform-ai-heading">
+				<h2 id="platform-ai-heading" className="text-lg font-semibold">
+					ИИ
+				</h2>
+				{isLoading ? (
+					<p className="text-sm text-muted-foreground">Загрузка…</p>
+				) : (
+					<form
+						onSubmit={(e) => void handleSave(e)}
+						className="grid gap-6"
+						data-testid="admin-ai-settings-form"
+					>
+						<div className="grid gap-2">
+							<Label htmlFor="openrouter-api-key">Токен OpenRouter</Label>
+							<p className="text-xs text-muted-foreground">
+								{settings?.hasApiKey
+									? `Сейчас сохранён: ${settings.apiKeyMasked}`
+									: "Ключ ещё не задан — чат автора не заработает."}
+							</p>
+							<Input
+								id="openrouter-api-key"
+								type="password"
+								autoComplete="off"
+								placeholder="sk-or-v1-…"
+								value={apiKeyDraft}
+								onChange={(e) => setApiKeyDraft(e.target.value)}
+								data-testid="openrouter-api-key-input"
+							/>
+							{settings?.hasApiKey ? (
+								<Button
+									type="button"
+									variant="outline"
+									size="sm"
+									className="w-fit"
+									disabled={isSaving}
+									onClick={() => void handleClearKey()}
+									data-testid="openrouter-api-key-clear"
+								>
+									Удалить ключ
+								</Button>
+							) : null}
+						</div>
+
+						<div className="grid gap-2">
+							<Label htmlFor="openrouter-model">Модель</Label>
+							<Select value={modelDraft} onValueChange={setModelDraft}>
+								<SelectTrigger
+									id="openrouter-model"
+									data-testid="openrouter-model-select"
+								>
+									<SelectValue placeholder="Выберите модель" />
+								</SelectTrigger>
+								<SelectContent>
+									{models.map((model) => (
+										<SelectItem key={model.id} value={model.id}>
+											{model.name}
+											{model.source === "curated" ? "" : ` (${model.id})`}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+							<p className="text-xs text-muted-foreground">
+								Сверху — рекомендованный топ. Если ключ задан, список
+								дополняется моделями из OpenRouter.
+							</p>
+						</div>
+
+						{error ? (
+							<p
+								className="text-sm text-destructive"
+								data-testid="admin-ai-settings-error"
+							>
+								{error}
+							</p>
+						) : null}
+						{message ? (
+							<p
+								className="text-sm text-muted-foreground"
+								data-testid="admin-ai-settings-message"
+							>
+								{message}
+							</p>
+						) : null}
+
+						<div className="flex flex-wrap gap-2">
+							<Button
+								type="submit"
+								disabled={isSaving}
+								data-testid="admin-ai-settings-submit"
+							>
+								{isSaving ? "Сохраняем…" : "Сохранить"}
+							</Button>
 							<Button
 								type="button"
 								variant="outline"
-								size="sm"
-								className="w-fit"
-								disabled={isSaving}
-								onClick={() => void handleClearKey()}
-								data-testid="openrouter-api-key-clear"
+								onClick={() => void load()}
+								data-testid="admin-ai-settings-refresh"
 							>
-								Удалить ключ
+								Обновить
 							</Button>
-						) : null}
-					</div>
+						</div>
+					</form>
+				)}
+			</section>
 
-					<div className="grid gap-2">
-						<Label htmlFor="openrouter-model">Модель</Label>
-						<Select value={modelDraft} onValueChange={setModelDraft}>
-							<SelectTrigger
-								id="openrouter-model"
-								data-testid="openrouter-model-select"
-							>
-								<SelectValue placeholder="Выберите модель" />
-							</SelectTrigger>
-							<SelectContent>
-								{models.map((model) => (
-									<SelectItem key={model.id} value={model.id}>
-										{model.name}
-										{model.source === "curated" ? "" : ` (${model.id})`}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-						<p className="text-xs text-muted-foreground">
-							Сверху — рекомендованный топ. Если ключ задан, список дополняется
-							моделями из OpenRouter.
-						</p>
-					</div>
-
-					{error ? (
-						<p
-							className="text-sm text-destructive"
-							data-testid="admin-ai-settings-error"
-						>
-							{error}
-						</p>
-					) : null}
-					{message ? (
-						<p
-							className="text-sm text-muted-foreground"
-							data-testid="admin-ai-settings-message"
-						>
-							{message}
-						</p>
-					) : null}
-
-					<div className="flex flex-wrap gap-2">
-						<Button
-							type="submit"
-							disabled={isSaving}
-							data-testid="admin-ai-settings-submit"
-						>
-							{isSaving ? "Сохраняем…" : "Сохранить"}
-						</Button>
-						<Button
-							type="button"
-							variant="outline"
-							onClick={() => void load()}
-							data-testid="admin-ai-settings-refresh"
-						>
-							Обновить
-						</Button>
-					</div>
-				</form>
-			)}
+			<section className="grid gap-3" aria-labelledby="platform-demo-heading">
+				<h2 id="platform-demo-heading" className="text-lg font-semibold">
+					Демо-каталог
+				</h2>
+				<p className="text-sm text-muted-foreground">
+					Идемпотентно создаёт 4 программы ОГЭ/ЕГЭ с темами, уроками и
+					активностями.
+				</p>
+				<SeedDemoCatalogButton variant="page" className="w-fit" />
+			</section>
 		</main>
 	);
 }

@@ -6,14 +6,13 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 type SeedDemoButtonProps = {
-	variant?: "sidebar" | "sheet";
+	variant?: "page" | "sidebar";
 	className?: string;
 	onDone?: () => void;
 };
 
 /** Admin-only control to seed the ОГЭ/ЕГЭ demo catalog (idempotent). */
 export function SeedDemoCatalogButton({
-	variant = "sidebar",
 	className,
 	onDone,
 }: SeedDemoButtonProps) {
@@ -47,39 +46,12 @@ export function SeedDemoCatalogButton({
 		}
 	};
 
-	if (variant === "sheet") {
-		return (
-			<Button
-				type="button"
-				variant="ghost"
-				className={cn("h-auto justify-start gap-3 px-3 py-3", className)}
-				data-testid="admin-seed-demo-catalog"
-				disabled={pending}
-				onClick={handleClick}
-			>
-				<span className="flex size-9 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-					{pending ? (
-						<Loader2Icon className="size-4 animate-spin" />
-					) : (
-						<DatabaseIcon className="size-4" />
-					)}
-				</span>
-				<span className="text-left">
-					<span className="block font-medium">Демо-каталог ОГЭ/ЕГЭ</span>
-					<span className="block text-xs font-normal text-muted-foreground">
-						4 программы с темами, уроками и Mafs
-					</span>
-				</span>
-			</Button>
-		);
-	}
-
 	return (
 		<Button
 			type="button"
 			variant="outline"
 			size="sm"
-			className={cn("w-full justify-start gap-2", className)}
+			className={cn("justify-start gap-2", className)}
 			data-testid="admin-seed-demo-catalog"
 			disabled={pending}
 			onClick={handleClick}
