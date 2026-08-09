@@ -7,9 +7,7 @@ describe("assertAcyclicEdges", () => {
 	});
 
 	test("self-loop throws", () => {
-		expect(() =>
-			assertAcyclicEdges([{ from: "a", to: "a" }]),
-		).toThrow();
+		expect(() => assertAcyclicEdges([{ from: "a", to: "a" }])).toThrow();
 	});
 
 	test("simple cycle throws", () => {
