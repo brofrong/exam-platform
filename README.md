@@ -33,13 +33,16 @@ LMS для подготовки к **ЕГЭ** и **ОГЭ**: админ напо
 UPDATE "user" SET role = 'admin' WHERE email = 'you@example.com';
 ```
 
+Роли: `admin` | `teacher` | `student`. Преподаватель (`teacher`) имеет доступ к контенту и проверке; настройки OpenRouter и смена ролей — только у `admin`.
+
 Права в UI и Zero mutators — через `can(role, capability)` из `#/shared/authz`, не через `role === 'admin'`.
 
 | Capability | Кто |
 |------------|-----|
-| `program:write`, `lesson:write`, `invite:create` | admin |
-| `submission:review`, `analytics:read`, `support:reply` | admin |
-| *(пусто)* | student — доступ к своим enrollment / submissions / support-треду |
+| `program:write`, `lesson:write`, `invite:create` | admin, teacher |
+| `submission:review`, `analytics:read`, `support:reply` | admin, teacher |
+| `users:manage`, `settings:ai` | admin |
+| *(пусто)* | student — доступ к своим enrollment / attempts / support-треду |
 
 Роль `teacher` в MVP нет; карта capabilities готова к расширению.
 

@@ -3,7 +3,7 @@ import { BookOpenIcon, HomeIcon, LogOutIcon, SettingsIcon } from "lucide-react";
 import { type ReactNode, useState } from "react";
 import ThemeToggle from "#/components/ThemeToggle";
 import { authClient } from "#/shared/auth-client";
-import type { Role } from "#/shared/authz";
+import { type Role, roleLabel } from "#/shared/authz";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -30,10 +30,6 @@ function isHomePath(pathname: string): boolean {
 		pathname === "/app/" ||
 		pathname.startsWith("/app/support")
 	);
-}
-
-function roleLabel(role: Role): string {
-	return role === "admin" ? "Преподаватель" : "Ученик";
 }
 
 function initialsFromName(name: string): string {

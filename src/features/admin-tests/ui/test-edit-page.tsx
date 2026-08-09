@@ -10,11 +10,13 @@ import {
 } from "#/features/admin-tests/lib/test-labels";
 import { computeTestStats } from "#/features/admin-tests/lib/test-stats";
 import { TestOptionsEditor } from "#/features/admin-tests/ui/test-options-editor";
+import { AiAuthorWorkspace } from "#/features/ai-author-chat";
 import {
 	emptyTheoryDoc,
 	normalizeTheoryDoc,
 	type TheoryDoc,
 	TheoryEditor,
+	TheoryRenderer,
 	toActivityContent,
 } from "#/features/lesson-editor";
 import {
@@ -33,6 +35,7 @@ import {
 } from "@/components/answer-widgets";
 import { EmptyState, PageHeader, StatCard } from "@/components/lms";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import {
 	Select,
 	SelectContent,
@@ -40,6 +43,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 
 type TestEditPageProps = {
 	groupId: string;
@@ -70,6 +74,7 @@ export function TestEditPage({ groupId, testId }: TestEditPageProps) {
 	const [correctMultiple, setCorrectMultiple] = useState<string[]>([]);
 	const [correctText, setCorrectText] = useState("");
 	const [grading, setGrading] = useState<TestGrading>("auto");
+	const [preview, setPreview] = useState(false);
 	const [isSaving, setIsSaving] = useState(false);
 	const [saveError, setSaveError] = useState<string | null>(null);
 	const [hydratedId, setHydratedId] = useState<string | null>(null);
@@ -199,153 +204,189 @@ export function TestEditPage({ groupId, testId }: TestEditPageProps) {
 	const stats = computeTestStats(test.attemptAnswers ?? [], answerType);
 
 	return (
-		<main
-			className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 py-10"
-			data-testid="admin-test-edit"
+		<AiAuthorWorkspace
+			mode="test"
+			title={test.group?.title ?? "Тест"}
+			documentJson={promptDraft}
 		>
-			<PageHeader
-				title="Редактор теста"
-				description="Вопрос, эталон ответа и способ проверки. Эталон виден только админу."
-				breadcrumbs={
-					<nav className="text-sm">
-						<Link
-							to="/admin/tests/$groupId"
-							params={{ groupId }}
-							className="hover:text-foreground"
-							data-testid="test-edit-group-link"
-						>
-							{test.group?.title ?? "Группа тестов"}
-						</Link>
-						<span className="mx-1.5">/</span>
-						<span className="text-foreground">Тест</span>
-					</nav>
-				}
-			/>
-
-			{stats.total > 0 ? (
-				<div className="grid grid-cols-3 gap-3">
-					<StatCard label="Верно" value={stats.correct} />
-					<StatCard label="Неверно" value={stats.incorrect} />
-					<StatCard label="На проверке" value={stats.pending} />
-				</div>
-			) : null}
-
-			<form
-				onSubmit={handleSave}
-				className="grid gap-6"
-				data-testid="test-edit-form"
-			>
-				<div className="grid gap-2">
-					<span className="text-sm font-medium">Текст вопроса</span>
-					<TheoryEditor
-						key={test.id}
-						content={promptDraft}
-						onChange={setPromptDraft}
-					/>
-				</div>
-
-				<div className="grid gap-2 sm:max-w-xs">
-					<span className="text-sm font-medium">Тип ответа</span>
-					<Select
-						value={answerType}
-						onValueChange={(value) =>
-							handleAnswerTypeChange(value as TestAnswerType)
+			{({ onEditorReady }) => (
+				<main
+					className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 py-10"
+					data-testid="admin-test-edit"
+				>
+					<PageHeader
+						title="Редактор теста"
+						breadcrumbs={
+							<nav className="text-sm">
+								<Link
+									to="/admin/tests/$groupId"
+									params={{ groupId }}
+									className="hover:text-foreground"
+									data-testid="test-edit-group-link"
+								>
+									{test.group?.title ?? "Группа тестов"}
+								</Link>
+								<span className="mx-1.5">/</span>
+								<span className="text-foreground">Тест</span>
+							</nav>
 						}
-					>
-						<SelectTrigger className="w-full" data-testid="test-answer-type">
-							<SelectValue />
-						</SelectTrigger>
-						<SelectContent>
-							{TEST_ANSWER_TYPES.map((type) => (
-								<SelectItem key={type} value={type}>
-									{ANSWER_TYPE_LABELS[type]}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
-				</div>
-
-				{requiresOptions(answerType) ? (
-					<TestOptionsEditor options={options} onChange={setOptions} />
-				) : null}
-
-				{answerType === "single_choice" ? (
-					<SingleChoiceAnswer
-						options={options}
-						value={correctSingle}
-						onChange={setCorrectSingle}
-						label="Правильный вариант"
-					/>
-				) : null}
-
-				{answerType === "multiple_choice" ? (
-					<MultipleChoiceAnswer
-						options={options}
-						value={correctMultiple}
-						onChange={setCorrectMultiple}
-						label="Правильные варианты"
-					/>
-				) : null}
-
-				{answerType === "short_text" || answerType === "number" ? (
-					<ShortTextAnswer
-						value={correctText}
-						onChange={setCorrectText}
-						label="Правильный ответ"
-						placeholder={
-							answerType === "number" ? "Например, 42" : "Эталонный текст"
+						actions={
+							<div className="flex items-center gap-2">
+								<Label
+									htmlFor="test-preview-switch"
+									className="text-sm font-normal text-muted-foreground"
+								>
+									Превью
+								</Label>
+								<Switch
+									id="test-preview-switch"
+									checked={preview}
+									onCheckedChange={setPreview}
+									data-testid="test-preview-switch"
+								/>
+							</div>
 						}
 					/>
-				) : null}
 
-				{answerType === "file_upload" ? (
-					<p className="text-sm text-muted-foreground">
-						Файл проверяется вручную — эталонного ответа нет.
-					</p>
-				) : null}
+					{stats.total > 0 ? (
+						<div className="grid grid-cols-3 gap-3">
+							<StatCard label="Верно" value={stats.correct} />
+							<StatCard label="Неверно" value={stats.incorrect} />
+							<StatCard label="На проверке" value={stats.pending} />
+						</div>
+					) : null}
 
-				<div className="grid gap-2 sm:max-w-xs">
-					<span className="text-sm font-medium">Проверка</span>
-					<Select
-						value={grading}
-						onValueChange={(value) => setGrading(value as TestGrading)}
-						disabled={answerType === "file_upload"}
+					<form
+						onSubmit={handleSave}
+						className="grid gap-6"
+						data-testid="test-edit-form"
 					>
-						<SelectTrigger className="w-full" data-testid="test-grading">
-							<SelectValue />
-						</SelectTrigger>
-						<SelectContent>
-							{TEST_GRADING.map((option) => (
-								<SelectItem key={option} value={option}>
-									{GRADING_LABELS[option]}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
-				</div>
+						<div className="grid gap-2">
+							<span className="text-sm font-medium">Текст вопроса</span>
+							{preview ? (
+								<div
+									className="rounded-xl border border-border bg-background px-4 py-3"
+									data-testid="test-preview"
+								>
+									<TheoryRenderer content={promptDraft} />
+								</div>
+							) : (
+								<TheoryEditor
+									key={test.id}
+									content={promptDraft}
+									onChange={setPromptDraft}
+									onEditorReady={onEditorReady}
+								/>
+							)}
+						</div>
 
-				{saveError ? (
-					<p className="text-sm text-destructive">{saveError}</p>
-				) : null}
+						<div className="grid gap-2 sm:max-w-xs">
+							<span className="text-sm font-medium">Тип ответа</span>
+							<Select
+								value={answerType}
+								onValueChange={(value) =>
+									handleAnswerTypeChange(value as TestAnswerType)
+								}
+							>
+								<SelectTrigger
+									className="w-full"
+									data-testid="test-answer-type"
+								>
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									{TEST_ANSWER_TYPES.map((type) => (
+										<SelectItem key={type} value={type}>
+											{ANSWER_TYPE_LABELS[type]}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</div>
 
-				<div className="flex flex-wrap gap-2">
-					<Button
-						type="button"
-						variant="outline"
-						data-testid="test-edit-cancel"
-						onClick={() => void backToGroup()}
-					>
-						Отмена
-					</Button>
-					<Button
-						type="submit"
-						data-testid="test-edit-submit"
-						disabled={isSaving}
-					>
-						{isSaving ? "Сохраняем…" : "Сохранить"}
-					</Button>
-				</div>
-			</form>
-		</main>
+						{requiresOptions(answerType) ? (
+							<TestOptionsEditor options={options} onChange={setOptions} />
+						) : null}
+
+						{answerType === "single_choice" ? (
+							<SingleChoiceAnswer
+								options={options}
+								value={correctSingle}
+								onChange={setCorrectSingle}
+								label="Правильный вариант"
+							/>
+						) : null}
+
+						{answerType === "multiple_choice" ? (
+							<MultipleChoiceAnswer
+								options={options}
+								value={correctMultiple}
+								onChange={setCorrectMultiple}
+								label="Правильные варианты"
+							/>
+						) : null}
+
+						{answerType === "short_text" || answerType === "number" ? (
+							<ShortTextAnswer
+								value={correctText}
+								onChange={setCorrectText}
+								label="Правильный ответ"
+								placeholder={
+									answerType === "number" ? "Например, 42" : "Эталонный текст"
+								}
+							/>
+						) : null}
+
+						{answerType === "file_upload" ? (
+							<p className="text-sm text-muted-foreground">
+								Файл проверяется вручную — эталонного ответа нет.
+							</p>
+						) : null}
+
+						<div className="grid gap-2 sm:max-w-xs">
+							<span className="text-sm font-medium">Проверка</span>
+							<Select
+								value={grading}
+								onValueChange={(value) => setGrading(value as TestGrading)}
+								disabled={answerType === "file_upload"}
+							>
+								<SelectTrigger className="w-full" data-testid="test-grading">
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									{TEST_GRADING.map((option) => (
+										<SelectItem key={option} value={option}>
+											{GRADING_LABELS[option]}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</div>
+
+						{saveError ? (
+							<p className="text-sm text-destructive">{saveError}</p>
+						) : null}
+
+						<div className="flex flex-wrap gap-2">
+							<Button
+								type="button"
+								variant="outline"
+								data-testid="test-edit-cancel"
+								onClick={() => void backToGroup()}
+							>
+								Отмена
+							</Button>
+							<Button
+								type="submit"
+								data-testid="test-edit-submit"
+								disabled={isSaving}
+							>
+								{isSaving ? "Сохраняем…" : "Сохранить"}
+							</Button>
+						</div>
+					</form>
+				</main>
+			)}
+		</AiAuthorWorkspace>
 	);
 }

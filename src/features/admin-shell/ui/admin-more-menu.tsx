@@ -5,6 +5,8 @@ import {
 	ListChecksIcon,
 	MessageCircleIcon,
 	MoreHorizontalIcon,
+	SparklesIcon,
+	UsersIcon,
 } from "lucide-react";
 import { useState } from "react";
 import { SeedDemoCatalogButton } from "#/features/admin-seed";
@@ -23,7 +25,9 @@ export type AdminMoreTarget =
 	| "/admin/analytics"
 	| "/admin/tests"
 	| "/admin/support"
-	| "/admin/invites";
+	| "/admin/invites"
+	| "/admin/users"
+	| "/admin/settings";
 
 export type AdminMoreLink = {
 	to: AdminMoreTarget;
@@ -69,6 +73,24 @@ export function getAdminMoreLinks(role: Role): AdminMoreLink[] {
 			icon: <LinkIcon className="size-4" />,
 		},
 	);
+	if (can(role, "users:manage")) {
+		links.push({
+			to: "/admin/users",
+			label: "Пользователи",
+			description: "Роли и список аккаунтов",
+			testId: "admin-nav-users",
+			icon: <UsersIcon className="size-4" />,
+		});
+	}
+	if (can(role, "settings:ai")) {
+		links.push({
+			to: "/admin/settings",
+			label: "ИИ",
+			description: "OpenRouter: токен и модель",
+			testId: "admin-nav-ai-settings",
+			icon: <SparklesIcon className="size-4" />,
+		});
+	}
 	return links;
 }
 

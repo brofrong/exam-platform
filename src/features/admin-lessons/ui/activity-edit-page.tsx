@@ -3,11 +3,13 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import { SelectTestGroupDialog } from "#/features/admin-lessons/ui/select-test-group-dialog";
+import { AiAuthorWorkspace } from "#/features/ai-author-chat";
 import {
 	emptyTheoryDoc,
 	normalizeTheoryDoc,
 	type TheoryDoc,
 	TheoryEditor,
+	TheoryRenderer,
 	toActivityContent,
 } from "#/features/lesson-editor";
 import {
@@ -21,6 +23,7 @@ import { EmptyState, PageHeader } from "@/components/lms";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 
 /** TipTap JSON document — must be JSON-serializable for the Zero mutator arg. */
 const activityContentSchema = z.record(z.string(), z.json());
@@ -34,6 +37,28 @@ function asActivityType(type: string): ActivityType {
 	return ACTIVITY_TYPES.includes(type as ActivityType)
 		? (type as ActivityType)
 		: "theory";
+}
+
+/** First heading in TipTap doc, otherwise fallback. */
+function theoryDisplayName(doc: TheoryDoc, fallback: string): string {
+	const nodes = doc.content ?? [];
+	for (const node of nodes) {
+		if (node.type !== "heading" || !Array.isArray(node.content)) {
+			continue;
+		}
+		const text = node.content
+			.filter(
+				(child): child is { type: "text"; text: string } =>
+					child.type === "text" && typeof child.text === "string",
+			)
+			.map((child) => child.text)
+			.join("")
+			.trim();
+		if (text.length > 0) {
+			return text;
+		}
+	}
+	return fallback;
 }
 
 function PracticeConfigForm({
@@ -238,6 +263,7 @@ export function ActivityEditPage({
 	const navigate = useNavigate();
 	const [lesson] = useQuery(queries.lessonById({ id: lessonId }));
 	const [theoryDraft, setTheoryDraft] = useState<TheoryDoc>(emptyTheoryDoc);
+	const [preview, setPreview] = useState(false);
 	const [contentError, setContentError] = useState<string | null>(null);
 	const [isSaving, setIsSaving] = useState(false);
 	const [hydratedId, setHydratedId] = useState<string | null>(null);
@@ -333,76 +359,129 @@ export function ActivityEditPage({
 	}
 
 	const typeLabel = ACTIVITY_TYPE_LABELS[activityType];
+	const theoryName = theoryDisplayName(theoryDraft, lesson.title);
 
-	return (
-		<main
-			className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-4 py-10"
-			data-testid="admin-activity-edit"
-		>
-			<PageHeader
-				title={
-					activityType === "theory" ? "Редактор теории" : "Настройки практики"
-				}
-				description={
-					activityType === "theory"
-						? "WYSIWYG TipTap. Сохраняется в содержимое активности."
-						: "Привяжите группу тестов, сколько задач выдать и проходной балл."
-				}
-				breadcrumbs={
-					<nav className="text-sm">
-						<Link
-							to="/admin/lessons/$lessonId"
-							params={{ lessonId }}
-							className="hover:text-foreground"
-							data-testid="activity-edit-lesson-link"
-						>
-							{lesson.title}
-						</Link>
-						<span className="mx-1.5">/</span>
-						<span className="text-foreground">{typeLabel}</span>
-					</nav>
-				}
-			/>
-
-			{activityType === "theory" ? (
-				<form
-					onSubmit={(e) => void handleSaveTheory(e)}
-					className="grid gap-4"
-					data-testid="activity-content-form"
-				>
-					<TheoryEditor
-						key={activity.id}
-						content={theoryDraft}
-						onChange={setTheoryDraft}
-					/>
-					{contentError ? (
-						<p className="text-sm text-destructive">{contentError}</p>
-					) : null}
-					<div className="flex flex-wrap gap-2">
-						<Button
-							type="button"
-							variant="outline"
-							data-testid="activity-content-cancel"
-							onClick={() => void backToLesson()}
-						>
-							Отмена
-						</Button>
-						<Button
-							type="submit"
-							data-testid="activity-content-submit"
-							disabled={isSaving}
-						>
-							{isSaving ? "Сохраняем…" : "Сохранить"}
-						</Button>
-					</div>
-				</form>
-			) : (
+	if (activityType === "practice") {
+		return (
+			<main
+				className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-4 py-10"
+				data-testid="admin-activity-edit"
+			>
+				<PageHeader
+					title="Настройки практики"
+					description="Привяжите группу тестов, сколько задач выдать и проходной балл."
+					breadcrumbs={
+						<nav className="text-sm">
+							<Link
+								to="/admin/lessons/$lessonId"
+								params={{ lessonId }}
+								className="hover:text-foreground"
+								data-testid="activity-edit-lesson-link"
+							>
+								{lesson.title}
+							</Link>
+							<span className="mx-1.5">/</span>
+							<span className="text-foreground">{typeLabel}</span>
+						</nav>
+					}
+				/>
 				<PracticeConfigForm
 					activityId={activity.id}
 					lessonId={lessonId}
 					initial={practiceInitial}
 				/>
+			</main>
+		);
+	}
+
+	return (
+		<AiAuthorWorkspace
+			mode="theory"
+			title={theoryName}
+			documentJson={theoryDraft}
+		>
+			{({ onEditorReady }) => (
+				<main
+					className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-4 py-10"
+					data-testid="admin-activity-edit"
+				>
+					<PageHeader
+						title={`Редактор теории · ${theoryName}`}
+						breadcrumbs={
+							<nav className="text-sm">
+								<Link
+									to="/admin/lessons/$lessonId"
+									params={{ lessonId }}
+									className="hover:text-foreground"
+									data-testid="activity-edit-lesson-link"
+								>
+									{lesson.title}
+								</Link>
+								<span className="mx-1.5">/</span>
+								<span className="text-foreground">{typeLabel}</span>
+							</nav>
+						}
+						actions={
+							<div className="flex items-center gap-2">
+								<Label
+									htmlFor="theory-preview-switch"
+									className="text-sm font-normal text-muted-foreground"
+								>
+									Превью
+								</Label>
+								<Switch
+									id="theory-preview-switch"
+									checked={preview}
+									onCheckedChange={setPreview}
+									data-testid="theory-preview-switch"
+								/>
+							</div>
+						}
+					/>
+
+					<form
+						onSubmit={(e) => void handleSaveTheory(e)}
+						className="grid gap-4"
+						data-testid="activity-content-form"
+					>
+						{preview ? (
+							<div
+								className="rounded-xl border border-border bg-background px-4 py-3"
+								data-testid="theory-preview"
+							>
+								<TheoryRenderer content={theoryDraft} />
+							</div>
+						) : (
+							<TheoryEditor
+								key={activity.id}
+								content={theoryDraft}
+								onChange={setTheoryDraft}
+								onEditorReady={onEditorReady}
+							/>
+						)}
+						{contentError ? (
+							<p className="text-sm text-destructive">{contentError}</p>
+						) : null}
+						<div className="flex flex-wrap gap-2">
+							<Button
+								type="button"
+								variant="outline"
+								data-testid="activity-content-cancel"
+								onClick={() => void backToLesson()}
+							>
+								Отмена
+							</Button>
+							<Button
+								type="submit"
+								data-testid="activity-content-submit"
+								disabled={isSaving}
+							>
+								{isSaving ? "Сохраняем…" : "Сохранить"}
+							</Button>
+						</div>
+					</form>
+				</main>
 			)}
-		</main>
+		</AiAuthorWorkspace>
 	);
 }

@@ -10,7 +10,7 @@ export const usersTable = pgTable("user", {
 	username: text("username").unique(),
 	/** Original (display) login before normalization */
 	displayUsername: text("display_username"),
-	/** `admin` | `student` — see `#/shared/authz` */
+	/** `admin` | `teacher` | `student` — see `#/shared/authz` */
 	role: text("role").default("student").notNull(),
 	/** Pref: notify when teacher replies in support chat (delivery TBD) */
 	notifySupportReply: boolean("notify_support_reply").default(true).notNull(),

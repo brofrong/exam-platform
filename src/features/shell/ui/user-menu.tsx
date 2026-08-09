@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { authClient } from "#/shared/auth-client";
-import { can, type Role } from "#/shared/authz";
+import { can, toRole } from "#/shared/authz";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,10 +20,6 @@ function initialsFromName(name: string): string {
 		return parts[0].slice(0, 2).toUpperCase();
 	}
 	return `${parts[0][0] ?? ""}${parts[1][0] ?? ""}`.toUpperCase();
-}
-
-function toRole(value: unknown): Role {
-	return value === "admin" ? "admin" : "student";
 }
 
 export function UserMenu() {

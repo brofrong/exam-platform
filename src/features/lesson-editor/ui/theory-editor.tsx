@@ -1,6 +1,6 @@
 import type { EditorView } from "@tiptap/pm/view";
-import { EditorContent, useEditor } from "@tiptap/react";
-import { useRef } from "react";
+import { type Editor, EditorContent, useEditor } from "@tiptap/react";
+import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 import {
 	createTheoryExtensions,
@@ -34,12 +34,15 @@ function insertImageAtSelection(
 export type TheoryEditorProps = {
 	content?: unknown;
 	onChange?: (doc: TheoryDoc) => void;
+	/** Fires when the TipTap instance is ready or destroyed. */
+	onEditorReady?: (editor: Editor | null) => void;
 	className?: string;
 };
 
 export function TheoryEditor({
 	content,
 	onChange,
+	onEditorReady,
 	className,
 }: TheoryEditorProps) {
 	const initial = normalizeTheoryDoc(content ?? emptyTheoryDoc);
@@ -110,6 +113,13 @@ export function TheoryEditor({
 			onChange?.(instance.getJSON());
 		},
 	});
+
+	useEffect(() => {
+		onEditorReady?.(editor ?? null);
+		return () => {
+			onEditorReady?.(null);
+		};
+	}, [editor, onEditorReady]);
 
 	return (
 		<div
