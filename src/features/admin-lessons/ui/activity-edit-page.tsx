@@ -65,10 +65,12 @@ function PracticeConfigForm({
 	activityId,
 	lessonId,
 	initial,
+	onBack,
 }: {
 	activityId: string;
 	lessonId: string;
 	initial: PracticeActivityContent | null;
+	onBack?: () => void | Promise<void>;
 }) {
 	const zero = useZero();
 	const navigate = useNavigate();
@@ -98,6 +100,10 @@ function PracticeConfigForm({
 	const groupSize = selectedGroup?.tests?.length ?? 0;
 
 	const backToLesson = async () => {
+		if (onBack) {
+			await onBack();
+			return;
+		}
 		await navigate({
 			to: "/admin/lessons/$lessonId",
 			params: { lessonId },
@@ -255,9 +261,15 @@ function PracticeConfigForm({
 export function ActivityEditPage({
 	lessonId,
 	activityId,
+	embedded = false,
+	onBack,
 }: {
 	lessonId: string;
 	activityId: string;
+	/** Render without full-page chrome for split-pane embedding. */
+	embedded?: boolean;
+	/** Override back/cancel/after-save navigation (e.g. stay in programs workspace). */
+	onBack?: () => void | Promise<void>;
 }) {
 	const zero = useZero();
 	const navigate = useNavigate();
@@ -294,11 +306,19 @@ export function ActivityEditPage({
 	}, [activity]);
 
 	const backToLesson = async () => {
+		if (onBack) {
+			await onBack();
+			return;
+		}
 		await navigate({
 			to: "/admin/lessons/$lessonId",
 			params: { lessonId },
 		});
 	};
+
+	const shellClass = embedded
+		? "flex w-full flex-col gap-6"
+		: "mx-auto flex w-full max-w-4xl flex-col gap-8 px-4 py-10";
 
 	const handleSaveTheory = async (event: React.FormEvent) => {
 		event.preventDefault();
@@ -331,7 +351,13 @@ export function ActivityEditPage({
 
 	if (lesson === undefined) {
 		return (
-			<main className="mx-auto w-full max-w-3xl px-4 py-10">
+			<main
+				className={
+					embedded
+						? "flex w-full flex-col gap-6"
+						: "mx-auto w-full max-w-3xl px-4 py-10"
+				}
+			>
 				<p className="text-sm text-muted-foreground">Загрузка…</p>
 			</main>
 		);
@@ -340,18 +366,31 @@ export function ActivityEditPage({
 	if (lesson === null || !activity || !activityType) {
 		return (
 			<main
-				className="mx-auto w-full max-w-3xl px-4 py-10"
+				className={
+					embedded
+						? "flex w-full flex-col gap-6"
+						: "mx-auto w-full max-w-3xl px-4 py-10"
+				}
 				data-testid="admin-activity-missing"
 			>
 				<EmptyState
 					title="Активность не найдена"
 					description="Возможно, её удалили или у вас нет доступа."
 					action={
-						<Button asChild data-testid="activity-back-to-lesson">
-							<Link to="/admin/lessons/$lessonId" params={{ lessonId }}>
+						onBack ? (
+							<Button
+								data-testid="activity-back-to-lesson"
+								onClick={() => void backToLesson()}
+							>
 								К уроку
-							</Link>
-						</Button>
+							</Button>
+						) : (
+							<Button asChild data-testid="activity-back-to-lesson">
+								<Link to="/admin/lessons/$lessonId" params={{ lessonId }}>
+									К уроку
+								</Link>
+							</Button>
+						)
 					}
 				/>
 			</main>
@@ -361,34 +400,34 @@ export function ActivityEditPage({
 	const typeLabel = ACTIVITY_TYPE_LABELS[activityType];
 	const theoryName = theoryDisplayName(theoryDraft, lesson.title);
 
+	const lessonBreadcrumb = embedded ? undefined : (
+		<nav className="text-sm">
+			<Link
+				to="/admin/lessons/$lessonId"
+				params={{ lessonId }}
+				className="hover:text-foreground"
+				data-testid="activity-edit-lesson-link"
+			>
+				{lesson.title}
+			</Link>
+			<span className="mx-1.5">/</span>
+			<span className="text-foreground">{typeLabel}</span>
+		</nav>
+	);
+
 	if (activityType === "practice") {
 		return (
-			<main
-				className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-4 py-10"
-				data-testid="admin-activity-edit"
-			>
+			<main className={shellClass} data-testid="admin-activity-edit">
 				<PageHeader
 					title="Настройки практики"
 					description="Привяжите группу тестов, сколько задач выдать и проходной балл."
-					breadcrumbs={
-						<nav className="text-sm">
-							<Link
-								to="/admin/lessons/$lessonId"
-								params={{ lessonId }}
-								className="hover:text-foreground"
-								data-testid="activity-edit-lesson-link"
-							>
-								{lesson.title}
-							</Link>
-							<span className="mx-1.5">/</span>
-							<span className="text-foreground">{typeLabel}</span>
-						</nav>
-					}
+					breadcrumbs={lessonBreadcrumb}
 				/>
 				<PracticeConfigForm
 					activityId={activity.id}
 					lessonId={lessonId}
 					initial={practiceInitial}
+					onBack={onBack}
 				/>
 			</main>
 		);
@@ -401,26 +440,10 @@ export function ActivityEditPage({
 			documentJson={theoryDraft}
 		>
 			{({ onEditorReady }) => (
-				<main
-					className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-4 py-10"
-					data-testid="admin-activity-edit"
-				>
+				<main className={shellClass} data-testid="admin-activity-edit">
 					<PageHeader
 						title={`Редактор теории · ${theoryName}`}
-						breadcrumbs={
-							<nav className="text-sm">
-								<Link
-									to="/admin/lessons/$lessonId"
-									params={{ lessonId }}
-									className="hover:text-foreground"
-									data-testid="activity-edit-lesson-link"
-								>
-									{lesson.title}
-								</Link>
-								<span className="mx-1.5">/</span>
-								<span className="text-foreground">{typeLabel}</span>
-							</nav>
-						}
+						breadcrumbs={lessonBreadcrumb}
 						actions={
 							<div className="flex items-center gap-2">
 								<Label

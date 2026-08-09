@@ -28,6 +28,7 @@ import { Route as ApiZeroRouteImport } from './routes/api/zero'
 import { Route as ApiUploadRouteImport } from './routes/api/upload'
 import { Route as ApiQueryRouteImport } from './routes/api/query'
 import { Route as ApiMutateRouteImport } from './routes/api/mutate'
+import { Route as AdminProgramsRouteRouteImport } from './routes/admin/programs/route'
 import { Route as AppProgramsIndexRouteImport } from './routes/app/programs/index'
 import { Route as AdminUsersIndexRouteImport } from './routes/admin/users/index'
 import { Route as AdminTestsIndexRouteImport } from './routes/admin/tests/index'
@@ -153,6 +154,11 @@ const ApiMutateRoute = ApiMutateRouteImport.update({
   path: '/api/mutate',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminProgramsRouteRoute = AdminProgramsRouteRouteImport.update({
+  id: '/programs',
+  path: '/programs',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AppProgramsIndexRoute = AppProgramsIndexRouteImport.update({
   id: '/programs/',
   path: '/programs/',
@@ -184,9 +190,9 @@ const AdminReviewsIndexRoute = AdminReviewsIndexRouteImport.update({
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminProgramsIndexRoute = AdminProgramsIndexRouteImport.update({
-  id: '/programs/',
-  path: '/programs/',
-  getParentRoute: () => AdminRoute,
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminProgramsRouteRoute,
 } as any)
 const AdminLessonsIndexRoute = AdminLessonsIndexRouteImport.update({
   id: '/lessons/',
@@ -265,9 +271,9 @@ const AdminReviewsAttemptIdRoute = AdminReviewsAttemptIdRouteImport.update({
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminProgramsProgramIdRoute = AdminProgramsProgramIdRouteImport.update({
-  id: '/programs/$programId',
-  path: '/programs/$programId',
-  getParentRoute: () => AdminRoute,
+  id: '/$programId',
+  path: '/$programId',
+  getParentRoute: () => AdminProgramsRouteRoute,
 } as any)
 const AdminLessonsNewRoute = AdminLessonsNewRouteImport.update({
   id: '/lessons/new',
@@ -311,6 +317,7 @@ export interface FileRoutesByFullPath {
   '/dev': typeof DevRouteWithChildren
   '/login': typeof LoginRoute
   '/zero': typeof ZeroRouteWithChildren
+  '/admin/programs': typeof AdminProgramsRouteRouteWithChildren
   '/api/mutate': typeof ApiMutateRoute
   '/api/query': typeof ApiQueryRoute
   '/api/upload': typeof ApiUploadRoute
@@ -409,6 +416,7 @@ export interface FileRoutesById {
   '/dev': typeof DevRouteWithChildren
   '/login': typeof LoginRoute
   '/zero': typeof ZeroRouteWithChildren
+  '/admin/programs': typeof AdminProgramsRouteRouteWithChildren
   '/api/mutate': typeof ApiMutateRoute
   '/api/query': typeof ApiQueryRoute
   '/api/upload': typeof ApiUploadRoute
@@ -461,6 +469,7 @@ export interface FileRouteTypes {
     | '/dev'
     | '/login'
     | '/zero'
+    | '/admin/programs'
     | '/api/mutate'
     | '/api/query'
     | '/api/upload'
@@ -558,6 +567,7 @@ export interface FileRouteTypes {
     | '/dev'
     | '/login'
     | '/zero'
+    | '/admin/programs'
     | '/api/mutate'
     | '/api/query'
     | '/api/upload'
@@ -759,6 +769,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiMutateRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/programs': {
+      id: '/admin/programs'
+      path: '/programs'
+      fullPath: '/admin/programs'
+      preLoaderRoute: typeof AdminProgramsRouteRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/app/programs/': {
       id: '/app/programs/'
       path: '/programs'
@@ -803,10 +820,10 @@ declare module '@tanstack/react-router' {
     }
     '/admin/programs/': {
       id: '/admin/programs/'
-      path: '/programs'
+      path: '/'
       fullPath: '/admin/programs/'
       preLoaderRoute: typeof AdminProgramsIndexRouteImport
-      parentRoute: typeof AdminRoute
+      parentRoute: typeof AdminProgramsRouteRoute
     }
     '/admin/lessons/': {
       id: '/admin/lessons/'
@@ -915,10 +932,10 @@ declare module '@tanstack/react-router' {
     }
     '/admin/programs/$programId': {
       id: '/admin/programs/$programId'
-      path: '/programs/$programId'
+      path: '/$programId'
       fullPath: '/admin/programs/$programId'
       preLoaderRoute: typeof AdminProgramsProgramIdRouteImport
-      parentRoute: typeof AdminRoute
+      parentRoute: typeof AdminProgramsRouteRoute
     }
     '/admin/lessons/new': {
       id: '/admin/lessons/new'
@@ -965,18 +982,30 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AdminProgramsRouteRouteChildren {
+  AdminProgramsProgramIdRoute: typeof AdminProgramsProgramIdRoute
+  AdminProgramsIndexRoute: typeof AdminProgramsIndexRoute
+}
+
+const AdminProgramsRouteRouteChildren: AdminProgramsRouteRouteChildren = {
+  AdminProgramsProgramIdRoute: AdminProgramsProgramIdRoute,
+  AdminProgramsIndexRoute: AdminProgramsIndexRoute,
+}
+
+const AdminProgramsRouteRouteWithChildren =
+  AdminProgramsRouteRoute._addFileChildren(AdminProgramsRouteRouteChildren)
+
 interface AdminRouteChildren {
+  AdminProgramsRouteRoute: typeof AdminProgramsRouteRouteWithChildren
   AdminIndexRoute: typeof AdminIndexRoute
   AdminLessonsLessonIdRoute: typeof AdminLessonsLessonIdRoute
   AdminLessonsNewRoute: typeof AdminLessonsNewRoute
-  AdminProgramsProgramIdRoute: typeof AdminProgramsProgramIdRoute
   AdminReviewsAttemptIdRoute: typeof AdminReviewsAttemptIdRoute
   AdminSupportThreadIdRoute: typeof AdminSupportThreadIdRoute
   AdminTestsGroupIdRoute: typeof AdminTestsGroupIdRoute
   AdminAnalyticsIndexRoute: typeof AdminAnalyticsIndexRoute
   AdminInvitesIndexRoute: typeof AdminInvitesIndexRoute
   AdminLessonsIndexRoute: typeof AdminLessonsIndexRoute
-  AdminProgramsIndexRoute: typeof AdminProgramsIndexRoute
   AdminReviewsIndexRoute: typeof AdminReviewsIndexRoute
   AdminSettingsIndexRoute: typeof AdminSettingsIndexRoute
   AdminSupportIndexRoute: typeof AdminSupportIndexRoute
@@ -988,17 +1017,16 @@ interface AdminRouteChildren {
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminProgramsRouteRoute: AdminProgramsRouteRouteWithChildren,
   AdminIndexRoute: AdminIndexRoute,
   AdminLessonsLessonIdRoute: AdminLessonsLessonIdRoute,
   AdminLessonsNewRoute: AdminLessonsNewRoute,
-  AdminProgramsProgramIdRoute: AdminProgramsProgramIdRoute,
   AdminReviewsAttemptIdRoute: AdminReviewsAttemptIdRoute,
   AdminSupportThreadIdRoute: AdminSupportThreadIdRoute,
   AdminTestsGroupIdRoute: AdminTestsGroupIdRoute,
   AdminAnalyticsIndexRoute: AdminAnalyticsIndexRoute,
   AdminInvitesIndexRoute: AdminInvitesIndexRoute,
   AdminLessonsIndexRoute: AdminLessonsIndexRoute,
-  AdminProgramsIndexRoute: AdminProgramsIndexRoute,
   AdminReviewsIndexRoute: AdminReviewsIndexRoute,
   AdminSettingsIndexRoute: AdminSettingsIndexRoute,
   AdminSupportIndexRoute: AdminSupportIndexRoute,

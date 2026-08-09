@@ -91,7 +91,13 @@ export const queries = defineQueries({
 				q
 					.orderBy("position", "asc")
 					.related("topicLessons", (tl) =>
-						tl.orderBy("position", "asc").related("lesson"),
+						tl
+							.orderBy("position", "asc")
+							.related("lesson", (lesson) =>
+								lesson.related("activities", (a) =>
+									a.orderBy("position", "asc"),
+								),
+							),
 					),
 			);
 	}),

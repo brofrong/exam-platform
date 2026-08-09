@@ -1,5 +1,6 @@
 import { ZeroProvider } from "@rocicorp/zero/react";
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { useMemo } from "react";
 import { StudentShell } from "#/features/student-shell";
 import { getCurrentUser } from "#/server/auth/get-current-user";
 import { mutators } from "#/server/zero/mutators";
@@ -19,16 +20,25 @@ export const Route = createFileRoute("/app")({
 
 function AppLayout() {
 	const { user } = Route.useRouteContext();
+	const zeroContext = useMemo(
+		() => ({ id: user.id, name: user.name, role: user.role }),
+		[user.id, user.name, user.role],
+	);
+	const cacheURL = useMemo(() => getZeroCacheURL(), []);
+	const shellUser = useMemo(
+		() => ({ name: user.name, role: user.role }),
+		[user.name, user.role],
+	);
 
 	return (
 		<ZeroProvider
-			cacheURL={getZeroCacheURL()}
+			cacheURL={cacheURL}
 			schema={schema}
 			mutators={mutators}
 			userID={user.id}
-			context={{ id: user.id, name: user.name, role: user.role }}
+			context={zeroContext}
 		>
-			<StudentShell user={{ name: user.name, role: user.role }}>
+			<StudentShell user={shellUser}>
 				<Outlet />
 			</StudentShell>
 		</ZeroProvider>
